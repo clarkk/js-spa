@@ -1,6 +1,6 @@
 import * as fmt from 'fmt';
 
-export const create_auth_store = init_state=>{
+export function create_auth_store(init_state){
 	let current_state = init_state, env_data = null, trans = window?.__trans__ || {}, trans_lang = trans.lang || {}, trans_lang_error = trans.lang_error || {};
 	const listeners = new Set(), o = {
 		env(data, update=false){
@@ -29,4 +29,45 @@ export const create_auth_store = init_state=>{
 	}
 	
 	return o;
-};
+}
+
+export function create_poller(action, seconds, only_visible=false){
+	const event = 'visibilitychange';
+	let timeout, running = false;
+	
+	if(only_visible){
+		document.addEventListener(event, handle);
+		if(!document.hidden) start();
+	}
+	else start();
+	
+	async function tick(){
+		if(!running) return;
+		await action();
+		if(running){
+			clearTimeout(timeout); 
+			timeout = setTimeout(tick, seconds * 1000);
+		}
+	}
+	
+	function start(){
+		clearTimeout(timeout);
+		if(running) return;
+		running = true;
+		tick();
+	}
+	
+	function stop(){
+		running = false;
+		clearTimeout(timeout);
+	}
+	
+	function handle(){
+		document.hidden ? stop() : start();
+	}
+	
+	return _=>{
+		stop();
+		if(only_visible) document.removeEventListener(event, handle);
+	};
+}
