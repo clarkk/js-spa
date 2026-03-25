@@ -51,8 +51,7 @@ export function create_poller(action, seconds, only_visible=false){
 	}
 	
 	function start(){
-		clearTimeout(timeout);
-		if(running) return;
+		stop();
 		running = true;
 		tick();
 	}
@@ -60,6 +59,7 @@ export function create_poller(action, seconds, only_visible=false){
 	function stop(){
 		running = false;
 		clearTimeout(timeout);
+		timeout = null;
 	}
 	
 	function handle(){
