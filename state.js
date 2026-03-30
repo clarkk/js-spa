@@ -1,8 +1,15 @@
 import * as fmt from 'fmt';
 
 export function create_auth_store(init_state){
-	let current_state = init_state, env_data = null, trans = window?.__trans__ || {}, trans_lang = trans.lang || {}, trans_lang_error = trans.lang_error || {};
+	let current_state = init_state, env_data = null, trans = {}, trans_lang = {}, trans_lang_error = {};
 	const listeners = new Set(), o = {
+		init_trans(){
+			if(Object.keys(trans).length) return;
+			trans = window?.__trans__ || {};
+			trans_lang = trans.lang || {};
+			trans_lang_error = trans.lang_error || {};
+			o.update();
+		},
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
 			env_data = {...data};
@@ -21,6 +28,8 @@ export function create_auth_store(init_state){
 			return _=>listeners.delete(fn);
 		}
 	};
+	
+	o.init_trans();
 	
 	function translate(key, dict){
 		const lang = env_data?.lang;
