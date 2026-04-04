@@ -20,7 +20,9 @@ export async function init(handler){
 		catch(e){
 			console.error('Error report failed:', e);
 		}
-		reporting = false;
+		finally{
+			reporting = false;
+		}
 	};
 	
 	window.onerror = (message, file, line, column, error)=>{
