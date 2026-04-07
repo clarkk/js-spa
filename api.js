@@ -28,7 +28,7 @@ async function request(path, options={}){
 		...options
 	});
 	
-	const data = res.headers.get('content-type')?.includes(content_json) ? await res.json() : null;
+	const text = res.headers.get('content-type')?.includes(content_json) ? await res.text() : null, data = text ? JSON.parse(text) : null;
 	
 	if(!res.ok){
 		throw {
