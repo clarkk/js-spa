@@ -20,8 +20,8 @@ export function create_auth_store(init_state){
 			current_state = state;
 			if(update) o.update();
 		},
-		t: key=>translate(key, trans_lang),
-		t_error: key=>translate(key, trans_lang_error),
+		t: (key, replace)=>translate(key, trans_lang, replace),
+		t_error: (key, replace)=>translate(key, trans_lang_error, replace),
 		update: _=>listeners.forEach(fn=>fn()),
 		subscribe(fn){
 			listeners.add(fn);
@@ -31,10 +31,16 @@ export function create_auth_store(init_state){
 	
 	o.init_trans();
 	
-	function translate(key, dict){
+	function translate(key, dict, replace){
 		const lang = env_data?.lang;
 		if(!lang) return fmt.html(key)
-		return fmt.html(dict[lang]?.[key] || key)
+		const s = dict[lang]?.[key] || key;
+		return fmt.html(trans_replace(s, replace));
+	}
+	
+	function trans_replace(s, replace={}){
+		for(const k in replace) s = s.replaceAll(`%${k}%`, replace[k]);
+		return s;
 	}
 	
 	return o;
