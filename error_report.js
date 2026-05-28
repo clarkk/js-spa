@@ -8,8 +8,8 @@ export async function init(handler){
 	async function report(message, file, line, column, error, type='Error'){
 		if(reporting) return;
 		
-		const origin = file || error?.stack || '', is_local = is_local_error(file, error?.stack || '');
-		if(origin && !is_local) return;
+		const stack = error?.stack || '', origin = file || stack;
+		if(origin && !is_local_error(file, stack)) return;
 		
 		reporting = true;
 		
@@ -93,7 +93,12 @@ function is_local_error(file, stack){
 		}
 		catch{}
 	}
-	return stack?.includes(location.hostname) || false;
+	if(stack){
+		if(stack.includes('iabjs://') || stack.includes('-extension://')) return false;
+		if(stack.includes(location.hostname) || stack.includes(window.location.origin)) return true;
+		return true;
+	}
+	return false;
 }
 
 function browser_version(data){
