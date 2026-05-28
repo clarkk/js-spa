@@ -1,10 +1,5 @@
 export async function init(handler){
-	let reporting = false, browser_data = {
-		ua: navigator.userAgent,
-		name: null,
-		version: null,
-		os: null
-	};
+	let reporting = false, browser_data = browser_fallback();
 	try{
 		browser_data = await browser();
 	}
@@ -56,12 +51,7 @@ export async function init(handler){
 }
 
 async function browser(){
-	let data = {
-		ua: navigator.userAgent,
-		name: null,
-		version: null,
-		os: null
-	};
+	let data = browser_fallback();
 	
 	if(navigator.userAgentData){
 		try {
@@ -113,6 +103,15 @@ function browser_version(data){
 		data.version,
 		data.os
 	].filter(Boolean).join(' ');
+}
+
+function browser_fallback(){
+	return {
+		ua: navigator.userAgent,
+		name: null,
+		version: null,
+		os: null
+	};
 }
 
 function file_location(file, line, column){
