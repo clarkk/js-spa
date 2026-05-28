@@ -1,20 +1,33 @@
 export async function init(handler){
-	let reporting = false;
+	let reporting = false, browser_data = {
+		ua: navigator.userAgent,
+		name: null,
+		version: null,
+		os: null
+	};
+	try{
+		browser_data = await browser();
+	}
+	catch{}
 	
 	async function report(message, file, line, column, error, type='Error'){
 		if(reporting) return;
+		
+		const origin = file || error?.stack || '', is_local = is_local_error(file, error?.stack || '');
+		if(origin && !is_local) return;
+		
 		reporting = true;
 		
 		try{
-			const url = window.location.href, data = await browser();
-			handler({
+			const url = window.location.href;
+			await handler({
 				url,
 				type,
 				file: file_location(file, line, column),
 				error: message || null,
 				stack: error?.stack || null,
-				browser: browser_version(data),
-				user_agent: data.ua
+				browser: browser_version(browser_data),
+				user_agent: browser_data.ua
 			});
 		}
 		catch(e){
@@ -26,12 +39,12 @@ export async function init(handler){
 	};
 	
 	window.onerror = (message, file, line, column, error)=>{
-		report(message, file, line, column, error, 'Runtime Error');
+		void report(message, file, line, column, error, 'Runtime Error');
 	};
 	
 	window.onunhandledrejection = e=>{
 		const reason = e.reason || null;
-		report(
+		void report(
 			reason?.message || reason,
 			null,
 			null,
@@ -56,14 +69,14 @@ async function browser(){
 				'fullVersionList', 'platform', 'platformVersion'
 			]);
 			
-			const specific = high_entropy.fullVersionList.find(filter_browser) || high_entropy.fullVersionList[0];
+			const specific = high_entropy.fullVersionList.find(filter_browser) || high_entropy.fullVersionList[0] || {};
 			
 			data.name = specific.brand;
 			data.version = specific.version;
 			data.os = high_entropy.platform+' '+high_entropy.platformVersion;
 		}
 		catch(e){
-			const basic = navigator.userAgentData.brands.find(filter_browser) || navigator.userAgentData.brands[0];
+			const basic = navigator.userAgentData.brands.find(filter_browser) || navigator.userAgentData.brands[0] || {};
 			data.name = basic.brand;
 			data.version = basic.version;
 		}
@@ -82,6 +95,17 @@ async function browser(){
 	return data;
 }
 
+function is_local_error(file, stack){
+	if(file){
+		try{
+			const url = new URL(file, location.href);
+			return url.hostname === location.hostname;
+		}
+		catch{}
+	}
+	return stack?.includes(location.hostname) || false;
+}
+
 function browser_version(data){
 	if(!data.name) return null;
 	return [
@@ -97,5 +121,5 @@ function file_location(file, line, column){
 }
 
 function filter_browser(v){
-	return v.brand !== 'Chromium' && !v.brand.includes('Not');
+	return v.brand && v.brand !== 'Chromium' && !v.brand.includes('Not');
 }
