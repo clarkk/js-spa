@@ -86,10 +86,9 @@ async function browser(){
 }
 
 function is_local_error(file, stack){
-	const domain = root_domain(location.hostname);
-	
 	if(!file && !stack) return true;
 	
+	const domain = root_domain(location.hostname);
 	if(file){
 		try{
 			const url = new URL(file, location.href);
