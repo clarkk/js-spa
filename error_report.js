@@ -86,17 +86,20 @@ async function browser(){
 }
 
 function is_local_error(file, stack){
+	const domain = root_domain(location.hostname);
+	
+	if(!file && !stack) return true;
+	
 	if(file){
 		try{
 			const url = new URL(file, location.href);
-			return url.hostname === location.hostname;
+			if(domain === root_domain(url.hostname)) return true;
 		}
 		catch{}
 	}
 	if(stack){
 		if(stack.includes('iabjs://') || stack.includes('-extension://')) return false;
-		if(stack.includes(location.hostname) || stack.includes(window.location.origin)) return true;
-		return true;
+		if(stack.includes(domain)) return true;
 	}
 	return false;
 }
@@ -117,6 +120,10 @@ function browser_fallback(){
 		version: null,
 		os: null
 	};
+}
+
+function root_domain(hostname){
+	return hostname.split('.').slice(-2).join('.');
 }
 
 function file_location(file, line, column){
