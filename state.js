@@ -22,7 +22,20 @@ export function create_auth_store(init_state){
 		},
 		t: (key, replace)=>translate(key, trans_lang, replace),
 		t_error: (key, replace)=>translate(key, trans_lang_error, replace),
-		update: _=>listeners.forEach(fn=>fn()),
+		update(){
+			for(const fn of listeners){
+				try{
+					fn();
+				}
+				catch(err){
+					console.error('Store listener failed:', err);
+					
+					setTimeout(_=>{
+						throw err instanceof Error ? err : new Error(String(err));
+					}, 0);
+				}
+			}
+		},
 		subscribe(fn){
 			listeners.add(fn);
 			return _=>listeners.delete(fn);
