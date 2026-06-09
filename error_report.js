@@ -1,3 +1,5 @@
+import { browser, browser_version, browser_fallback } from './browser.js';
+
 export async function init(handler){
 	let reporting = false, browser_data = browser_fallback();
 	try{
@@ -50,41 +52,6 @@ export async function init(handler){
 	};
 }
 
-async function browser(){
-	let data = browser_fallback();
-	
-	if(navigator.userAgentData){
-		try {
-			const high_entropy = await navigator.userAgentData.getHighEntropyValues([
-				'fullVersionList', 'platform', 'platformVersion'
-			]);
-			
-			const specific = high_entropy.fullVersionList.find(filter_browser) || high_entropy.fullVersionList[0] || {};
-			
-			data.name = specific.brand;
-			data.version = specific.version;
-			data.os = high_entropy.platform+' '+high_entropy.platformVersion;
-		}
-		catch(e){
-			const basic = navigator.userAgentData.brands.find(filter_browser) || navigator.userAgentData.brands[0] || {};
-			data.name = basic.brand;
-			data.version = basic.version;
-		}
-	}
-	else{
-		if(data.ua.includes('Firefox/')){
-			data.name = 'Firefox';
-			data.version = data.ua.split('Firefox/')[1]?.split(' ')[0] || null;
-		}
-		else if(data.ua.includes('Safari/') && !data.ua.includes('Chrome')){
-			data.name = 'Safari';
-			data.version = data.ua.split('Version/')[1]?.split(' ')[0] || null;
-		}
-	}
-	
-	return data;
-}
-
 function is_local_error(file, stack){
 	if(!file && !stack) return true;
 	
@@ -103,24 +70,6 @@ function is_local_error(file, stack){
 	return false;
 }
 
-function browser_version(data){
-	if(!data.name) return null;
-	return [
-		data.name,
-		data.version,
-		data.os
-	].filter(Boolean).join(' ');
-}
-
-function browser_fallback(){
-	return {
-		ua: navigator.userAgent,
-		name: null,
-		version: null,
-		os: null
-	};
-}
-
 function root_domain(hostname){
 	return hostname.split('.').slice(-2).join('.');
 }
@@ -128,8 +77,4 @@ function root_domain(hostname){
 function file_location(file, line, column){
 	if(!file) return null;
 	return `${file}:${line ?? 'undefined'}:${column ?? 'undefined'}`;
-}
-
-function filter_browser(v){
-	return v.brand && v.brand !== 'Chromium' && !v.brand.includes('Not');
 }
