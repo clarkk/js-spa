@@ -1,22 +1,11 @@
 import * as api from 'api';
 import * as fmt from 'fmt';
 
-export function create_auth_store(init_state){
+export function create_auth_store(init_state, url_trans){
 	valid_state(init_state);
 	
-	let current_state = init_state, env_data = null, trans_loading = null, trans_lang = {}, trans_lang_error = {};
+	let current_state = init_state, env_data = null, trans_lang = {}, trans_lang_error = {};
 	const listeners = new Set(), o = {
-		load_trans(url){
-			if(trans_loading) return trans_loading;
-			trans_loading = api.client.get(url).then(trans=>{
-				trans_lang = trans?.lang || {};
-				trans_lang_error = trans?.lang_error || {};
-				o.update();
-			}).finally(_=>{
-				trans_loading = null;
-			});
-			return trans_loading;
-		},
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
 			env_data = {...data};
@@ -50,6 +39,16 @@ export function create_auth_store(init_state){
 		}
 	};
 	
+	load_trans(url_trans);
+	
+	function load_trans(url){
+		api.client.get(url).then(trans=>{
+			trans_lang = trans?.lang || {};
+			trans_lang_error = trans?.lang_error || {};
+			o.update();
+		});
+	}
+	
 	function translate(key, dict, replace){
 		const lang = env_data?.lang;
 		if(!lang) return fmt.html(key);
@@ -81,8 +80,13 @@ export function create_poller(action, seconds, only_visible=false){
 	
 	async function tick(){
 		if(!running) return;
-		await action();
-		if(running){
+		try{
+			await action();
+		}
+		catch(err){
+			console.error('Poller action failed:', err);
+		}
+		if(running && (!only_visible || !document.hidden)){
 			clearTimeout(timeout); 
 			timeout = setTimeout(tick, seconds * 1000);
 		}
