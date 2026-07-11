@@ -1,14 +1,21 @@
+import * as api from 'api';
 import * as fmt from 'fmt';
 
 export function create_auth_store(init_state){
-	let current_state = init_state, env_data = null, trans = {}, trans_lang = {}, trans_lang_error = {};
+	valid_state(init_state);
+	
+	let current_state = init_state, env_data = null, trans_loading = null, trans_lang = {}, trans_lang_error = {};
 	const listeners = new Set(), o = {
-		init_trans(){
-			if(Object.keys(trans).length) return;
-			trans = window?.__trans__ || {};
-			trans_lang = trans.lang || {};
-			trans_lang_error = trans.lang_error || {};
-			o.update();
+		load_trans(url){
+			if(trans_loading) return trans_loading;
+			trans_loading = api.client.get(url).then(trans=>{
+				trans_lang = trans?.lang || {};
+				trans_lang_error = trans?.lang_error || {};
+				o.update();
+			}).finally(_=>{
+				trans_loading = null;
+			});
+			return trans_loading;
 		},
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
@@ -17,6 +24,7 @@ export function create_auth_store(init_state){
 		},
 		state(state, update=false){
 			if(!arguments.length) return current_state;
+			valid_state(state);
 			current_state = state;
 			if(update) o.update();
 		},
@@ -42,11 +50,9 @@ export function create_auth_store(init_state){
 		}
 	};
 	
-	o.init_trans();
-	
 	function translate(key, dict, replace){
 		const lang = env_data?.lang;
-		if(!lang) return fmt.html(key)
+		if(!lang) return fmt.html(key);
 		const s = dict[lang]?.[key] || key;
 		return fmt.html(trans_replace(s, replace));
 	}
@@ -54,6 +60,10 @@ export function create_auth_store(init_state){
 	function trans_replace(s, replace={}){
 		for(const k in replace) s = s.replaceAll(`%${k}%`, replace[k]);
 		return s;
+	}
+	
+	function valid_state(state){
+		if(typeof state !== 'string') throw Error(`State must be a string, got ${typeof state}`);
 	}
 	
 	return o;
