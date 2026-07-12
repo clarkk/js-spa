@@ -26,16 +26,23 @@ export function create_router(handler){
 }
 
 export const controller = (_=>{
-	let container = null, subscription = null, cleanup = null, o = {
-		init(element){
-			container = element;
+	let container = null, subscription = null, cleanup = null, render_id = 0, o = {
+		init(elm){
+			container = elm;
 		},
 		render(store, view){
 			o.clear();
+			
+			const current_render_id = ++render_id;
+			
 			subscription = store.subscribe(_=>{
-				view(container);
+				view(container, active);
 			});
-			view(container);
+			view(container, active);
+			
+			function active(){
+				return current_render_id === render_id;
+			}
 		},
 		clear(){
 			if(subscription){
