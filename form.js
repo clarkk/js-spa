@@ -7,11 +7,11 @@ export const
 	TYPE_PASSWORD = 'password',
 	TYPE_TEXTAREA = 'textarea';
 
-/*const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
+const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
 	INP_DISABLED='disabled', INP_VISIBLE='visible', INP_READONLY='readonly',
-	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
-	EVENT_INPUT='input', EVENT_CHANGE='change',
-	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];*/
+	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next'//,
+	//EVENT_INPUT='input', EVENT_CHANGE='change',
+	//BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
 export function fieldset(fields, buttons){
 	const field_names = {}, tabs = create_tabs(), o = {
@@ -22,6 +22,24 @@ export function fieldset(fields, buttons){
 		button_id(name){
 			valid_button_name(name);
 			return buttons[name].id;
+		},
+		field(name, value){
+			valid_field_name(name);
+			return create_field(o, name, value);
+		},
+		fields(name){
+			if(!arguments.length) return fields;
+			valid_field_name(name);
+			return fields.get(name);
+		},
+		button(name){
+			valid_button_name(name);
+			return create_button(o, name);
+		},
+		buttons(name){
+			if(!arguments.length) return buttons;
+			valid_button_name(name);
+			return buttons[name];
 		},
 		html_field(name, label, width){
 			return `<div class="field-label" style="width:${width ? width+'px' : '100%'}">
@@ -42,7 +60,7 @@ export function fieldset(fields, buttons){
 					}*/
 					if(!field.id) field.id = dom.id();
 					if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
-					//if(!field.css) field.css = {style: [], class: []};
+					if(!field.css) field.css = {style: [], class: []};
 				});
 			}
 			else if(apply_fields !== null) throw Error('Fields must be defined');
@@ -57,12 +75,12 @@ export function fieldset(fields, buttons){
 				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
 				
 				const value = values[name] ?? null;
-				//o.field(name, value).render();
+				o.field(name, value).render();
 			});
 			return o;
 		},
 		render_buttons(){
-			//for(const k in buttons) o.button(k).render();
+			for(const k in buttons) o.button(k).render();
 			return o;
 		},
 		focus(){
@@ -122,16 +140,173 @@ export function fieldset(fields, buttons){
 	return Object.freeze(o);
 }
 
-function deep_clone(obj){
-	if(obj === null || typeof obj !== 'object') return obj;
+function create_field(fieldset, name, value){
+	let input, rendered = false;
+	const field = fieldset.fields(name), o = {
+		render(){
+			if(rendered) throw Error(`Field '${name}' is already rendered`);
+			
+			rendered = true;
+			const elm = document.getElementById(field.id), input_id = dom.id();
+			if(!elm) throw Error(`Field '${name}' is not found in DOM`);
+			
+			if(field.ralign) field.css.class.push('text-right');
+			
+			switch(field.type){
+			default:
+				elm.innerHTML = `<input id="${input_id}" ${render_css()} type="${field.type || 'text'}" autocomplete="nope" value="${fmt.html(render_value())}">`;
+			}
+			
+			input = document.getElementById(input_id);
+			if(input){
+				input.addEventListener('keydown', e=>{
+					switch(e.key){
+					case KEY_TAB:
+						e.preventDefault();
+						o.tab(e);
+						break;
+					case KEY_ESC:
+						console.log('esc');
+						break;
+					case KEY_ENTER:
+						if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
+							e.preventDefault();
+							const buttons = fieldset.buttons();
+							if(button_click(buttons[BTN_ACTION])) break;
+							if(button_click(buttons[BTN_NEXT])) break;
+						}
+						break;
+					}
+					
+					function button_click(button){
+						if(button.Button.hidden()){
+							button.Button.click();
+							return true;
+						}
+						return false;
+					}
+				});
+			}
+		},
+		/*tab(e){
+			fieldset.tabs().tab(field.tabindex, e);
+		},
+		focus(no_selection){
+			if(no_selection || input.prop(INP_READONLY)) input.focus();
+			else input.select().focus();
+		},*/
+		readonly(bool){
+			if(!o.enabled()) return;
+			
+			input.readOnly = !!bool;
+			apply_input_class(INP_READONLY, bool);
+		},
+		enabled(visible){
+			if(!input || input.disabled) return false;
+			const is_visible = input.offsetWidth || input.offsetHeight || input.getClientRects().length;
+			return visible && !is_visible ? false : true;
+		},
+		/*val(value){
+			if(!arguments.length) return input?.length ? input.val() : (field.value || '');
+			
+			value = value || '';
+			input.val(value).trigger(EVENT_INPUT).trigger(EVENT_CHANGE);
+			return this;
+		},
+		input(){
+			return input;
+		}*/
+	};
 	
-	if(Array.isArray(obj)) return obj.map(v=>deep_clone(v));
+	field.Field = o;
+	if(value != null) field.value = value;
+	//if('tabindex' in field) fieldset.tabs().field(field.tabindex, f);
 	
-	const clone = {};
-	for(const key in obj){
-		if(Object.prototype.hasOwnProperty.call(obj, key)) clone[key] = deep_clone(obj[key]);
+	function render_css(){
+		if(!field.css.class.length && !field.css.style.length) return '';
+		
+		const list = [];
+		if(field.css.class.length) list.push('class="'+field.css.class.join(' ')+'"');
+		if(field.css.style.length) list.push('style="'+field.css.style.join('; ')+'"');
+		return list.join(' ');
 	}
-	return clone;
+	
+	function render_value(){
+		return field.value || '';
+	}
+	
+	function apply_input_class(class_name, bool){
+		if(bool) input.classList.add(class_name);
+		else input.classList.remove(class_name);
+	}
+	
+	return Object.freeze(o);
+}
+
+function create_button(fieldset, name){
+	let icon, value, input, loading = false, hidden = true;
+	const button = fieldset.buttons(name), o = {
+		render(){
+			const elm = document.getElementById(button.id), input_id = dom.id();
+			if(!elm) throw Error(`Button '${name}' is not found in DOM`);
+			
+			/*switch(name){
+			case BTN_ACTION:
+				icon = button.icon || 'check-lg';
+				value = lng.get(button.value || 'BTN_OK');
+				break;
+			case BTN_BACK:
+				icon = button.icon || 'chevron-left';
+				value = lng.get(button.value || 'BTN_BACK');
+				break;
+			case BTN_NEXT:
+				icon = button.icon || 'chevron-right';
+				value = lng.get(button.value || 'BTN_NEXT');
+				break;
+			}*/
+			
+			elm.innerHTML = `<button id="${input_id}"><i class="bi bi-${icon}"></i>${value}</button>`;
+			input = document.getElementById(input_id);
+			if(input) input.addEventListener('click', _=>o.click());
+		},
+		click(){
+			if(loading) return;
+			
+			if(button.click){
+				o.loading(true);
+				button.click.call(fieldset, o);
+			}
+			else throw Error(`Button '${name}' has no action`);
+		},
+		loading(bool){
+			if(bool){
+				input.classList.add('loading');
+				/*fieldset.API?.context({
+					Button: this
+				});*/
+			}
+			else input.classList.remove('loading');
+			
+			const fields = fieldset.fields();
+			if(fields) fields.forEach(field=>{
+				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) field.Field.readonly(bool);
+			});
+			loading = !!bool;
+		},
+		hide(bool){
+			hidden = !!bool;
+		},
+		hidden(){
+			return hidden;
+		},
+		focus(){
+			input.focus();
+		}
+	};
+	
+	button.Button = o;
+	
+	return Object.freeze(o);
 }
 
 /*export function Fieldset_api(api_send, api, fields, buttons){
@@ -152,29 +327,12 @@ export function Fieldset(fields, buttons={}){
 			fields = null;
 			f.apply_fields(apply_fields);
 		},
-		field(name, value){
-			valid_field_name(name);
-			return Field(this, name, value);
-		},
-		button(name){
-			valid_button_name(name);
-			return Button(this, name);
-		},
-		fields(name){
-			if(!arguments.length) return fields;
-			
-			valid_field_name(name);
-			return fields.get(name);
-		},
+		
+		
 		tabs(){
 			return _tabs;
 		},
-		buttons(name){
-			if(!arguments.length) return buttons;
-			
-			valid_button_name(name);
-			return buttons[name];
-		},
+		
 		
 		
 		
@@ -230,170 +388,6 @@ export function Fieldset(fields, buttons={}){
 	}
 	
 	return Object.freeze(f);
-}
-
-function Button(fieldset, name){
-	let icon, value, input, loading = false, hidden = true;
-	const button = fieldset.buttons(name), b = {
-		render(){
-			const elm = $('#'+button.id), input_id = dom.id();
-			if(!elm.length) throw Error(`Button '${name}' is not found in DOM`);
-			
-			switch(name){
-			case BTN_ACTION:
-				icon = button.icon || 'check-lg';
-				value = lng.get(button.value || 'BTN_OK');
-				break;
-			case BTN_BACK:
-				icon = button.icon || 'chevron-left';
-				value = lng.get(button.value || 'BTN_BACK');
-				break;
-			case BTN_NEXT:
-				icon = button.icon || 'chevron-right';
-				value = lng.get(button.value || 'BTN_NEXT');
-				break;
-			}
-			
-			elm.html(`<button id="${input_id}"><i class="bi bi-${icon}"></i>${value}</button>`);
-			input = $('#'+input_id).click(_=>this.click());
-		},
-		click(){
-			if(loading) return;
-			
-			if(button.click){
-				this.loading(true);
-				button.click.call(fieldset, this);
-			}
-			else throw Error(`Button '${name}' has no action`);
-		},
-		loading(bool){
-			if(bool){
-				input.addClass('loading');
-				fieldset.API?.context({
-					Button: this
-				});
-			}
-			else input.removeClass('loading');
-			
-			const fields = fieldset.fields();
-			if(fields) fields.forEach(field=>{
-				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) field.Field.readonly(bool);
-			});
-			loading = !!bool;
-		},
-		hide(bool){
-			hidden = !!bool;
-		},
-		hidden(){
-			return hidden;
-		},
-		focus(){
-			input.focus();
-		}
-	};
-	
-	button.Button = b;
-	
-	return Object.freeze(b);
-}
-
-function Field(fieldset, name, value){
-	let input, rendered = false;
-	const field = fieldset.fields(name), f = {
-		render(){
-			if(rendered) throw Error(`Field '${name}' is already rendered`);
-			
-			rendered = true;
-			const elm = $('#'+field.id), input_id = dom.id();
-			if(!elm.length) throw Error(`Field '${name}' is not found in DOM`);
-			
-			if(field.ralign) field.css.class.push('text-right');
-			
-			switch(field.type){
-			default:
-				elm.html(`<input id="${input_id}" ${render_css()} type="${field.type || 'text'}" autocomplete="nope" value="${fmt.html(render_value(), true)}">`);
-			}
-			
-			input = $('#'+input_id).keydown(e=>{
-				switch(e.key){
-				case KEY_TAB:
-					e.preventDefault();
-					f.tab(e);
-					break;
-				case KEY_ESC:
-					console.log('esc')
-					break;
-				case KEY_ENTER:
-					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
-						e.preventDefault();
-						const buttons = fieldset.buttons();
-						if(button_click(buttons[BTN_ACTION])) break;
-						if(button_click(buttons[BTN_NEXT])) break;
-					}
-					break;
-				}
-				
-				function button_click(button){
-					if(button.Button.hidden()){
-						button.Button.click();
-						return true;
-					}
-					return false;
-				}
-			});
-		},
-		tab(e){
-			fieldset.tabs().tab(field.tabindex, e);
-		},
-		focus(no_selection){
-			if(no_selection || input.prop(INP_READONLY)) input.focus();
-			else input.select().focus();
-		},
-		readonly(bool){
-			if(!this.enabled()) return;
-			
-			input.prop(INP_READONLY, bool);
-			apply_input_class(INP_READONLY, bool);
-		},
-		enabled(visible){
-			if(!input?.length || input.is(':'+INP_DISABLED)) return false;
-			return visible && !input.is(':'+INP_VISIBLE) ? false : true;
-		},
-		val(value){
-			if(!arguments.length) return input?.length ? input.val() : (field.value || '');
-			
-			value = value || '';
-			input.val(value).trigger(EVENT_INPUT).trigger(EVENT_CHANGE);
-			return this;
-		},
-		input(){
-			return input;
-		}
-	};
-	
-	field.Field = f;
-	if(value != null) field.value = value;
-	if('tabindex' in field) fieldset.tabs().field(field.tabindex, f);
-	
-	function render_css(){
-		if(!field.css.class.length && !field.css.style.length) return '';
-		
-		const list = [];
-		if(field.css.class.length) list.push('class="'+field.css.class.join(' ')+'"');
-		if(field.css.style.length) list.push('style="'+field.css.style.join('; ')+'"');
-		return list.join(' ');
-	}
-	
-	function render_value(){
-		return field.value || '';
-	}
-	
-	function apply_input_class(class_name, bool){
-		if(bool) input.addClass(class_name);
-		else input.removeClass(class_name);
-	}
-	
-	return Object.freeze(f);
 }*/
 
 function create_tabs(){
@@ -421,4 +415,16 @@ function create_tabs(){
 			tabs = {};
 		}
 	};
+}
+
+function deep_clone(obj){
+	if(obj === null || typeof obj !== 'object') return obj;
+	
+	if(Array.isArray(obj)) return obj.map(v=>deep_clone(v));
+	
+	const clone = {};
+	for(const key in obj){
+		if(Object.prototype.hasOwnProperty.call(obj, key)) clone[key] = deep_clone(obj[key]);
+	}
+	return clone;
 }
