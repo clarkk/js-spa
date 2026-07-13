@@ -8,13 +8,14 @@ export const
 	TYPE_TEXTAREA = 'textarea';
 
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
-	INP_DISABLED='disabled', INP_VISIBLE='visible', INP_READONLY='readonly',
-	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next'//,
-	//EVENT_INPUT='input', EVENT_CHANGE='change',
-	//BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
+	INP_DISABLED='disabled', INP_READONLY='readonly',
+	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
+	EVENT_INPUT='input', EVENT_CHANGE='change',
+	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
-export function fieldset(fields, buttons){
+export function fieldset(store, fields, buttons){
 	const field_names = {}, tabs = create_tabs(), o = {
+		store,
 		field_id(name){
 			valid_field_name(name);
 			return fields.get(name).id;
@@ -42,10 +43,15 @@ export function fieldset(fields, buttons){
 			return buttons[name];
 		},
 		html_field(name, label, width){
-			return `<div class="field-label" style="width:${width ? width+'px' : '100%'}">
-	<label>${fmt.html(label)}</label>
-	<div id="${o.field_id(name)}" class="field-input"></div>
-</div>`;
+			return `
+				<div class="field-label" style="width:${width ? width+'px' : '100%'}">
+					<label>${fmt.html(label)}</label>
+					<div id="${o.field_id(name)}" class="field-input"></div>
+				</div>
+			`;
+		},
+		html_button(name){
+			return `<div id="${o.button_id(name)}"></div>`;
 		},
 		apply_fields(apply_fields){
 			if(fields?.size) throw Error('Fields are already applied');
@@ -83,10 +89,32 @@ export function fieldset(fields, buttons){
 			for(const k in buttons) o.button(k).render();
 			return o;
 		},
+		set_tabindex_field(tabindex, Field){
+			tabs.field(tabindex, Field);
+		},
+		tab(tabindex, e){
+			tabs.tab(tabindex, e);
+		},
+		val(name){
+			if(fields === null) return null;
+			
+			if(!arguments.length){
+				const data = {};
+				fields.forEach((field,name)=>{
+					data[name] = get_input_value(name);
+				});
+				return data;
+			}
+			
+			if(name){
+				valid_field_name(name);
+				return get_input_value(name);
+			}
+		},
 		focus(){
-			/*if(fields === null){
+			if(fields === null){
 				focus_button();
-				return this;
+				return o;
 			}
 			
 			let found = false;
@@ -101,13 +129,13 @@ export function fieldset(fields, buttons){
 				}
 				else if(v.focus){
 					found = true;
-					if(v.Field.enabled()){
-						if(v.Field.input().is(':'+INP_VISIBLE)) v.Field.focus();
+					if(v.Field.enabled() && elm_visible(v.Field.input())){
+						v.Field.focus();
 						break;
 					}
 				}
 			}
-			//if(!found) focus_button();*/
+			//if(!found) focus_button();
 			
 			return o;
 		}
@@ -131,6 +159,33 @@ export function fieldset(fields, buttons){
 			if(field_names[v[0]]) throw Error(`Field '${v[0]}' already exists in fieldset`);
 			field_names[v[0]] = true;
 		});
+	}
+	
+	function get_input_value(name){
+		const field = fields.get(name);
+		switch(field.type){
+		case TYPE_HIDDEN:
+		case TYPE_BLIND:
+			return field.value || '';
+		default: return field.Field.val();
+		}
+	}
+	
+	function focus_button(){
+		for(const k in buttons){
+			if(buttons[k].focus){
+				buttons[k].Button.focus();
+				return;
+			}
+		}
+		
+		for(const k in BTN_CTA_NAMES){
+			const button = buttons[BTN_CTA_NAMES[k]];
+			if(button){
+				button.Button.focus();
+				return;
+			}
+		}
 	}
 	
 	function apply_button(name, button){
@@ -188,13 +243,17 @@ function create_field(fieldset, name, value){
 				});
 			}
 		},
-		/*tab(e){
-			fieldset.tabs().tab(field.tabindex, e);
+		tab(e){
+			fieldset.tab(field.tabindex, e);
 		},
-		focus(no_selection){
-			if(no_selection || input.prop(INP_READONLY)) input.focus();
-			else input.select().focus();
-		},*/
+		focus(no_selection=false){
+			if(!input) return;
+			if(no_selection || input.readOnly) input.focus();
+			else{
+				input.select();
+				input.focus();
+			}
+		},
 		readonly(bool){
 			if(!o.enabled()) return;
 			
@@ -203,24 +262,27 @@ function create_field(fieldset, name, value){
 		},
 		enabled(visible){
 			if(!input || input.disabled) return false;
-			const is_visible = input.offsetWidth || input.offsetHeight || input.getClientRects().length;
-			return visible && !is_visible ? false : true;
+			return visible && !elm_visible(input) ? false : true;
 		},
-		/*val(value){
-			if(!arguments.length) return input?.length ? input.val() : (field.value || '');
+		val(value){
+			if(!arguments.length) return input ? input.value : (field.value || '');
 			
 			value = value || '';
-			input.val(value).trigger(EVENT_INPUT).trigger(EVENT_CHANGE);
-			return this;
+			if(input){
+				input.value = value;
+				input.dispatchEvent(new Event(EVENT_INPUT, {bubbles: true}));
+				input.dispatchEvent(new Event(EVENT_CHANGE, {bubbles: true}));
+			}
+			return o;
 		},
 		input(){
 			return input;
-		}*/
+		}
 	};
 	
 	field.Field = o;
 	if(value != null) field.value = value;
-	//if('tabindex' in field) fieldset.tabs().field(field.tabindex, f);
+	if('tabindex' in field) fieldset.set_tabindex_field(field.tabindex, o);
 	
 	function render_css(){
 		if(!field.css.class.length && !field.css.style.length) return '';
@@ -250,20 +312,20 @@ function create_button(fieldset, name){
 			const elm = document.getElementById(button.id), input_id = dom.id();
 			if(!elm) throw Error(`Button '${name}' is not found in DOM`);
 			
-			/*switch(name){
+			switch(name){
 			case BTN_ACTION:
 				icon = button.icon || 'check-lg';
-				value = lng.get(button.value || 'BTN_OK');
+				value = fieldset.store.t(button.value || 'BTN_OK');
 				break;
 			case BTN_BACK:
 				icon = button.icon || 'chevron-left';
-				value = lng.get(button.value || 'BTN_BACK');
+				value = fieldset.store.t(button.value || 'BTN_BACK');
 				break;
 			case BTN_NEXT:
 				icon = button.icon || 'chevron-right';
-				value = lng.get(button.value || 'BTN_NEXT');
+				value = fieldset.store.t(button.value || 'BTN_NEXT');
 				break;
-			}*/
+			}
 			
 			elm.innerHTML = `<button id="${input_id}"><i class="bi bi-${icon}"></i>${value}</button>`;
 			input = document.getElementById(input_id);
@@ -282,7 +344,7 @@ function create_button(fieldset, name){
 			if(bool){
 				input.classList.add('loading');
 				/*fieldset.API?.context({
-					Button: this
+					Button: o
 				});*/
 			}
 			else input.classList.remove('loading');
@@ -319,8 +381,6 @@ function create_button(fieldset, name){
 export function Fieldset(fields, buttons={}){
 	const _field_names = {}, _tabs = Tabs(), f = {
 		
-		
-		
 		reapply_fields(apply_fields){
 			for(const k in _field_names) delete _field_names[k];
 			_tabs.clear();
@@ -328,66 +388,13 @@ export function Fieldset(fields, buttons={}){
 			f.apply_fields(apply_fields);
 		},
 		
-		
-		tabs(){
-			return _tabs;
-		},
-		
-		
-		
-		
-		val(name){
-			if(fields === null) return null;
-			
-			if(!arguments.length){
-				const data = {};
-				fields.forEach((field,name)=>{
-					data[name] = get_input_value(name);
-				});
-				return data;
-			}
-			
-			if(name){
-				valid_field_name(name);
-				return get_input_value(name);
-			}
-		},
 		hide_button(name, bool){
-			$('#'+this.button_id(name)).css('display', !!bool ? 'block' : 'none');
-			this.buttons(name).Button.hide(bool);
+			$('#'+o.button_id(name)).css('display', !!bool ? 'block' : 'none');
+			o.buttons(name).Button.hide(bool);
 		},
 		
 	};
 	
-	
-	function focus_button(){
-		for(const k in buttons){
-			if(buttons[k].focus){
-				buttons[k].Button.focus();
-				return;
-			}
-		}
-		
-		for(const k in BTN_CTA_NAMES){
-			const button = buttons[BTN_CTA_NAMES[k]];
-			if(button){
-				button.Button.focus();
-				return;
-			}
-		}
-	}
-	
-	function get_input_value(name){
-		const field = fields.get(name);
-		switch(field.type){
-		case TYPE_HIDDEN:
-		case TYPE_BLIND:
-			return field.value || '';
-		default: return field.Field.val();
-		}
-	}
-	
-	return Object.freeze(f);
 }*/
 
 function create_tabs(){
@@ -427,4 +434,8 @@ function deep_clone(obj){
 		if(Object.prototype.hasOwnProperty.call(obj, key)) clone[key] = deep_clone(obj[key]);
 	}
 	return clone;
+}
+
+function elm_visible(elm){
+	return elm && (elm.offsetWidth || elm.offsetHeight || elm.getClientRects().length);
 }
