@@ -17,7 +17,11 @@ export function fieldset(fields, buttons){
 	const field_names = {}, tabs = create_tabs(), o = {
 		field_id(name){
 			valid_field_name(name);
-			//return fields.get(name).id;
+			return fields.get(name).id;
+		},
+		button_id(name){
+			valid_button_name(name);
+			return buttons[name].id;
 		},
 		html_field(name, label, width){
 			return `<div class="field-label" style="width:${width ? width+'px' : '100%'}">
@@ -30,7 +34,7 @@ export function fieldset(fields, buttons){
 			
 			if(Array.isArray(apply_fields) && apply_fields.length){
 				unique_fields(apply_fields);
-				fields = new Map(structuredClone(apply_fields));
+				fields = new Map(deep_clone(apply_fields));
 				fields.forEach((field, name)=>{
 					/*if(field == null){
 						field = {};
@@ -43,12 +47,65 @@ export function fieldset(fields, buttons){
 			}
 			else if(apply_fields !== null) throw Error('Fields must be defined');
 		},
+		render(values={}){
+			o.render_fields(values);
+			o.render_buttons();
+			return o;
+		},
+		render_fields(values={}){
+			if(fields) fields.forEach((field, name)=>{
+				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
+				
+				const value = values[name] ?? null;
+				//o.field(name, value).render();
+			});
+			return o;
+		},
+		render_buttons(){
+			//for(const k in buttons) o.button(k).render();
+			return o;
+		},
+		focus(){
+			/*if(fields === null){
+				focus_button();
+				return this;
+			}
+			
+			let found = false;
+			for(const [_,v] of fields){
+				if(!v.Field) continue;
+				
+				if(found){
+					if(v.Field.enabled(true)){
+						v.Field.focus();
+						break;
+					}
+				}
+				else if(v.focus){
+					found = true;
+					if(v.Field.enabled()){
+						if(v.Field.input().is(':'+INP_VISIBLE)) v.Field.focus();
+						break;
+					}
+				}
+			}
+			//if(!found) focus_button();*/
+			
+			return o;
+		}
 	};
 	
 	o.apply_fields(fields);
 	
+	buttons = deep_clone(buttons);
+	for(const k in buttons) apply_button(k, buttons[k]);
+	
 	function valid_field_name(name){
 		if(!field_names[name]) throw Error(`Field '${name}' does not exist in fieldset`);
+	}
+	
+	function valid_button_name(name){
+		if(!buttons[name]) throw Error(`Button '${name}' does not exist in fieldset`);
 	}
 	
 	function unique_fields(a){
@@ -58,7 +115,23 @@ export function fieldset(fields, buttons){
 		});
 	}
 	
+	function apply_button(name, button){
+		button.id = dom.id();
+	}
+	
 	return Object.freeze(o);
+}
+
+function deep_clone(obj){
+	if(obj === null || typeof obj !== 'object') return obj;
+	
+	if(Array.isArray(obj)) return obj.map(v=>deep_clone(v));
+	
+	const clone = {};
+	for(const key in obj){
+		if(Object.prototype.hasOwnProperty.call(obj, key)) clone[key] = deep_clone(obj[key]);
+	}
+	return clone;
 }
 
 /*export function Fieldset_api(api_send, api, fields, buttons){
@@ -71,10 +144,7 @@ export function fieldset(fields, buttons){
 export function Fieldset(fields, buttons={}){
 	const _field_names = {}, _tabs = Tabs(), f = {
 		
-		button_id(name){
-			valid_button_name(name);
-			return buttons[name].id;
-		},
+		
 		
 		reapply_fields(apply_fields){
 			for(const k in _field_names) delete _field_names[k];
@@ -106,24 +176,8 @@ export function Fieldset(fields, buttons={}){
 			return buttons[name];
 		},
 		
-		render(values={}){
-			this.render_fields(values);
-			this.render_buttons();
-			return this;
-		},
-		render_fields(values={}){
-			if(fields) fields.forEach((field, name)=>{
-				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
-				
-				let value = values[name] ?? null;
-				this.field(name, value).render();
-			});
-			return this;
-		},
-		render_buttons(){
-			for(const k in buttons) this.button(k).render();
-			return this;
-		},
+		
+		
 		val(name){
 			if(fields === null) return null;
 			
@@ -144,52 +198,9 @@ export function Fieldset(fields, buttons={}){
 			$('#'+this.button_id(name)).css('display', !!bool ? 'block' : 'none');
 			this.buttons(name).Button.hide(bool);
 		},
-		focus(){
-			if(fields === null){
-				focus_button();
-				return this;
-			}
-			
-			let found = false;
-			for(const [_,v] of fields){
-				if(!v.Field) continue;
-				
-				if(found){
-					if(v.Field.enabled(true)){
-						v.Field.focus();
-						break;
-					}
-				}
-				else if(v.focus){
-					found = true;
-					if(v.Field.enabled()){
-						if(v.Field.input().is(':'+INP_VISIBLE)) v.Field.focus();
-						break;
-					}
-				}
-			}
-			//if(!found) focus_button();
-			
-			return this;
-		}
+		
 	};
 	
-	
-	
-	buttons = $.extend(true, {}, buttons);
-	for(const k in buttons) apply_button(k, buttons[k]);
-	
-	
-	
-	function apply_button(name, button){
-		button.id = dom.id();
-	}
-	
-	
-	
-	function valid_button_name(name){
-		if(!buttons[name]) throw Error(`Button '${name}' does not exist in fieldset`);
-	}
 	
 	function focus_button(){
 		for(const k in buttons){
