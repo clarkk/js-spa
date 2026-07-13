@@ -195,7 +195,7 @@ export function fieldset(store, fields, buttons){
 }
 
 function create_field(fieldset, name, value){
-	let input, rendered = false;
+	let input = null, rendered = false;
 	const field = fieldset.fields(name), o = {
 		render(){
 			if(rendered) throw Error(`Field '${name}' is already rendered`);
@@ -212,35 +212,35 @@ function create_field(fieldset, name, value){
 			}
 			
 			input = document.getElementById(input_id);
-			if(input){
-				input.addEventListener('keydown', e=>{
-					switch(e.key){
-					case KEY_TAB:
+			if(!input) return;
+			
+			input.addEventListener('keydown', e=>{
+				switch(e.key){
+				case KEY_TAB:
+					e.preventDefault();
+					o.tab(e);
+					break;
+				case KEY_ESC:
+					console.log('esc');
+					break;
+				case KEY_ENTER:
+					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
 						e.preventDefault();
-						o.tab(e);
-						break;
-					case KEY_ESC:
-						console.log('esc');
-						break;
-					case KEY_ENTER:
-						if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
-							e.preventDefault();
-							const buttons = fieldset.buttons();
-							if(button_click(buttons[BTN_ACTION])) break;
-							if(button_click(buttons[BTN_NEXT])) break;
-						}
-						break;
+						const buttons = fieldset.buttons();
+						if(button_click(buttons[BTN_ACTION])) break;
+						if(button_click(buttons[BTN_NEXT])) break;
 					}
-					
-					function button_click(button){
-						if(button.Button.hidden()){
-							button.Button.click();
-							return true;
-						}
-						return false;
+					break;
+				}
+				
+				function button_click(button){
+					if(!button.Button.hidden()){
+						button.Button.click();
+						return true;
 					}
-				});
-			}
+					return false;
+				}
+			});
 		},
 		tab(e){
 			fieldset.tab(field.tabindex, e);
@@ -303,7 +303,7 @@ function create_field(fieldset, name, value){
 }
 
 function create_button(fieldset, name){
-	let icon, value, input, loading = false, hidden = true;
+	let icon = '', value = '', input = null, loading = false, hidden = false;
 	const button = fieldset.buttons(name), o = {
 		render(){
 			const elm = document.getElementById(button.id), input_id = dom.id();
@@ -326,7 +326,9 @@ function create_button(fieldset, name){
 			
 			elm.innerHTML = `<button id="${input_id}"><i class="bi bi-${icon}"></i>${value}</button>`;
 			input = document.getElementById(input_id);
-			if(input) input.addEventListener('click', _=>o.click());
+			if(!input) return;
+			
+			input.addEventListener('click', _=>o.click());
 		},
 		click(){
 			if(loading) return;
