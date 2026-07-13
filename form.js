@@ -60,10 +60,10 @@ export function fieldset(store, fields, buttons){
 				unique_fields(apply_fields);
 				fields = new Map(deep_clone(apply_fields));
 				fields.forEach((field, name)=>{
-					/*if(field == null){
+					if(field == null){
 						field = {};
 						fields.set(name, field);
-					}*/
+					}
 					if(!field.id) field.id = dom.id();
 					if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
 					if(!field.css) field.css = {style: [], class: []};
