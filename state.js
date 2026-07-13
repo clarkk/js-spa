@@ -11,11 +11,10 @@ export function create_auth_store(init_state, url_trans){
 			env_data = {...data};
 			if(update) o.update();
 		},
-		state(state, update=false){
+		state(state){
 			if(!arguments.length) return current_state;
 			valid_state(state);
 			current_state = state;
-			if(update) o.update();
 		},
 		t: (key, replace)=>translate(key, trans_lang, replace),
 		t_error: (key, replace)=>translate(key, trans_lang_error, replace),

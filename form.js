@@ -8,7 +8,6 @@ export const
 	TYPE_TEXTAREA = 'textarea';
 
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
-	INP_DISABLED='disabled', INP_READONLY='readonly',
 	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
 	EVENT_INPUT='input', EVENT_CHANGE='change',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
@@ -256,9 +255,7 @@ function create_field(fieldset, name, value){
 		},
 		readonly(bool){
 			if(!o.enabled()) return;
-			
 			input.readOnly = !!bool;
-			apply_input_class(INP_READONLY, bool);
 		},
 		enabled(visible){
 			if(!input || input.disabled) return false;
@@ -297,10 +294,10 @@ function create_field(fieldset, name, value){
 		return field.value || '';
 	}
 	
-	function apply_input_class(class_name, bool){
+	/*function apply_input_class(class_name, bool){
 		if(bool) input.classList.add(class_name);
 		else input.classList.remove(class_name);
-	}
+	}*/
 	
 	return Object.freeze(o);
 }
