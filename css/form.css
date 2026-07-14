@@ -272,13 +272,14 @@ textarea.error {
 
 .inp-alert.warning{
 	background:hsl(var(--color-background-warning));
+}*/
+
+input.error:focus,
+textarea.error:focus {
+	box-shadow: 0 0 0 3px hsl(var(--color-background-error) / 40%);
 }
 
-.inp-error:focus{
-	box-shadow:0 0 0 3px hsl(var(--color-background-error) / 40%);
-}
-
-.btn-cta{
+/*.btn-cta{
 	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 10%) !important;
 	--opacity-border:100%;
 	background:hsl(var(--color-focus));

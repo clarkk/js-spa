@@ -11,6 +11,7 @@ export const
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
 	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
 	EVENT_INPUT='input', EVENT_CHANGE='change',
+	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
 export function fieldset(store, fields, buttons){
@@ -115,51 +116,66 @@ export function fieldset(store, fields, buttons){
 		error(err){
 			if(err instanceof api.HTTP_error){
 				has_error = false;
-				
 				switch(err.status){
 				case 422:
 					const error = err.body.error || {};
-					console.log('err:', error)
 					fields.forEach((field, name)=>{
 						const input = field.Field?.input();
-						if(!input || [TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
+						if(!input) return;
 						
-						//if(input) input.classList.toggle('error', !!bool);
-						//field.Field?.error(!!error[name])
-						
-						has_error = true;
+						const input_error = !!error[name];
+						input.classList.toggle(CLASS_ERROR, input_error);
+						if(input_error) has_error = true;
 					});
+					if(has_error) o.focus();
 					return true;
 				}
 			}
 			
 			return false;
 		},
+		clear_error(){
+			if(!has_error) return o;
+			
+			has_error = false;
+			fields.forEach(field=>{
+				field.Field?.input()?.classList.remove(CLASS_ERROR);
+			});
+			return o
+		},
 		focus(){
 			if(fields === null){
 				focus_button();
 				return o;
 			}
-			
-			let found = false;
-			for(const [_,v] of fields){
-				if(!v.Field) continue;
-				
-				if(found){
-					if(v.Field.enabled(true)){
-						v.Field.focus();
-						break;
-					}
-				}
-				else if(v.focus){
-					found = true;
-					if(v.Field.enabled() && elm_visible(v.Field.input())){
-						v.Field.focus();
+			if(has_error){
+				for(const [_,field] of fields){
+					if(field.Field?.enabled(true) && field.Field.input().classList.contains(CLASS_ERROR)){
+						field.Field.focus();
 						break;
 					}
 				}
 			}
-			
+			else{
+				let found = false;
+				for(const [_,field] of fields){
+					if(!field.Field) continue;
+					
+					if(found){
+						if(field.Field.enabled(true)){
+							field.Field.focus();
+							break;
+						}
+					}
+					else if(field.focus){
+						found = true;
+						if(field.Field.enabled() && elm_visible(field.Field.input())){
+							field.Field.focus();
+							break;
+						}
+					}
+				}
+			}
 			return o;
 		}
 	};
