@@ -1,3 +1,4 @@
+import * as api from 'api';
 import * as fmt from 'fmt';
 import * as dom from 'dom';
 
@@ -13,6 +14,7 @@ const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowD
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
 export function fieldset(store, fields, buttons){
+	let has_error = false;
 	const field_names = {}, tabs = create_tabs(), o = {
 		store,
 		field_id(name){
@@ -110,10 +112,33 @@ export function fieldset(store, fields, buttons){
 				return get_input_value(name);
 			}
 		},
-		error(error){
-			if(fields === null) return;
+		error(err){
+			if(err instanceof api.HTTP_error){
+				has_error = false;
+				
+				switch(err.status){
+				case 422:
+					const error = err.body.error || {};
+					console.log('err:', error)
+					return true;
+				}
+			}
 			
-			fields.forEach((field, name)=>field.Field?.error(!!error[name]));
+			return false;
+			
+			/*switch(res.status){
+			case 422:
+				const error = res.body.error || {};
+				fields.forEach((field, name)=>{
+					const input = field.Field?.input();
+					console.log('input', input)
+					//if(input) input.classList.toggle('error', !!bool);
+					//field.Field?.error(!!error[name])
+					
+					//has_error = true;
+				});
+				break;
+			}*/
 		},
 		focus(){
 			if(fields === null){
@@ -278,9 +303,6 @@ function create_field(fieldset, name, value){
 				input.dispatchEvent(new Event(EVENT_CHANGE, {bubbles: true}));
 			}
 			return o;
-		},
-		error(bool){
-			if(input) input.classList.toggle('error', !!bool);
 		},
 		input(){
 			return input;

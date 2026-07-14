@@ -20,6 +20,15 @@ export const client = {
 	}
 };
 
+export function HTTP_error(status, body){
+	this.name = "HTTP error";
+	this.status = status;
+	this.body = body;
+}
+
+HTTP_error.prototype = Object.create(Error.prototype);
+HTTP_error.prototype.constructor = HTTP_error;
+
 async function request(path, options={}){
 	const res = await fetch(_api_url+path, {
 		headers: {
@@ -31,10 +40,7 @@ async function request(path, options={}){
 	const text = res.headers.get('content-type')?.includes(type_json) ? await res.text() : null, data = text ? JSON.parse(text) : null;
 	
 	if(!res.ok){
-		throw {
-			status: res.status,
-			body: data
-		};
+		throw new HTTP_error(res.status, data);
 	}
 	
 	return data;
