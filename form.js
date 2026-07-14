@@ -204,6 +204,9 @@ function create_field(fieldset, name, value){
 			const elm = document.getElementById(field.id), input_id = dom.id();
 			if(!elm) throw Error(`Field '${name}' is not found in DOM`);
 			
+			const label = elm.parentElement?.querySelector('label');
+			if(label) label.htmlFor = input_id;
+			
 			if(field.ralign) field.css.class.push('text-right');
 			
 			switch(field.type){
@@ -214,7 +217,7 @@ function create_field(fieldset, name, value){
 			input = document.getElementById(input_id);
 			if(!input) return;
 			
-			input.addEventListener('keydown', e=>{
+			input.addEventListener('keydown', async e=>{
 				switch(e.key){
 				case KEY_TAB:
 					e.preventDefault();
@@ -227,15 +230,15 @@ function create_field(fieldset, name, value){
 					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
 						e.preventDefault();
 						const buttons = fieldset.buttons();
-						if(button_click(buttons[BTN_ACTION])) break;
-						if(button_click(buttons[BTN_NEXT])) break;
+						if(await button_click(buttons[BTN_ACTION])) break;
+						if(await button_click(buttons[BTN_NEXT])) break;
 					}
 					break;
 				}
 				
-				function button_click(button){
-					if(!button.Button.hidden()){
-						button.Button.click();
+				async function button_click(button){
+					if(button?.Button && !button.Button.hidden()){
+						await button.Button.click();
 						return true;
 					}
 					return false;
@@ -330,22 +333,21 @@ function create_button(fieldset, name){
 			
 			input.addEventListener('click', _=>o.click());
 		},
-		click(){
+		async click(){
 			if(loading) return;
 			
-			if(button.click){
-				o.loading(true);
-				button.click.call(fieldset, o);
+			if(!button.click) throw Error(`Button '${name}' has no action`);
+			
+			o.loading(true);
+			try{
+				await button.click.call(fieldset, o);
 			}
-			else throw Error(`Button '${name}' has no action`);
+			finally{
+				o.loading(false);
+			}
 		},
 		loading(bool){
-			if(bool){
-				input.classList.add('loading');
-				/*fieldset.API?.context({
-					Button: o
-				});*/
-			}
+			if(bool) input.classList.add('loading');
 			else input.classList.remove('loading');
 			
 			const fields = fieldset.fields();
