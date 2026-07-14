@@ -337,10 +337,6 @@ function create_field(fieldset, name, value){
 		return field.value || '';
 	}
 	
-	/*function apply_input_class(class_name, bool){
-		input.classList.toggle(class_name, !!bool);
-	}*/
-	
 	return Object.freeze(o);
 }
 
@@ -410,14 +406,7 @@ function create_button(fieldset, name){
 	return Object.freeze(o);
 }
 
-/*export function Fieldset_api(api_send, api, fields, buttons){
-	return Object.freeze(Object.assign({
-		API: api,
-		api_send
-	}, Fieldset(fields, buttons)));
-}
-
-export function Fieldset(fields, buttons={}){
+/*export function Fieldset(fields, buttons={}){
 	const _field_names = {}, _tabs = Tabs(), f = {
 		
 		reapply_fields(apply_fields){
