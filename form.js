@@ -110,6 +110,11 @@ export function fieldset(store, fields, buttons){
 				return get_input_value(name);
 			}
 		},
+		error(error){
+			if(fields === null) return;
+			
+			fields.forEach((field, name)=>field.Field?.error(!!error[name]));
+		},
 		focus(){
 			if(fields === null){
 				focus_button();
@@ -134,7 +139,6 @@ export function fieldset(store, fields, buttons){
 					}
 				}
 			}
-			//if(!found) focus_button();
 			
 			return o;
 		}
@@ -275,6 +279,9 @@ function create_field(fieldset, name, value){
 			}
 			return o;
 		},
+		error(bool){
+			if(input) input.classList.toggle('error', !!bool);
+		},
 		input(){
 			return input;
 		}
@@ -298,8 +305,7 @@ function create_field(fieldset, name, value){
 	}
 	
 	/*function apply_input_class(class_name, bool){
-		if(bool) input.classList.add(class_name);
-		else input.classList.remove(class_name);
+		input.classList.toggle(class_name, !!bool);
 	}*/
 	
 	return Object.freeze(o);
@@ -347,8 +353,7 @@ function create_button(fieldset, name){
 			}
 		},
 		loading(bool){
-			if(bool) input.classList.add('loading');
-			else input.classList.remove('loading');
+			input.classList.toggle('loading', !!bool);
 			
 			const fields = fieldset.fields();
 			if(fields) fields.forEach(field=>{

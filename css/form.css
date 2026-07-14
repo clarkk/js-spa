@@ -230,15 +230,16 @@ textarea,
 	font-size:13px;
 	padding:3px 6px 4px;
 	border-radius:4px;
+}*/
+
+input.error,
+textarea.error {
+	background-color: hsl(357 100% 96%);
+	border-color: hsl(var(--color-background-error)) !important;
+	color: hsl(355 71% 14%);
 }
 
-.inp-error{
-	background-color:hsl(357 100% 96%);
-	border-color:hsl(var(--color-background-error)) !important;
-	color:hsl(355 71% 14%);
-}
-
-.inp-positive{
+/*.inp-positive{
 	--opacity-border:25%;
 	background:hsl(var(--color-background-success));
 	border-color:hsl(0 0% 0% / var(--opacity-border)) !important;
