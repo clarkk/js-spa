@@ -120,25 +120,20 @@ export function fieldset(store, fields, buttons){
 				case 422:
 					const error = err.body.error || {};
 					console.log('err:', error)
+					fields.forEach((field, name)=>{
+						const input = field.Field?.input();
+						if(!input || [TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
+						
+						//if(input) input.classList.toggle('error', !!bool);
+						//field.Field?.error(!!error[name])
+						
+						has_error = true;
+					});
 					return true;
 				}
 			}
 			
 			return false;
-			
-			/*switch(res.status){
-			case 422:
-				const error = res.body.error || {};
-				fields.forEach((field, name)=>{
-					const input = field.Field?.input();
-					console.log('input', input)
-					//if(input) input.classList.toggle('error', !!bool);
-					//field.Field?.error(!!error[name])
-					
-					//has_error = true;
-				});
-				break;
-			}*/
 		},
 		focus(){
 			if(fields === null){
