@@ -115,11 +115,28 @@ export function fieldset(store, fields, buttons){
 				return get_input_value(name);
 			}
 		},
+		reset(values={}){
+			fields.forEach((field, name)=>{
+				if(field.Field?.enabled()){
+					if(values[name] != null) field.Field.val(values[name]);
+					else field.Field.reset();
+				}
+			});
+			return o;
+		},
 		error(err){
 			switch(true){
 			case err instanceof api.HTTP_error:
 				has_error = false;
 				switch(err.status){
+				case 400:
+					console.error('HTTP 400:', err)
+					return true;
+				
+				case 404:
+					console.error('HTTP 404:', err)
+					return true;
+				
 				case 422:
 					const error = err.body.error || {};
 					fields.forEach((field, name)=>{
@@ -136,11 +153,16 @@ export function fieldset(store, fields, buttons){
 					});
 					if(has_error) o.focus();
 					return true;
+				
+				case 500:
+				case 502:
+				case 503:
+					console.error('HTTP 500-503:', err)
+					return true;
 				}
-				return false;
 			
 			case err instanceof api.Response_JSON_error:
-				console.log('res JSON err:', err)
+				console.error('res JSON err:', err)
 				return true;
 			}
 			
@@ -332,6 +354,9 @@ function create_field(fieldset, name, value){
 				input.dispatchEvent(new Event(EVENT_CHANGE, {bubbles: true}));
 			}
 			return o;
+		},
+		reset(){
+			o.val(field.value || '');
 		},
 		input(){
 			return input;
