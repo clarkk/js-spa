@@ -45,10 +45,12 @@ export function fieldset(store, fields, buttons){
 			return buttons[name];
 		},
 		html_field(name, label, width){
+			const id = o.field_id(name);
 			return `
 				<div class="field-label" style="width:${width ? width+'px' : '100%'}">
 					<label>${fmt.html(label)}</label>
-					<div id="${o.field_id(name)}" class="field-input"></div>
+					<div id="${id}" class="field-input"></div>
+					<div id="${field_error_id(id)}" class="field-error"></div>
 				</div>
 			`;
 		},
@@ -123,9 +125,14 @@ export function fieldset(store, fields, buttons){
 						const input = field.Field?.input();
 						if(!input) return;
 						
-						const input_error = !!error[name];
-						input.classList.toggle(CLASS_ERROR, input_error);
-						if(input_error) has_error = true;
+						const input_error = error[name] || null;
+						input.classList.toggle(CLASS_ERROR, !!input_error);
+						
+						if(input_error){
+							set_field_error(field.id, input_error);
+							has_error = true;
+						}
+						else clear_field_error(field.id);
 					});
 					if(has_error) o.focus();
 					return true;
@@ -140,6 +147,7 @@ export function fieldset(store, fields, buttons){
 			has_error = false;
 			fields.forEach(field=>{
 				field.Field?.input()?.classList.remove(CLASS_ERROR);
+				clear_field_error(field.id);
 			});
 			return o
 		},
@@ -282,6 +290,15 @@ function create_field(fieldset, name, value){
 						return true;
 					}
 					return false;
+				}
+			});
+			
+			input.addEventListener(EVENT_INPUT, _=>{
+				input.classList.remove(CLASS_ERROR);
+				const elm = document.getElementById(field_error_id(field.id));
+				if(elm){
+					elm.style.display = 'none';
+					elm.innerHTML = '';
 				}
 			});
 		},
@@ -466,4 +483,24 @@ function deep_clone(obj){
 
 function elm_visible(elm){
 	return elm && (elm.offsetWidth || elm.offsetHeight || elm.getClientRects().length);
+}
+
+function set_field_error(id, msg){
+	const elm = document.getElementById(field_error_id(id));
+	if(elm){
+		elm.innerHTML = fmt.html(msg);
+		elm.style.display = 'block';
+	}
+}
+
+function clear_field_error(id){
+	const elm = document.getElementById(field_error_id(id));
+	if(elm){
+		elm.style.display = 'none';
+		elm.innerHTML = '';
+	}
+}
+
+function field_error_id(id){
+	return id+'_error';
 }

@@ -192,6 +192,12 @@ textarea,
 	padding: var(--input-focus-shadow);
 }
 
+.field-error {
+	display: none;
+	font-size: .8rem;
+	color: hsl(var(--color-background-error));
+}
+
 /*
 .label-inline,
 .label-checkbox-inline{
