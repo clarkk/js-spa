@@ -1,47 +1,88 @@
 let _api_url;
 
-const type_json = 'application/json';
+const content_type = 'Content-Type', type_json = 'application/json', header_idempotency='Idempotency-Key';
 
 export function init(path){
 	_api_url = path;
 }
 
 export const client = {
-	get(path){
-		return request(path, {
-			method: 'GET'
-		});
-	},
-	post(path, data){
-		return request(path, {
+	get: path=>request(path, {
+		method: 'GET'
+	}),
+	post: (path, data)=>request(path, {
+		method: 'POST',
+		body: JSON.stringify(data)
+	}),
+	post_idempotency(path, data){
+		const key = crypto.randomUUID(), data_send = JSON.stringify(data), exec = _=>request(path, {
 			method: 'POST',
-			body: JSON.stringify(data)
+			headers: {
+				[header_idempotency]: key
+			},
+			body: data_send
 		});
+		return {
+			request: exec(),
+			replay(){
+				return exec();
+			}
+		}
 	}
 };
 
 export function HTTP_error(status, body){
-	this.name = "HTTP error";
+	const msg = 'HTTP '+status;
+	Error.call(this, msg);
+	this.name = 'HTTP error';
+	this.message = msg;
 	this.status = status;
 	this.body = body;
+	if(Error.captureStackTrace) Error.captureStackTrace(this, HTTP_error);
 }
-
 HTTP_error.prototype = Object.create(Error.prototype);
 HTTP_error.prototype.constructor = HTTP_error;
 
+export function Response_JSON_error(status, err, text){
+	const msg = 'Invalid JSON response: '+err.message;
+	Error.call(this, msg);
+	this.name = 'Response JSON error';
+	this.message = msg;
+	this.status = status;
+	this.text = text;
+	this.cause = err;
+	if(Error.captureStackTrace) Error.captureStackTrace(this, Response_JSON_error);
+}
+Response_JSON_error.prototype = Object.create(Error.prototype);
+Response_JSON_error.prototype.constructor = Response_JSON_error;
+
 async function request(path, options={}){
+	if(typeof _api_url !== 'string') throw Error('API client has not been initialized');
+	
+	const headers = {...options.headers};
+	if(options.body != null && !headers[content_type]) headers[content_type] = type_json;
+	
 	const res = await fetch(_api_url+path, {
-		headers: {
-			'Content-Type': type_json
-		},
-		...options
+		...options,
+		headers
 	});
 	
-	const text = res.headers.get('content-type')?.includes(type_json) ? await res.text() : null, data = text ? JSON.parse(text) : null;
+	const text = await res.text(), is_json = res.headers.get(content_type)?.includes(type_json);
 	
-	if(!res.ok){
-		throw new HTTP_error(res.status, data);
+	let data = null;
+	if(text.trim()){
+		if(is_json){
+			try{
+				data = JSON.parse(text);
+			}
+			catch(err){
+				throw new Response_JSON_error(res.status, err, text);
+			}
+		}
+		else data = text;
 	}
+	
+	if(!res.ok) throw new HTTP_error(res.status, data);
 	
 	return data;
 }

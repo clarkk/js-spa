@@ -116,7 +116,8 @@ export function fieldset(store, fields, buttons){
 			}
 		},
 		error(err){
-			if(err instanceof api.HTTP_error){
+			switch(true){
+			case err instanceof api.HTTP_error:
 				has_error = false;
 				switch(err.status){
 				case 422:
@@ -127,7 +128,6 @@ export function fieldset(store, fields, buttons){
 						
 						const input_error = error[name] || null;
 						input.classList.toggle(CLASS_ERROR, !!input_error);
-						
 						if(input_error){
 							set_field_error(field.id, input_error);
 							has_error = true;
@@ -137,6 +137,11 @@ export function fieldset(store, fields, buttons){
 					if(has_error) o.focus();
 					return true;
 				}
+				return false;
+			
+			case err instanceof api.Response_JSON_error:
+				console.log('res JSON err:', err)
+				return true;
 			}
 			
 			return false;
@@ -295,11 +300,7 @@ function create_field(fieldset, name, value){
 			
 			input.addEventListener(EVENT_INPUT, _=>{
 				input.classList.remove(CLASS_ERROR);
-				const elm = document.getElementById(field_error_id(field.id));
-				if(elm){
-					elm.style.display = 'none';
-					elm.innerHTML = '';
-				}
+				clear_field_error(field.id);
 			});
 		},
 		tab(e){
