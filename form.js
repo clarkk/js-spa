@@ -381,7 +381,7 @@ function create_field(fieldset, name, value){
 		val(value){
 			if(!arguments.length){
 				if(field.type === TYPE_CHECKBOX) return !!input.checked;
-				else return input.value || '';
+				return input.value || '';
 			}
 			
 			value = value || '';
@@ -411,47 +411,13 @@ function create_field(fieldset, name, value){
 	if('tabindex' in field) fieldset.set_tabindex_field(field.tabindex, o);
 	
 	function init_checkbox(checkbox_id, checkbox_inner_id){
-		const checkbox = document.getElementById(checkbox_id), checkbox_inner = document.getElementById(checkbox_inner_id), size = 10;
+		const checkbox = document.getElementById(checkbox_id), checkbox_inner = document.getElementById(checkbox_inner_id);
 		input.addEventListener('focus', _=>checkbox.classList.add('focus'));
 		input.addEventListener('blur', _=>checkbox.classList.remove('focus'));
 		input.addEventListener(EVENT_INPUT, e=>{
-			//if(input.checked)
+			checkbox_inner.classList.toggle('checked', e.target.checked);
 		});
-		/*
-		input.focus(_=>checkbox.addClass('focus')).blur(_=>checkbox.removeClass('focus')).on(EVENT_INPUT, (e, data)=>{
-			const value = input.prop(INP_CHECKED);
-			if(input.prop(INP_READONLY)) input.prop(INP_CHECKED, !value);
-			else{
-				const radio = field.checkbox_radio, tabindex = field.tabindex;
-				if(radio && !(data && data.omit_retrigger)){
-					if(!value){
-						input.prop(INP_CHECKED, !value);
-						return;
-					}
-					
-					fields.forEach(field=>{
-						if(field.type === TYPE_CHECKBOX && field.checkbox_radio === radio && field.tabindex !== tabindex){
-							field.Field.get_input().prop(INP_CHECKED, false).trigger(EVENT_INPUT, {
-								omit_retrigger: true
-							});
-						}
-					});
-				}
-				
-				const i = value ? size : 0;
-				inner.animate({
-					height: i,
-					width: i
-				}, 200);
-			}
-		});
-		
-		if(input.prop(INP_CHECKED)){
-			inner.css({
-				height: size,
-				width: size
-			});
-		}*/
+		if(input.checked) checkbox_inner.classList.add('checked');
 	}
 	
 	function render_css(){
