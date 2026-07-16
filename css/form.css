@@ -162,8 +162,7 @@ textarea,
 .list-tr.check-tr.checked .inp-checkbox-row{
 	--color-border:var(--color-background-dark) !important;
 	background:hsl(var(--color-background-dark));
-}
-*/
+}*/
 
 /*.field-group {
 	padding: .2rem;
@@ -180,27 +179,34 @@ textarea,
 .field-label,
 .field-label-inline {
 	display: inline-flex;
-	gap: .1rem;
 	padding: .3rem;
 }
 
 .field-label {
 	flex-direction: column;
-	vertical-align: top;
+	gap: .1rem;
+}
+
+.field-label-inline {
+	align-items: center;
+	gap: .3rem;
+}
+
+.field-label label,
+.field-label-inline label {
+	font-size: .8rem;
+	text-align: left;
 }
 
 .field-label label {
 	display: block;
-	text-align: left;
-	font-size: .8rem;
-	cursor: default;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
 
-.field-label-inline {
-	white-space: nowrap;
+.field-label-inline label {
+	display: inline-block;
 }
 
 .field-input {
@@ -431,7 +437,8 @@ button:focus {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+.input-checkbox.focus {
 	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--input-focus-color) / 40%);
 }
 

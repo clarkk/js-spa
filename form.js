@@ -12,7 +12,6 @@ export const
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
 	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
 	EVENT_INPUT='input', EVENT_CHANGE='change',
-	INP_CHECKED='checked',
 	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
@@ -57,9 +56,15 @@ export function fieldset(store, fields, buttons){
 			`;
 		},
 		html_field_inline(name, label, width){
+			const id = o.field_id(name);
 			return `
 				<div class="field-label-inline">
-					${fields.get(name).type === TYPE_CHECKBOX ? `` : ``}
+					${fields.get(name).type === TYPE_CHECKBOX ? `
+						<label>${fmt.html(label)}</label>
+						<div id="${id}" class="field-input"></div>
+					` : `
+						
+					`}
 				</div>
 			`;
 		},
@@ -250,7 +255,8 @@ export function fieldset(store, fields, buttons){
 		case TYPE_HIDDEN:
 		case TYPE_BLIND:
 			return field.value || '';
-		default: return field.Field.val();
+		default:
+			return field.Field.val();
 		}
 	}
 	
@@ -293,12 +299,15 @@ function create_field(fieldset, name, value){
 			
 			if(field.ralign) field.css.class.push('text-right');
 			
+			let checkbox_id, checkbox_inner_id;
 			switch(field.type){
 			case TYPE_CHECKBOX:
+				checkbox_id = dom.id();
+				checkbox_inner_id = dom.id();
 				elm.innerHTML = `
-					<div class="input-checkbox">
-						<input id="${input_id}" type="${TYPE_CHECKBOX}" ${field.value ? INP_CHECKED : ''}>
-						<div class="input-checkbox-inner"></div>
+					<div id="${checkbox_id}" class="input-checkbox">
+						<input id="${input_id}" type="${TYPE_CHECKBOX}" ${field.value ? 'checked' : ''}>
+						<div id="${checkbox_inner_id}" class="input-checkbox-inner"></div>
 					</div>
 				`;
 				break;
@@ -341,6 +350,14 @@ function create_field(fieldset, name, value){
 				input.classList.remove(CLASS_ERROR);
 				clear_field_error(field.id);
 			});
+			
+			switch(field.type){
+			case TYPE_CHECKBOX:
+				init_checkbox(checkbox_id, checkbox_inner_id);
+				break;
+			}
+			
+			return o;
 		},
 		tab(e){
 			fieldset.tab(field.tabindex, e);
@@ -362,13 +379,22 @@ function create_field(fieldset, name, value){
 			return visible && !elm_visible(input) ? false : true;
 		},
 		val(value){
-			if(!arguments.length) return input ? input.value : (field.value || '');
+			if(!arguments.length){
+				if(field.type === TYPE_CHECKBOX) return !!input.checked;
+				else return input.value || '';
+			}
 			
 			value = value || '';
 			if(input){
-				input.value = value;
-				input.dispatchEvent(new Event(EVENT_INPUT, {bubbles: true}));
-				input.dispatchEvent(new Event(EVENT_CHANGE, {bubbles: true}));
+				if(field.type === TYPE_CHECKBOX){
+					input.checked = !!value;
+					input.dispatchEvent(new Event(EVENT_INPUT, {bubbles: true}));
+				}
+				else{
+					input.value = value;
+					input.dispatchEvent(new Event(EVENT_INPUT, {bubbles: true}));
+					input.dispatchEvent(new Event(EVENT_CHANGE, {bubbles: true}));
+				}
 			}
 			return o;
 		},
@@ -383,6 +409,50 @@ function create_field(fieldset, name, value){
 	field.Field = o;
 	if(value != null) field.value = value;
 	if('tabindex' in field) fieldset.set_tabindex_field(field.tabindex, o);
+	
+	function init_checkbox(checkbox_id, checkbox_inner_id){
+		const checkbox = document.getElementById(checkbox_id), checkbox_inner = document.getElementById(checkbox_inner_id), size = 10;
+		input.addEventListener('focus', _=>checkbox.classList.add('focus'));
+		input.addEventListener('blur', _=>checkbox.classList.remove('focus'));
+		input.addEventListener(EVENT_INPUT, e=>{
+			//if(input.checked)
+		});
+		/*
+		input.focus(_=>checkbox.addClass('focus')).blur(_=>checkbox.removeClass('focus')).on(EVENT_INPUT, (e, data)=>{
+			const value = input.prop(INP_CHECKED);
+			if(input.prop(INP_READONLY)) input.prop(INP_CHECKED, !value);
+			else{
+				const radio = field.checkbox_radio, tabindex = field.tabindex;
+				if(radio && !(data && data.omit_retrigger)){
+					if(!value){
+						input.prop(INP_CHECKED, !value);
+						return;
+					}
+					
+					fields.forEach(field=>{
+						if(field.type === TYPE_CHECKBOX && field.checkbox_radio === radio && field.tabindex !== tabindex){
+							field.Field.get_input().prop(INP_CHECKED, false).trigger(EVENT_INPUT, {
+								omit_retrigger: true
+							});
+						}
+					});
+				}
+				
+				const i = value ? size : 0;
+				inner.animate({
+					height: i,
+					width: i
+				}, 200);
+			}
+		});
+		
+		if(input.prop(INP_CHECKED)){
+			inner.css({
+				height: size,
+				width: size
+			});
+		}*/
+	}
 	
 	function render_css(){
 		if(!field.css.class.length && !field.css.style.length) return '';
