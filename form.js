@@ -6,11 +6,13 @@ export const
 	TYPE_HIDDEN = 'hidden',
 	TYPE_BLIND = 'blind',
 	TYPE_PASSWORD = 'password',
-	TYPE_TEXTAREA = 'textarea';
+	TYPE_TEXTAREA = 'textarea',
+	TYPE_CHECKBOX = 'checkbox';
 
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
 	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
 	EVENT_INPUT='input', EVENT_CHANGE='change',
+	INP_CHECKED='checked',
 	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
@@ -51,6 +53,13 @@ export function fieldset(store, fields, buttons){
 					<label>${fmt.html(label)}</label>
 					<div id="${id}" class="field-input"></div>
 					<div id="${field_error_id(id)}" class="field-error"></div>
+				</div>
+			`;
+		},
+		html_field_inline(name, label, width){
+			return `
+				<div class="field-label-inline">
+					${fields.get(name).type === TYPE_CHECKBOX ? `` : ``}
 				</div>
 			`;
 		},
@@ -285,6 +294,14 @@ function create_field(fieldset, name, value){
 			if(field.ralign) field.css.class.push('text-right');
 			
 			switch(field.type){
+			case TYPE_CHECKBOX:
+				elm.innerHTML = `
+					<div class="input-checkbox">
+						<input id="${input_id}" type="${TYPE_CHECKBOX}" ${field.value ? INP_CHECKED : ''}>
+						<div class="input-checkbox-inner"></div>
+					</div>
+				`;
+				break;
 			default:
 				elm.innerHTML = `<input id="${input_id}" ${render_css()} type="${field.type || 'text'}" autocomplete="nope" value="${fmt.html(render_value())}">`;
 			}

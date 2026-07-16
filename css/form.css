@@ -19,6 +19,13 @@ fieldset {
 
 button,
 input,
+textarea,
+.input-checkbox {
+	transition: all .3s;
+}
+
+button,
+input,
 textarea {
 	appearance: none;
 	outline: none;
@@ -40,7 +47,8 @@ button {
 }
 
 input,
-textarea {
+textarea,
+.input-checkbox {
 	display: inline-block;
 	width: 100%;
 	padding: .3rem .4rem;
@@ -57,18 +65,9 @@ textarea {
 	max-height: 10rem;
 }
 
-/*button,
-input,
-textarea,
-.inp-checkbox,
-.inp-checkbox-row{
-	font-family:Tahoma;
-	transition:all .3s;
-}
-
+/*
 input,
 textarea{
-	
 	vertical-align:middle;
 	
 }
@@ -89,17 +88,31 @@ textarea{
 	border-radius:5px;
 	font-size:15px;
 	font-weight:bold;
+}*/
+
+input[type='checkbox'] {
+	position: absolute;
+	inset: 0;
+	margin: 0;
+	padding: 0;
+	opacity: 0 !important;
 }
 
-input[type='checkbox']{
-	position:absolute;
-	width:inherit;
-	height:inherit;
-	margin:-1px;
-	opacity:0 !important;
+.input-checkbox {
+	position: relative;
+	display: flex;
+	height: 18px;
+	width: 18px;
 }
 
-.inp-checkbox,
+.input-checkbox-inner {
+	--opacity: 74%;
+	margin: auto;
+	background: hsl(0 0% 0% / var(--opacity));
+	border-radius: 1px;
+}
+
+/*.inp-checkbox,
 .inp-checkbox-row{
 	display:flex;
 	height:18px;
@@ -150,12 +163,6 @@ textarea,
 	--color-border:var(--color-background-dark) !important;
 	background:hsl(var(--color-background-dark));
 }
-
-.field-label-inline{
-	display:inline-block;
-	padding:2px;
-	white-space:nowrap;
-}
 */
 
 /*.field-group {
@@ -170,11 +177,15 @@ textarea,
 	cursor: default;
 }*/
 
-.field-label {
+.field-label,
+.field-label-inline {
 	display: inline-flex;
-	flex-direction: column;
 	gap: .1rem;
 	padding: .3rem;
+}
+
+.field-label {
+	flex-direction: column;
 	vertical-align: top;
 }
 
@@ -186,6 +197,10 @@ textarea,
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+
+.field-label-inline {
+	white-space: nowrap;
 }
 
 .field-input {
