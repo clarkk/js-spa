@@ -36,7 +36,7 @@ export const controller = (_=>{
 			const current_render_id = ++render_id;
 			
 			subscription = store.subscribe(_=>{
-				view(container, active);
+				if(active()) view(container, active);
 			});
 			view(container, active);
 			
