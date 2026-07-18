@@ -34,7 +34,9 @@ export function create_auth_store(init_state, url_trans){
 		},
 		subscribe(fn){
 			listeners.add(fn);
-			return _=>listeners.delete(fn);
+			return function unsubscribe(){
+				listeners.delete(fn);
+			};
 		}
 	};
 	
@@ -45,6 +47,8 @@ export function create_auth_store(init_state, url_trans){
 			trans_lang = trans?.lang || {};
 			trans_lang_error = trans?.lang_error || {};
 			o.update();
+		}).catch(err=>{
+			console.error('Unable to load translations:', err);
 		});
 	}
 	
@@ -68,47 +72,50 @@ export function create_auth_store(init_state, url_trans){
 }
 
 export function create_poller(action, seconds, only_visible=false){
-	const event = 'visibilitychange';
-	let timeout, running = false;
+	const event = 'visibilitychange', delay = seconds * 1000;
+	let timeout = null, running = false, run_id = 0;
 	
 	if(only_visible){
-		document.addEventListener(event, handle);
+		document.addEventListener(event, handle_visibility);
 		if(!document.hidden) start();
 	}
 	else start();
 	
-	async function tick(){
-		if(!running) return;
+	async function tick(current_run_id){
+		if(!running || current_run_id !== run_id) return;
+		timeout = null;
 		try{
 			await action();
 		}
 		catch(err){
 			console.error('Poller action failed:', err);
 		}
-		if(running && (!only_visible || !document.hidden)){
-			clearTimeout(timeout); 
-			timeout = setTimeout(tick, seconds * 1000);
+		if(running && current_run_id === run_id && (!only_visible || !document.hidden)){
+			timeout = setTimeout(_=>tick(current_run_id), delay);
 		}
 	}
 	
 	function start(){
-		stop();
+		if(running) return;
 		running = true;
-		tick();
+		const current_run_id = ++run_id;
+		tick(current_run_id);
 	}
 	
 	function stop(){
 		running = false;
+		run_id++;
 		clearTimeout(timeout);
 		timeout = null;
 	}
 	
-	function handle(){
-		document.hidden ? stop() : start();
+	function handle_visibility(){
+		if(document.hidden) stop();
+		else start();
 	}
 	
-	return _=>{
+	return function destroy(){
 		stop();
-		if(only_visible) document.removeEventListener(event, handle);
+		if(only_visible) document.removeEventListener(event, handle_visibility);
 	};
 }
