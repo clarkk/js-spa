@@ -15,8 +15,33 @@ const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowD
 	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
 
-export function fieldset(store, fields, buttons){
+fieldset.table = function(store, name, fields, buttons){
+	return fieldset(store, fields, buttons, {
+		type: 'table',
+		name
+	});
+};
+
+fieldset.action = function(store, name, fields, buttons){
+	return fieldset(store, fields, buttons, {
+		type: 'action',
+		name
+	});
+};
+
+fieldset.query = function(store, name, fields, buttons){
+	return fieldset(store, fields, buttons, {
+		type: 'query',
+		name
+	});
+};
+
+export function fieldset(store, fields, buttons, model_input=null){
 	let has_error = false;
+	
+	const model_fields = model_input ? store.model_input.get(model_input.type, model_input.name) : null;
+	if(model_input && !model_fields) throw Error(`Model input '${model_input.type}:${model_input.name}' does not exist`);
+	
 	const field_names = {}, tabs = create_tabs(), o = {
 		store,
 		field_id(name){
@@ -250,14 +275,28 @@ export function fieldset(store, fields, buttons){
 	}
 	
 	function get_input_value(name){
+		let value;
 		const field = fields.get(name);
 		switch(field.type){
 		case TYPE_HIDDEN:
 		case TYPE_BLIND:
-			return field.value || '';
+			value = field.value || '';
 		default:
-			return field.Field.val();
+			value = field.Field.val();
 		}
+		return convert_input_value(name, value);
+	}
+	
+	function convert_input_value(name, value){
+		if(!model_fields) return value;
+		/*const model_field = model_fields[name];
+		if(!model_field){
+			throw Error(
+				`Field '${name}' does not exist in model input `+
+				`'${model_input.type}:${model_input.name}'`
+			);
+		}
+		return convert_model_value(name, value, model_field);*/
 	}
 	
 	function focus_button(){

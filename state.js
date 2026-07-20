@@ -5,7 +5,8 @@ export function create_auth_store(init_state, url_trans){
 	valid_state(init_state);
 	
 	let current_state = init_state, env_data = null, trans_lang = {}, trans_lang_error = {};
-	const listeners = new Set(), o = {
+	const listeners = new Set(), model_input = create_model_input(), o = {
+		model_input,
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
 			env_data = {...data};
@@ -68,7 +69,7 @@ export function create_auth_store(init_state, url_trans){
 		if(typeof state !== 'string') throw Error(`State must be a string, got ${typeof state}`);
 	}
 	
-	return o;
+	return Object.freeze(o);
 }
 
 export function create_poller(action, seconds, only_visible=false){
@@ -118,4 +119,28 @@ export function create_poller(action, seconds, only_visible=false){
 		stop();
 		if(only_visible) document.removeEventListener(event, handle_visibility);
 	};
+}
+
+export function create_model_input(){
+	const data = {
+		table: {},
+		action: {},
+		query: {}
+	};
+	return Object.freeze({
+		load(update){
+			data.table = deep_freeze(update.table || {});
+			data.action = deep_freeze(update.action || {});
+			data.query = deep_freeze(update.query || {});
+		},
+		get(type, name){
+			return data[type]?.[name];
+		}
+	});
+}
+
+function deep_freeze(obj){
+	if(!obj || typeof obj !== 'object') return obj;
+	for(const value of Object.values(obj)) deep_freeze(value);
+	return Object.freeze(obj);
 }
