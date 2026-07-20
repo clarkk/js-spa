@@ -1,3 +1,4 @@
+import * as model_input_types from './model_input_types.js';
 import * as api from 'api';
 import * as fmt from 'fmt';
 import * as dom from 'dom';
@@ -143,7 +144,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			
 			if(!arguments.length){
 				const data = {};
-				fields.forEach((field,name)=>{
+				fields.forEach((field, name)=>{
 					data[name] = get_input_value(name);
 				});
 				return data;
@@ -284,21 +285,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 		default:
 			value = field.Field.val();
 		}
-		return convert_input_value(name, value);
-	}
-	
-	function convert_input_value(name, value){
 		if(!model_fields) return value;
-		/*const model_field = model_fields[name];
-		if(!model_field){
-			throw Error(
-				`Field '${name}' does not exist in model input `+
-				`'${model_input.type}:${model_input.name}'`
-			);
-		}
-		return convert_model_value(name, value, model_field);*/
+		return model_input_types.convert(model_fields, name, value);
 	}
-	
 	function focus_button(){
 		for(const k in buttons){
 			if(buttons[k].focus){
