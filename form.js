@@ -1,4 +1,4 @@
-import * as model_input_types from './model_input_types.js';
+import * as frm_types from 'frm_types';
 import * as api from 'api';
 import * as fmt from 'fmt';
 import * as dom from 'dom';
@@ -286,7 +286,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			value = field.Field.val();
 		}
 		if(!model_fields) return value;
-		return model_input_types.convert(model_fields, name, value);
+		return frm_types.convert(model_fields, name, value);
 	}
 	
 	function focus_button(){
