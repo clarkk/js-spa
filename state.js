@@ -1,7 +1,7 @@
 import * as api from 'api';
 import * as fmt from 'fmt';
 
-export function create_auth_store(init_state, url_trans){
+export function create_auth_store(init_state, url_trans, create_extension=null){
 	valid_state(init_state);
 	
 	let current_state = init_state, env_data = null, trans_lang = {}, trans_lang_error = {};
@@ -67,6 +67,15 @@ export function create_auth_store(init_state, url_trans){
 	
 	function valid_state(state){
 		if(typeof state !== 'string') throw Error(`State must be a string, got ${typeof state}`);
+	}
+	
+	if(create_extension){
+		const extension = create_extension(o);
+		if(!extension || typeof extension !== 'object') throw Error('Store extension must return an object');
+		for(const key of Object.keys(extension)){
+			if(key in o) throw Error('Store extension property already exists: '+key);
+		}
+		Object.assign(o, extension);
 	}
 	
 	return Object.freeze(o);
@@ -139,7 +148,7 @@ export function create_model_input(){
 	});
 }
 
-function deep_freeze(obj){
+export function deep_freeze(obj){
 	if(!obj || typeof obj !== 'object') return obj;
 	for(const value of Object.values(obj)) deep_freeze(value);
 	return Object.freeze(obj);
