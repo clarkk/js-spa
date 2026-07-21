@@ -1,4 +1,4 @@
-import { browser, browser_version, browser_fallback } from './browser.js';
+import { browser, browser_version, browser_fallback } from 'browser';
 
 export async function init(handler){
 	let reporting = false, browser_data = browser_fallback();

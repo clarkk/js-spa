@@ -288,6 +288,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		if(!model_fields) return value;
 		return model_input_types.convert(model_fields, name, value);
 	}
+	
 	function focus_button(){
 		for(const k in buttons){
 			if(buttons[k].focus){
