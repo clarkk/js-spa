@@ -46,6 +46,24 @@ button {
 	user-select: none;
 }
 
+.btn-small {
+	padding: .5rem .8rem;
+}
+
+/*.btn-large{
+	padding:6px 14px 7px;
+	border-radius:4px;
+	font-size:14px;
+	font-weight:bold;
+}
+
+.btn-big{
+	padding:7px 16px 8px;
+	border-radius:5px;
+	font-size:15px;
+	font-weight:bold;
+}*/
+
 input,
 textarea,
 .input-checkbox {
@@ -72,24 +90,6 @@ textarea {
 /*input,
 textarea{
 	vertical-align:middle;
-}
-
-.btn-small{
-	padding:2px 6px 4px;
-}
-
-.btn-large{
-	padding:6px 14px 7px;
-	border-radius:4px;
-	font-size:14px;
-	font-weight:bold;
-}
-
-.btn-big{
-	padding:7px 16px 8px;
-	border-radius:5px;
-	font-size:15px;
-	font-weight:bold;
 }*/
 
 input[type='checkbox'] {
