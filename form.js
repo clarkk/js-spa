@@ -308,6 +308,10 @@ export function fieldset(store, fields, buttons, model_input=null){
 	
 	function apply_button(name, button){
 		button.id = dom.id();
+		
+		if(button.class == null) button.class = [];
+		else if(typeof button.class === 'string') button.class = [button.class];
+		else if(!Array.isArray(button.class)) throw Error(`Button '${name}' class must be a string or array`);
 	}
 	
 	return Object.freeze(o);
@@ -466,7 +470,7 @@ function create_field(fieldset, name, value){
 }
 
 function create_button(fieldset, name){
-	let icon = '', value = '', input = null, loading = false, hidden = false;
+	let icon = '', text = '', input = null, loading = false, hidden = false;
 	const button = fieldset.buttons(name), o = {
 		render(){
 			const elm = document.getElementById(button.id), input_id = dom.id();
@@ -475,19 +479,21 @@ function create_button(fieldset, name){
 			switch(name){
 			case BTN_ACTION:
 				icon = button.icon || 'check-lg';
-				value = fieldset.store.t(button.value || 'BTN_OK');
+				text = fieldset.store.t(button.text || 'BTN_OK');
 				break;
 			case BTN_BACK:
 				icon = button.icon || 'chevron-left';
-				value = fieldset.store.t(button.value || 'BTN_BACK');
+				text = fieldset.store.t(button.text || 'BTN_BACK');
 				break;
 			case BTN_NEXT:
 				icon = button.icon || 'chevron-right';
-				value = fieldset.store.t(button.value || 'BTN_NEXT');
+				text = fieldset.store.t(button.text || 'BTN_NEXT');
 				break;
 			}
 			
-			elm.innerHTML = `<button id="${input_id}"><i class="bi bi-${icon}"></i>${value}</button>`;
+			const class_attr = button.class.length ? ` class="${button.class.join(' ')}"` : '';
+			
+			elm.innerHTML = `<button id="${input_id}" ${class_attr}><i class="bi bi-${icon}"></i>${text}</button>`;
 			input = document.getElementById(input_id);
 			if(!input) return;
 			
