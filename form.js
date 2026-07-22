@@ -309,9 +309,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	function apply_button(name, button){
 		button.id = dom.id();
 		
-		if(button.class == null) button.class = [];
-		else if(typeof button.class === 'string') button.class = [button.class];
-		else if(!Array.isArray(button.class)) throw Error(`Button '${name}' class must be a string or array`);
+		if(!button.css) button.css = {style: [], class: []};
 	}
 	
 	return Object.freeze(o);
@@ -345,7 +343,7 @@ function create_field(fieldset, name, value){
 				`;
 				break;
 			default:
-				elm.innerHTML = `<input id="${input_id}" ${render_css()} type="${field.type || 'text'}" autocomplete="nope" value="${fmt.html(render_value())}">`;
+				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" value="${fmt.html(render_value())}">`;
 			}
 			
 			input = document.getElementById(input_id);
@@ -453,15 +451,6 @@ function create_field(fieldset, name, value){
 		if(input.checked) checkbox_inner.classList.add('checked');
 	}
 	
-	function render_css(){
-		if(!field.css.class.length && !field.css.style.length) return '';
-		
-		const list = [];
-		if(field.css.class.length) list.push('class="'+field.css.class.join(' ')+'"');
-		if(field.css.style.length) list.push('style="'+field.css.style.join('; ')+'"');
-		return list.join(' ');
-	}
-	
 	function render_value(){
 		return field.value || '';
 	}
@@ -491,9 +480,7 @@ function create_button(fieldset, name){
 				break;
 			}
 			
-			const class_attr = button.class.length ? ` class="${button.class.join(' ')}"` : '';
-			
-			elm.innerHTML = `<button id="${input_id}" ${class_attr}><i class="bi bi-${icon}"></i>${text}</button>`;
+			elm.innerHTML = `<button id="${input_id}" ${render_css(button.css)}><i class="bi bi-${icon}"></i>${text}</button>`;
 			input = document.getElementById(input_id);
 			if(!input) return;
 			
@@ -581,6 +568,20 @@ function create_tabs(){
 			tabs = {};
 		}
 	};
+}
+
+function render_css(css){
+	if(!css) return '';
+	
+	const list = [], classes = to_array(css.class), styles = to_array(css.style);
+	if(classes.length) list.push(`class="${classes.join(' ')}"`);
+	if(styles.length) list.push(`style="${styles.join('; ')}"`);
+	return list.join(' ');
+}
+
+function to_array(v){
+	if(v == null) return [];
+	return Array.isArray(v) ? v : [v];
 }
 
 function deep_clone(obj){
