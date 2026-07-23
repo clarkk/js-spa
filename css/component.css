@@ -1,13 +1,8 @@
-.loader {
-	width: var(--loader-size);
-	height: var(--loader-size);
-	margin: 10px auto;
-}
-
 .loader svg {
 	display: block;
-	width: 100%;
-	height: 100%;
+	width: var(--loader-size);
+	height: var(--loader-size);
+	margin: 0 auto;
 	transform-origin: center;
 	animation: loader-rotate 2s linear infinite;
 }
