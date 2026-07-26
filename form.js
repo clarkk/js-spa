@@ -17,7 +17,7 @@ export const
 	BTN_PUT = 'put';
 
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
-	EVENT_INPUT='input', EVENT_CHANGE='change',
+	EVENT_INPUT='input',
 	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
 
@@ -421,22 +421,16 @@ function create_field(fieldset, name, value){
 				return input.value || '';
 			}
 			
-			value = value || '';
+			if(value == null) value = '';
 			if(input){
-				if(field.type === TYPE_CHECKBOX){
-					input.checked = !!value;
-					input.dispatchEvent(new Event(EVENT_INPUT, {bubbles: true}));
-				}
-				else{
-					input.value = value;
-					input.dispatchEvent(new Event(EVENT_INPUT, {bubbles: true}));
-					input.dispatchEvent(new Event(EVENT_CHANGE, {bubbles: true}));
-				}
+				if(field.type === TYPE_CHECKBOX) input.checked = !!value;
+				else input.value = value;
+				input.dispatchEvent(new Event(EVENT_INPUT));
 			}
 			return o;
 		},
 		reset(){
-			o.val(field.value || '');
+			o.val(field.value);
 		},
 		input(){
 			return input;
@@ -458,7 +452,7 @@ function create_field(fieldset, name, value){
 	}
 	
 	function render_value(){
-		return field.value || '';
+		return field.value ?? '';
 	}
 	
 	return Object.freeze(o);
