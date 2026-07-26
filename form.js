@@ -8,13 +8,18 @@ export const
 	TYPE_BLIND = 'blind',
 	TYPE_PASSWORD = 'password',
 	TYPE_TEXTAREA = 'textarea',
-	TYPE_CHECKBOX = 'checkbox';
+	TYPE_CHECKBOX = 'checkbox',
+	
+	BTN_ACTION = 'action',
+	BTN_BACK = 'back',
+	BTN_CANCEL = 'cancel',
+	BTN_NEXT = 'next',
+	BTN_PUT = 'put';
 
 const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
-	BTN_ACTION='action', BTN_BACK='back', BTN_NEXT='next',
 	EVENT_INPUT='input', EVENT_CHANGE='change',
 	CLASS_ERROR='error',
-	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT];
+	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
 
 fieldset.table = function(store, name, fields, buttons){
 	return fieldset(store, fields, buttons, {
@@ -362,6 +367,7 @@ function create_field(fieldset, name, value){
 					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
 						e.preventDefault();
 						const buttons = fieldset.buttons();
+						if(await button_click(buttons[BTN_PUT])) break;
 						if(await button_click(buttons[BTN_ACTION])) break;
 						if(await button_click(buttons[BTN_NEXT])) break;
 					}
@@ -474,9 +480,17 @@ function create_button(fieldset, name){
 				icon = button.icon || 'chevron-left';
 				text = fieldset.store.t(button.text || 'BTN_BACK');
 				break;
+			case BTN_CANCEL:
+				icon = button.icon || 'x-lg';
+				text = fieldset.store.t(button.text || 'BTN_CANCEL');
+				break;
 			case BTN_NEXT:
 				icon = button.icon || 'chevron-right';
 				text = fieldset.store.t(button.text || 'BTN_NEXT');
+				break;
+			case BTN_PUT:
+				icon = button.icon || 'check-lg';
+				text = fieldset.store.t(button.text || 'BTN_SAVE');
 				break;
 			}
 			
