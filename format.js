@@ -9,7 +9,8 @@ export function html(s){
 };
 
 export function amount(s, f=2){
-	return Number(s).toFixed(f).replace('.', ',');
+	const [int, dec] = Number(s).toFixed(f).split('.');
+	return int.replace(/\B(?=(\d{3})+(?!\d))/g, '.')+','+dec;
 }
 
 export function timestamp(time){
