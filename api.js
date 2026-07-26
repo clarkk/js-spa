@@ -12,22 +12,14 @@ export const client = {
 		method: 'GET'
 	}),
 	post(path, data, etag=null){
-		const headers = {};
-		if(etag !== null) headers[header_if_match] = etag;
-		
 		return request(path, {
 			method: 'POST',
-			headers,
+			headers: create_headers().if_match(etag).build(),
 			body: JSON.stringify(data)
 		});
 	},
 	post_idempotency(path, data, etag=null){
-		const data_send = JSON.stringify(data), headers = {
-			[header_idempotency]: crypto.randomUUID()
-		};
-		if(etag !== null) headers[header_if_match] = etag;
-		
-		const exec = _=>request(path, {
+		const headers = create_headers().idempotency().if_match(etag).build(), data_send = JSON.stringify(data), exec = _=>request(path, {
 			method: 'POST',
 			headers,
 			body: data_send
@@ -95,4 +87,21 @@ async function request(path, options={}){
 	if(!res.ok) throw new HTTP_error(res.status, data);
 	
 	return data;
+}
+
+function create_headers(){
+	const headers = {};
+	return {
+		if_match(etag){
+			if(etag !== null) headers[header_if_match] = etag;
+			return this;
+		},
+		idempotency(){
+			headers[header_idempotency] = crypto.randomUUID();
+			return this;
+		},
+		build(){
+			return headers;
+		}
+	};
 }
