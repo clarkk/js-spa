@@ -11,13 +11,11 @@ export const client = {
 	get: path=>request(path, {
 		method: 'GET'
 	}),
-	post(path, data, etag=null){
-		return request(path, {
-			method: 'POST',
-			headers: create_headers().if_match(etag).build(),
-			body: JSON.stringify(data)
-		});
-	},
+	post: (path, data, etag=null)=>request(path, {
+		method: 'POST',
+		headers: create_headers().if_match(etag).build(),
+		body: JSON.stringify(data)
+	}),
 	post_idempotency(path, data, etag=null){
 		const headers = create_headers().idempotency().if_match(etag).build(), data_send = JSON.stringify(data), exec = _=>request(path, {
 			method: 'POST',
