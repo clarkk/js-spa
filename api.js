@@ -1,6 +1,7 @@
 let _api_url;
 
-const content_type = 'Content-Type', type_json = 'application/json', header_idempotency='Idempotency-Key';
+const content_type='Content-Type', type_json='application/json',
+	header_idempotency='Idempotency-Key', header_if_match='If-Match';
 
 export function init(path){
 	_api_url = path;
@@ -10,16 +11,25 @@ export const client = {
 	get: path=>request(path, {
 		method: 'GET'
 	}),
-	post: (path, data)=>request(path, {
-		method: 'POST',
-		body: JSON.stringify(data)
-	}),
-	post_idempotency(path, data){
-		const key = crypto.randomUUID(), data_send = JSON.stringify(data), exec = _=>request(path, {
+	post(path, data, etag=null){
+		const headers = {};
+		if(etag !== null) headers[header_if_match] = etag;
+		
+		return request(path, {
 			method: 'POST',
-			headers: {
-				[header_idempotency]: key
-			},
+			headers,
+			body: JSON.stringify(data)
+		});
+	},
+	post_idempotency(path, data, etag=null){
+		const data_send = JSON.stringify(data), headers = {
+			[header_idempotency]: crypto.randomUUID()
+		};
+		if(etag !== null) headers[header_if_match] = etag;
+		
+		const exec = _=>request(path, {
+			method: 'POST',
+			headers,
 			body: data_send
 		});
 		return {
