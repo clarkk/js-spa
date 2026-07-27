@@ -1,9 +1,13 @@
-let _api_url;
+let _api_url, _csrf = null;
 
 const content_type='Content-Type', type_json='application/json';
 
 export function init(path){
 	_api_url = path;
+}
+
+export function init_csrf(csrf){
+	_csrf = csrf;
 }
 
 export const client = Object.freeze({
@@ -60,6 +64,11 @@ async function request(path, options={}){
 	
 	const headers = {...options.headers};
 	if(options.body != null && !headers[content_type]) headers[content_type] = type_json;
+	
+	if(_csrf){
+		const csrf_headers = _csrf.headers(options.method);
+		if(csrf_headers) Object.assign(headers, csrf_headers);
+	}
 	
 	const res = await fetch(_api_url+path, {
 		...options,
