@@ -377,7 +377,7 @@ function create_field(fieldset, name, value){
 					o.tab(e);
 					break;
 				case KEY_ESC:
-					console.log('esc');
+					if(!fieldset.sending()) fieldset.buttons(BTN_CANCEL)?.Button.click();
 					break;
 				case KEY_ENTER:
 					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
