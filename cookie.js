@@ -4,7 +4,7 @@ export function get(name){
 		const value = cookie.trim();
 		if(value.startsWith(prefix)){
 			try{
-				return decodeURIComponent(value.slice(prefix.length));
+				return decodeURIComponent(value.slice(prefix.length)).replace(/^"|"$/g, '');
 			}
 			catch(err){
 				console.error('Unable to decode cookie:', err);
