@@ -377,7 +377,7 @@ function create_field(fieldset, name, value){
 					o.tab(e);
 					break;
 				case KEY_ESC:
-					if(!fieldset.sending()) fieldset.buttons(BTN_CANCEL)?.Button.click();
+					await button_click(fieldset.buttons(BTN_CANCEL));
 					break;
 				case KEY_ENTER:
 					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
@@ -388,14 +388,6 @@ function create_field(fieldset, name, value){
 						if(await button_click(buttons[BTN_NEXT])) break;
 					}
 					break;
-				}
-				
-				async function button_click(button){
-					if(button?.Button && !button.Button.hidden()){
-						await button.Button.click();
-						return true;
-					}
-					return false;
 				}
 			});
 			
@@ -456,6 +448,13 @@ function create_field(fieldset, name, value){
 	field.Field = o;
 	if(value != null) field.value = value;
 	if('tabindex' in field) fieldset.set_tabindex_field(field.tabindex, o);
+	
+	async function button_click(button){
+		if(!button?.Button || button.Button.hidden()) return false;
+		
+		await button.Button.click();
+		return false;
+	}
 	
 	function init_checkbox(checkbox_id, checkbox_inner_id){
 		const checkbox = document.getElementById(checkbox_id), checkbox_inner = document.getElementById(checkbox_inner_id);
