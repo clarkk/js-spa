@@ -43,13 +43,16 @@ fieldset.query = function(store, name, fields, buttons){
 };
 
 export function fieldset(store, fields, buttons, model_input=null){
-	let has_error = false;
+	let has_error = false, sending = false;
 	
 	const model_fields = model_input ? store.model_input.get(model_input.type, model_input.name) : null;
 	if(model_input && !model_fields) throw Error(`Model input '${model_input.type}:${model_input.name}' does not exist`);
 	
 	const field_names = {}, tabs = create_tabs(), o = {
 		store,
+		sending(){
+			return sending;
+		},
 		field_id(name){
 			valid_field_name(name);
 			return fields.get(name).id;
@@ -69,7 +72,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		},
 		button(name){
 			valid_button_name(name);
-			return create_button(o, name);
+			return create_button(o, name, send);
 		},
 		buttons(name){
 			if(!arguments.length) return buttons;
@@ -265,6 +268,19 @@ export function fieldset(store, fields, buttons, model_input=null){
 	buttons = deep_clone(buttons);
 	for(const k in buttons) apply_button(k, buttons[k]);
 	
+	async function send(run){
+		if(sending) return false;
+		
+		sending = true;
+		try{
+			await run();
+			return true;
+		}
+		finally{
+			sending = false;
+		}
+	}
+	
 	function valid_field_name(name){
 		if(!field_names[name]) throw Error(`Field '${name}' does not exist in fieldset`);
 	}
@@ -458,7 +474,7 @@ function create_field(fieldset, name, value){
 	return Object.freeze(o);
 }
 
-function create_button(fieldset, name){
+function create_button(fieldset, name, send){
 	let icon = '', text = '', input = null, loading = false, hidden = false;
 	const button = fieldset.buttons(name), o = {
 		render(){
@@ -495,26 +511,17 @@ function create_button(fieldset, name){
 			input.addEventListener('click', _=>o.click());
 		},
 		async click(){
-			if(loading) return;
+			if(loading || fieldset.sending()) return false;
 			
 			if(!button.click) throw Error(`Button '${name}' has no action`);
 			
-			o.loading(true);
+			set_loading(true);
 			try{
-				await button.click.call(fieldset, o);
+				return await send(_=>button.click.call(fieldset, o));
 			}
 			finally{
-				o.loading(false);
+				set_loading(false);
 			}
-		},
-		loading(bool){
-			input.classList.toggle('loading', !!bool);
-			
-			const fields = fieldset.fields();
-			if(fields) fields.forEach(field=>{
-				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) field.Field.readonly(bool);
-			});
-			loading = !!bool;
 		},
 		hide(bool){
 			hidden = !!bool;
@@ -528,6 +535,17 @@ function create_button(fieldset, name){
 	};
 	
 	button.Button = o;
+	
+	function set_loading(bool){
+		input.classList.toggle('loading', !!bool);
+		
+		const fields = fieldset.fields();
+		if(fields) fields.forEach(field=>{
+			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) field.Field.readonly(bool);
+		});
+			
+		loading = !!bool;
+	}
 	
 	return Object.freeze(o);
 }

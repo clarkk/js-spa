@@ -1,13 +1,12 @@
 let _api_url;
 
-const content_type='Content-Type', type_json='application/json',
-	header_idempotency='Idempotency-Key', header_if_match='If-Match';
+const content_type='Content-Type', type_json='application/json';
 
 export function init(path){
 	_api_url = path;
 }
 
-export const client = {
+export const client = Object.freeze({
 	get: path=>request(path, {
 		method: 'GET'
 	}),
@@ -29,7 +28,7 @@ export const client = {
 			}
 		}
 	}
-};
+});
 
 export function HTTP_error(status, body){
 	const msg = 'HTTP '+status;
@@ -91,11 +90,11 @@ function create_headers(){
 	const headers = {};
 	return {
 		if_match(etag){
-			if(etag !== null) headers[header_if_match] = etag;
+			if(etag !== null) headers['If-Match'] = etag;
 			return this;
 		},
 		idempotency(){
-			headers[header_idempotency] = crypto.randomUUID();
+			headers['Idempotency-Key'] = crypto.randomUUID();
 			return this;
 		},
 		build(){
