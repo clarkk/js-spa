@@ -364,17 +364,7 @@ function create_field(store, fieldset, name, value, model_input){
 				`;
 				break;
 			default:
-				let maxlength = 0;
-				if(model_input){
-					const table = store.model_input.table_resource(model_input.name);
-					if(!table) throw Error(`Table resouce '${model_input.name}' does not exist`);
-					
-					const column = store.db_schema.get_column(table, name);
-					if(!column) throw Error(`DB schema '${table}.${name}' does not exist`);
-					
-					maxlength = column.length;
-				}
-				
+				const maxlength = input_maxlength();
 				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(render_value())}">`;
 			}
 			
@@ -475,6 +465,18 @@ function create_field(store, fieldset, name, value, model_input){
 			checkbox_inner.classList.toggle('checked', e.target.checked);
 		});
 		if(input.checked) checkbox_inner.classList.add('checked');
+	}
+	
+	function input_maxlength(){
+		if(!model_input) return null;
+		
+		const table = store.model_input.table_resource(model_input.name);
+		if(!table) throw Error(`Table resouce '${model_input.name}' does not exist`);
+		
+		const column = store.db_schema.get_column(table, name);
+		if(!column) throw Error(`DB schema '${table}.${name}' does not exist`);
+		
+		return column.length;
 	}
 	
 	function render_value(){
