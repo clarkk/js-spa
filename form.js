@@ -22,24 +22,24 @@ const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowD
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
 
 fieldset.table = function(store, name, fields, buttons){
-	return fieldset(store, fields, buttons, {
+	return fieldset(store, fields, buttons, Object.freeze({
 		type: 'table',
 		name
-	});
+	}));
 };
 
 fieldset.action = function(store, name, fields, buttons){
-	return fieldset(store, fields, buttons, {
+	return fieldset(store, fields, buttons, Object.freeze({
 		type: 'action',
 		name
-	});
+	}));
 };
 
 fieldset.query = function(store, name, fields, buttons){
-	return fieldset(store, fields, buttons, {
+	return fieldset(store, fields, buttons, Object.freeze({
 		type: 'query',
 		name
-	});
+	}));
 };
 
 export function fieldset(store, fields, buttons, model_input=null){
@@ -63,7 +63,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		},
 		field(name, value){
 			valid_field_name(name);
-			return create_field(o, name, value);
+			return create_field(store, o, name, value, model_input);
 		},
 		fields(name){
 			if(!arguments.length) return fields;
@@ -336,7 +336,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	return Object.freeze(o);
 }
 
-function create_field(fieldset, name, value){
+function create_field(store, fieldset, name, value, model_input){
 	let input = null, rendered = false;
 	const field = fieldset.fields(name), o = {
 		render(){
@@ -364,7 +364,18 @@ function create_field(fieldset, name, value){
 				`;
 				break;
 			default:
-				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" value="${fmt.html(render_value())}">`;
+				let maxlength = 0;
+				if(model_input){
+					const table = store.model_input.table_resource(model_input.name);
+					if(!table) throw Error(`Table resouce '${model_input.name}' does not exist`);
+					
+					const column = store.db_schema.get_column(table, name);
+					if(!column) throw Error(`DB schema '${table}.${name}' does not exist`);
+					
+					maxlength = column.length;
+				}
+				
+				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(render_value())}">`;
 			}
 			
 			input = document.getElementById(input_id);

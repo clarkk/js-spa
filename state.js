@@ -5,8 +5,9 @@ export function create_auth_store(init_state, url_trans, create_extension=null){
 	valid_state(init_state);
 	
 	let current_state = init_state, env_data = null, trans_lang = {}, trans_lang_error = {};
-	const listeners = new Set(), model_input = create_model_input(), o = {
+	const listeners = new Set(), model_input = create_model_input(), db_schema = create_db_schema(), o = {
 		model_input,
+		db_schema,
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
 			env_data = {...data};
@@ -130,26 +131,43 @@ export function create_poller(action, seconds, only_visible=false){
 	};
 }
 
-export function create_model_input(){
+export function deep_freeze(obj){
+	if(!obj || typeof obj !== 'object') return obj;
+	for(const value of Object.values(obj)) deep_freeze(value);
+	return Object.freeze(obj);
+}
+
+function create_model_input(){
 	const data = {
 		table: {},
+		table_resources: {},
 		action: {},
 		query: {}
 	};
 	return Object.freeze({
 		load(update){
 			data.table = deep_freeze(update.table || {});
+			data.table_resources = deep_freeze(update.table_resources || {});
 			data.action = deep_freeze(update.action || {});
 			data.query = deep_freeze(update.query || {});
 		},
 		get(type, name){
-			return data[type]?.[name];
+			return data[type]?.[name] ?? null;
+		},
+		table_resource(name){
+			return data.table_resources[name] ?? null;
 		}
 	});
 }
 
-export function deep_freeze(obj){
-	if(!obj || typeof obj !== 'object') return obj;
-	for(const value of Object.values(obj)) deep_freeze(value);
-	return Object.freeze(obj);
+function create_db_schema(){
+	let data = {};
+	return Object.freeze({
+		load(update){
+			data = deep_freeze(update || {});
+		},
+		get_column(table, column){
+			return data[table]?.[column] ?? null;
+		}
+	});
 }
