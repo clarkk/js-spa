@@ -9,6 +9,7 @@ export const
 	TYPE_PASSWORD = 'password',
 	TYPE_TEXTAREA = 'textarea',
 	TYPE_CHECKBOX = 'checkbox',
+	TYPE_DROPDOWN = 'dropdown',
 	
 	BTN_ACTION = 'action',
 	BTN_BACK = 'back',
@@ -63,7 +64,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		},
 		field(name, value){
 			valid_field_name(name);
-			return create_field(store, o, name, value, model_input);
+			return create_field(o, name, value, model_input);
 		},
 		fields(name){
 			if(!arguments.length) return fields;
@@ -336,7 +337,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	return Object.freeze(o);
 }
 
-function create_field(store, fieldset, name, value, model_input){
+function create_field(fieldset, name, value, model_input){
 	let input = null, rendered = false;
 	const field = fieldset.fields(name), o = {
 		render(){
@@ -362,6 +363,9 @@ function create_field(store, fieldset, name, value, model_input){
 						<div id="${checkbox_inner_id}" class="input-checkbox-inner"></div>
 					</div>
 				`;
+				break;
+			case TYPE_DROPDOWN:
+				
 				break;
 			default:
 				const maxlength = input_maxlength();
@@ -470,10 +474,10 @@ function create_field(store, fieldset, name, value, model_input){
 	function input_maxlength(){
 		if(!model_input) return null;
 		
-		const table = store.model_input.table_resource(model_input.name);
+		const table = fieldset.store.model_input.table_resource(model_input.name);
 		if(!table) throw Error(`Table resouce '${model_input.name}' does not exist`);
 		
-		const column = store.db_schema.get_column(table, name);
+		const column = fieldset.store.db_schema.get_column(table, name);
 		if(!column) throw Error(`DB schema '${table}.${name}' does not exist`);
 		
 		return column.length;
