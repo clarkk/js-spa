@@ -55,17 +55,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 		sending(){
 			return sending;
 		},
-		field_id(name){
-			valid_field_name(name);
-			return fields.get(name).id;
-		},
 		button_id(name){
 			valid_button_name(name);
 			return buttons[name].id;
-		},
-		field(name, value){
-			valid_field_name(name);
-			return create_field(o, name, value, model_input);
 		},
 		fields(name){
 			if(!arguments.length) return fields;
@@ -81,18 +73,18 @@ export function fieldset(store, fields, buttons, model_input=null){
 			valid_button_name(name);
 			return buttons[name];
 		},
-		html_field(name, label, width){
-			const id = o.field_id(name);
+		html_field(name, label=null, width=null){
+			const id = prepare_field_id(name);
 			return `
 				<div class="field-label" style="width:${width ? width+'px' : '100%'}">
-					<label>${fmt.html(label)}</label>
+					${label ? `<label>${fmt.html(label)}</label>` : ''}
 					<div id="${id}" class="field-input"></div>
 					<div id="${field_error_id(id)}" class="field-error"></div>
 				</div>
 			`;
 		},
 		html_field_inline(name, label, width){
-			const id = o.field_id(name);
+			const id = prepare_field_id(name);
 			return `
 				<div class="field-label-inline">
 					${fields.get(name).type === TYPE_CHECKBOX ? `
@@ -135,7 +127,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
 				
 				const value = values[name] ?? null;
-				o.field(name, value).render();
+				prepare_field(name, value).render();
 			});
 			return o;
 		},
@@ -167,6 +159,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 		},
 		val_types(){
 			const data = o.val(), error = {};
+			if(data === null) return null;
+			
 			for(const k in data){
 				const result = frm_types.convert(model_schema, k, data[k]);
 				if(result.error) error[k] = result.error;
@@ -297,6 +291,16 @@ export function fieldset(store, fields, buttons, model_input=null){
 		finally{
 			sending = false;
 		}
+	}
+	
+	function prepare_field_id(name){
+		valid_field_name(name);
+		return fields.get(name).id;
+	}
+	
+	function prepare_field(name, value){
+		valid_field_name(name);
+		return create_field(o, name, value, model_input);
 	}
 	
 	function valid_field_name(name){

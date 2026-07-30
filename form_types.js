@@ -7,14 +7,13 @@ export function convert(model_schema, name, value){
 	
 	console.log(name, field)
 	
-	const result = convert_value(field, value);
-	if(result.error) return result;
-	
-	return value;
-}
-
-function convert_value(field, value){
-	if(value === null) return field.nullable ? {value: null} : {error: 'Value can not be null'};
+	if(value === null){
+		return field.nullable ? {
+			value
+		} : {
+			error: 'Value can not be null'
+		};
+	}
 	
 	return {
 		error: 'test error!'
