@@ -366,7 +366,7 @@ function create_field(fieldset, name, value, model_input){
 				`;
 				break;
 			case TYPE_DROPDOWN:
-				field.Dropdown = frm_dropdown.create();
+				field.Dropdown = frm_dropdown.create(field);
 				elm.innerHTML = field.Dropdown.html(input_id);
 				break;
 			default:
