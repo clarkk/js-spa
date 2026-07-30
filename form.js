@@ -165,6 +165,20 @@ export function fieldset(store, fields, buttons, model_input=null){
 				return get_input_value(name);
 			}
 		},
+		val_types(){
+			const data = o.val(), error = {};
+			for(const k in data){
+				const result = frm_types.convert(model_schema, k, data[k]);
+				if(result.error) error[k] = result.error;
+				else data[k] = result.value;
+			}
+			if(Object.keys(error).length){
+				throw new api.HTTP_error(422, {
+					error
+				});
+			}
+			return data;
+		},
 		reset(values={}){
 			fields.forEach((field, name)=>{
 				if(field.Field?.enabled()){
@@ -310,8 +324,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		default:
 			value = field.Field.val();
 		}
-		if(!model_schema) return value;
-		return frm_types.convert(model_schema, name, value);
+		return value;
 	}
 	
 	function focus_button(){
