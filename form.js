@@ -55,18 +55,10 @@ export function fieldset(store, fields, buttons, model_input=null){
 		sending(){
 			return sending;
 		},
-		button_id(name){
-			valid_button_name(name);
-			return buttons[name].id;
-		},
 		fields(name){
 			if(!arguments.length) return fields;
 			valid_field_name(name);
 			return fields.get(name);
-		},
-		button(name){
-			valid_button_name(name);
-			return create_button(o, name, send);
 		},
 		buttons(name){
 			if(!arguments.length) return buttons;
@@ -97,25 +89,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			`;
 		},
 		html_button(name){
-			return `<div id="${o.button_id(name)}"></div>`;
-		},
-		apply_fields(apply_fields){
-			if(fields?.size) throw Error('Fields are already applied');
-			
-			if(Array.isArray(apply_fields) && apply_fields.length){
-				unique_fields(apply_fields);
-				fields = new Map(deep_clone(apply_fields));
-				fields.forEach((field, name)=>{
-					if(field == null){
-						field = {};
-						fields.set(name, field);
-					}
-					if(!field.id) field.id = dom.id();
-					if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
-					if(!field.css) field.css = {style: [], class: []};
-				});
-			}
-			else if(apply_fields !== null) throw Error('Fields must be defined');
+			return `<div id="${prepare_button_id(name)}"></div>`;
 		},
 		render(values={}){
 			o.render_fields(values);
@@ -132,11 +106,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 			return o;
 		},
 		render_buttons(){
-			for(const k in buttons) o.button(k).render();
+			for(const k in buttons) prepare_button(k).render();
 			return o;
-		},
-		set_tabindex_field(tabindex, Field){
-			tabs.field(tabindex, Field);
 		},
 		tab(tabindex, e){
 			tabs.tab(tabindex, e);
@@ -275,7 +246,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		}
 	};
 	
-	o.apply_fields(fields);
+	apply_fields(fields);
 	
 	buttons = deep_clone(buttons);
 	for(const k in buttons) apply_button(k, buttons[k]);
@@ -293,14 +264,41 @@ export function fieldset(store, fields, buttons, model_input=null){
 		}
 	}
 	
+	function apply_fields(apply_fields){
+		if(Array.isArray(apply_fields) && apply_fields.length){
+			unique_fields(apply_fields);
+			fields = new Map(deep_clone(apply_fields));
+			fields.forEach((field, name)=>{
+				if(field == null){
+					field = {};
+					fields.set(name, field);
+				}
+				if(!field.id) field.id = dom.id();
+				if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
+				if(!field.css) field.css = {style: [], class: []};
+			});
+		}
+		else if(apply_fields !== null) throw Error('Fields must be defined');
+	}
+	
 	function prepare_field_id(name){
 		valid_field_name(name);
 		return fields.get(name).id;
 	}
 	
+	function prepare_button_id(name){
+		valid_button_name(name);
+		return buttons[name].id;
+	}
+	
 	function prepare_field(name, value){
 		valid_field_name(name);
-		return create_field(o, name, value, model_input);
+		return create_field(o, name, value, model_input, set_tabindex_field);
+	}
+	
+	function prepare_button(name){
+		valid_button_name(name);
+		return create_button(o, name, send);
 	}
 	
 	function valid_field_name(name){
@@ -348,6 +346,10 @@ export function fieldset(store, fields, buttons, model_input=null){
 		}
 	}
 	
+	function set_tabindex_field(tabindex, Field){
+		tabs.field(tabindex, Field);
+	}
+	
 	function apply_button(name, button){
 		button.id = dom.id();
 		
@@ -357,7 +359,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	return Object.freeze(o);
 }
 
-function create_field(fieldset, name, value, model_input){
+function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	let input = null, rendered = false;
 	const field = fieldset.fields(name), o = {
 		render(){
@@ -473,7 +475,7 @@ function create_field(fieldset, name, value, model_input){
 	
 	field.Field = o;
 	if(value != null) field.value = value;
-	if('tabindex' in field) fieldset.set_tabindex_field(field.tabindex, o);
+	if('tabindex' in field) set_tabindex_field(field.tabindex, o);
 	
 	async function button_click(button){
 		if(!button?.Button || button.Button.hidden()) return false;
