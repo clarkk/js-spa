@@ -1,4 +1,5 @@
 import * as frm_types from 'frm_types';
+import * as frm_dropdown from 'frm_dropdown';
 import * as api from 'api';
 import * as fmt from 'fmt';
 import * as dom from 'dom';
@@ -365,7 +366,8 @@ function create_field(fieldset, name, value, model_input){
 				`;
 				break;
 			case TYPE_DROPDOWN:
-				
+				field.Dropdown = frm_dropdown.create();
+				elm.innerHTML = field.Dropdown.html(input_id);
 				break;
 			default:
 				const maxlength = input_maxlength();
@@ -475,7 +477,7 @@ function create_field(fieldset, name, value, model_input){
 		if(!model_input) return null;
 		
 		let resource = fieldset.store.schema.table_resource(model_input.name);
-		if(!resource) throw Error(`Table resouce '${model_input.name}' does not exist`);
+		if(!resource) throw Error(`Table resource '${model_input.name}' does not exist`);
 		
 		if(!Array.isArray(resource)) resource = [resource];
 		for(const table of resource){
