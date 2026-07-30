@@ -46,8 +46,8 @@ fieldset.query = function(store, name, fields, buttons){
 export function fieldset(store, fields, buttons, model_input=null){
 	let has_error = false, sending = false;
 	
-	const model_fields = model_input ? store.model_input.get(model_input.type, model_input.name) : null;
-	if(model_input && !model_fields) throw Error(`Model input '${model_input.type}:${model_input.name}' does not exist`);
+	const model_schema = model_input ? store.schema.get(model_input.type, model_input.name) : null;
+	if(model_input && !model_schema) throw Error(`Model input '${model_input.type}.${model_input.name}' does not exist`);
 	
 	const field_names = {}, tabs = create_tabs(), o = {
 		store,
@@ -233,7 +233,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				return o;
 			}
 			if(has_error){
-				for(const [_,field] of fields){
+				for(const [_, field] of fields){
 					if(field.Field?.enabled(true) && field.Field.input().classList.contains(CLASS_ERROR)){
 						field.Field.focus();
 						break;
@@ -242,7 +242,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			else{
 				let found = false;
-				for(const [_,field] of fields){
+				for(const [_, field] of fields){
 					if(!field.Field) continue;
 					
 					if(found){
@@ -307,20 +307,20 @@ export function fieldset(store, fields, buttons, model_input=null){
 		default:
 			value = field.Field.val();
 		}
-		if(!model_fields) return value;
-		return frm_types.convert(model_fields, name, value);
+		if(!model_schema) return value;
+		return frm_types.convert(model_schema, name, value);
 	}
 	
 	function focus_button(){
-		for(const k in buttons){
-			if(buttons[k].focus){
-				buttons[k].Button.focus();
+		for(const button of buttons){
+			if(button.focus){
+				button.Button.focus();
 				return;
 			}
 		}
 		
-		for(const k in BTN_CTA_NAMES){
-			const button = buttons[BTN_CTA_NAMES[k]];
+		for(const key of BTN_CTA_NAMES){
+			const button = buttons[key];
 			if(button){
 				button.Button.focus();
 				return;
@@ -474,13 +474,16 @@ function create_field(fieldset, name, value, model_input){
 	function input_maxlength(){
 		if(!model_input) return null;
 		
-		const table = fieldset.store.model_input.table_resource(model_input.name);
-		if(!table) throw Error(`Table resouce '${model_input.name}' does not exist`);
+		let resource = fieldset.store.schema.table_resource(model_input.name);
+		if(!resource) throw Error(`Table resouce '${model_input.name}' does not exist`);
 		
-		const column = fieldset.store.db_schema.get_column(table, name);
-		if(!column) throw Error(`DB schema '${table}.${name}' does not exist`);
+		if(!Array.isArray(resource)) resource = [resource];
+		for(const table of resource){
+			const column = fieldset.store.schema.get_db_column(table, name);
+			if(column) return column.length || null;
+		}
 		
-		return column.length;
+		throw Error(`DB schema '${model_input.name}.${name}' does not exist`);
 	}
 	
 	function render_value(){

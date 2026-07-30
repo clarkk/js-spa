@@ -5,9 +5,8 @@ export function create_auth_store(init_state, url_trans, create_extension=null){
 	valid_state(init_state);
 	
 	let current_state = init_state, env_data = null, trans_lang = {}, trans_lang_error = {};
-	const listeners = new Set(), model_input = create_model_input(), db_schema = create_db_schema(), o = {
-		model_input,
-		db_schema,
+	const listeners = new Set(), schema = create_schema(), o = {
+		schema,
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
 			env_data = {...data};
@@ -137,8 +136,9 @@ export function deep_freeze(obj){
 	return Object.freeze(obj);
 }
 
-function create_model_input(){
+function create_schema(){
 	const data = {
+		db: {},
 		table: {},
 		table_resources: {},
 		action: {},
@@ -146,6 +146,7 @@ function create_model_input(){
 	};
 	return Object.freeze({
 		load(update){
+			data.db = deep_freeze(update.db || {});
 			data.table = deep_freeze(update.table || {});
 			data.table_resources = deep_freeze(update.table_resources || {});
 			data.action = deep_freeze(update.action || {});
@@ -154,20 +155,11 @@ function create_model_input(){
 		get(type, name){
 			return data[type]?.[name] ?? null;
 		},
+		get_db_column(table, column){
+			return data.db[table]?.[column] ?? null;
+		},
 		table_resource(name){
 			return data.table_resources[name] ?? null;
-		}
-	});
-}
-
-function create_db_schema(){
-	let data = {};
-	return Object.freeze({
-		load(update){
-			data = deep_freeze(update || {});
-		},
-		get_column(table, column){
-			return data[table]?.[column] ?? null;
 		}
 	});
 }
