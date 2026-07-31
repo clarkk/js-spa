@@ -137,6 +137,7 @@ export function deep_freeze(obj){
 }
 
 function create_schema(){
+	let load_id = 0;
 	const data = {
 		db: {},
 		table: {},
@@ -146,6 +147,12 @@ function create_schema(){
 	};
 	return Object.freeze({
 		load(update){
+			load_id++;
+			console.log(`TEST! Schema load #${load_id}`, {
+				update,
+				table: update.table,
+				table_keys: Object.keys(update.table || {})
+			});
 			data.db = deep_freeze(update.db || {});
 			data.table = deep_freeze(update.table || {});
 			data.table_resources = deep_freeze(update.table_resources || {});
@@ -153,7 +160,19 @@ function create_schema(){
 			data.query = deep_freeze(update.query || {});
 		},
 		get(type, name){
-			return data[type]?.[name] ?? null;
+			const value = data[type]?.[name] ?? null;
+			if(value === null){
+				console.error(`TEST! Schema '${type}.${name}' does not exist`, {
+					type,
+					name,
+					load_id,
+					data_type: data[type],
+					keys: Object.keys(data[type] || {}),
+					data
+				});
+				console.trace();
+			}
+			return value;l;
 		},
 		get_db_column(table, column){
 			return data.db[table]?.[column] ?? null;
