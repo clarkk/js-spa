@@ -1,8 +1,13 @@
 export const ERROR_NULL = 'null',
 	ERROR_STRING = 'string',
-	ERROR_INT = 'integer',
 	ERROR_DECIMAL = 'decimal',
-	ERROR_BOOL = 'boolean';
+	ERROR_INT32 = 'int32',
+	ERROR_INT64 = 'int64',
+	ERROR_UINT32 = 'uint32',
+	ERROR_UINT64 = 'uint64',
+	ERROR_BOOL = 'boolean',
+	
+	SOURCE = 'convert';
 
 const TYPE_STRING='string', TYPE_INT='integer', TYPE_BOOL='boolean',
 	FORMAT_DECIMAL='decimal', FORMAT_INT32='int32', FORMAT_INT64='int64', FORMAT_UINT32='uint32', FORMAT_UINT64='uint64',
@@ -47,19 +52,19 @@ function convert_string(field, value){
 
 function convert_integer(field, value){
 	const type = typeof value;
-	if(type !== TYPE_STRING && type !== 'number' && type !== 'bigint') return error(ERROR_INT);
-	if(type === 'number' && !Number.isSafeInteger(value)) return error(ERROR_INT);
+	if(type !== TYPE_STRING && type !== 'number' && type !== 'bigint') return error_int(field.format);
+	if(type === 'number' && !Number.isSafeInteger(value)) return error_int(field.format);
 	
 	const s = String(value);
 	switch(field.format){
 	case FORMAT_INT32:
 	case FORMAT_INT64:
-		if(!RE_INT_SIGNED.test(s)) return error(ERROR_INT);
+		if(!RE_INT_SIGNED.test(s)) return error_int(field.format);
 		break;
 		
 	case FORMAT_UINT32:
 	case FORMAT_UINT64:
-		if(!RE_INT_UNSIGNED.test(s)) return error(ERROR_INT);
+		if(!RE_INT_UNSIGNED.test(s)) return error_int(field.format);
 		break;
 		
 	default:
@@ -69,24 +74,24 @@ function convert_integer(field, value){
 	const b = BigInt(s);
 	switch(field.format){
 	case FORMAT_INT32:
-		if (b < MIN_INT32 || b > MAX_INT32) return error(ERROR_INT);
+		if(b < MIN_INT32 || b > MAX_INT32) return error_int(field.format);
 		break;
 		
 	case FORMAT_UINT32:
-		if (b > MAX_UINT32) return error(ERROR_INT);
+		if(b > MAX_UINT32 || b < 0) return error_int(field.format);
 		break;
 		
 	case FORMAT_INT64:
-		if (b < MIN_INT64 || b > MAX_INT64) return error(ERROR_INT);
+		if(b < MIN_INT64 || b > MAX_INT64) return error_int(field.format);
 		break;
 		
 	case FORMAT_UINT64:
-		if (b > MAX_UINT64) return error(ERROR_INT);
+		if(b > MAX_UINT64 || b < 0) return error_int(field.format);
 		break;
 	}
 	
 	const n = Number(b);
-	if(!Number.isSafeInteger(n)) return error(ERROR_INT);
+	if(!Number.isSafeInteger(n)) return error_int(field.format);
 	return result(n);
 }
 
@@ -113,4 +118,19 @@ function error(error){
 	return {
 		error
 	};
+}
+
+function error_int(format){
+	switch(format){
+	case FORMAT_INT32:
+		return error(ERROR_INT32);
+	case FORMAT_INT64:
+		return error(ERROR_INT64);
+	case FORMAT_UINT32:
+		return error(ERROR_UINT32);
+	case FORMAT_UINT64:
+		return error(ERROR_UINT64);
+	default:
+		throw Error(`Unsupported int format '${format}'`);
+	}
 }

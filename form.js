@@ -139,7 +139,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			if(Object.keys(error).length){
 				throw new api.HTTP_error(422, {
-					error
+					error,
+					source: frm_types.SOURCE
 				});
 			}
 			return data;
@@ -160,7 +161,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				switch(err.status){
 				case 400:
 				case 422:
-					const error = err.body?.error || {};
+					const error = err.body?.error || {}, convert_error = err.body?.source === frm_types.SOURCE;
 					if(error.request){
 						console.error(`HTTP ${err.status}:`, err);
 						return true;
@@ -169,9 +170,10 @@ export function fieldset(store, fields, buttons, model_input=null){
 						const input = field.Field?.input();
 						if(!input) return;
 						
-						const input_error = error[name] || null;
+						let input_error = error[name] || null;
 						input.classList.toggle(CLASS_ERROR, !!input_error);
 						if(input_error){
+							if(convert_error) input_error = convert_error_message(input_error)
 							set_field_error(field.id, input_error);
 							has_error = true;
 						}
@@ -261,6 +263,33 @@ export function fieldset(store, fields, buttons, model_input=null){
 		}
 		finally{
 			sending = false;
+		}
+	}
+	
+	function convert_error_message(code){
+		switch(code){
+		case frm_types.ERROR_NULL:
+			return store.t_error('DATA_TYPE_NULL');
+			
+		case frm_types.ERROR_STRING:
+			return store.t_error('DATA_TYPE_STRING');
+			
+		case frm_types.ERROR_DECIMAL:
+			return store.t_error('DATA_TYPE_DECIMAL');
+			
+		case frm_types.ERROR_INT32:
+		case frm_types.ERROR_INT64:
+			return store.t_error('DATA_TYPE_INTEGER');
+			
+		case frm_types.ERROR_UINT32:
+		case frm_types.ERROR_UINT64:
+			return store.t_error('DATA_TYPE_UNSIGNED_INTEGER');
+			
+		case frm_types.ERROR_BOOL:
+			return store.t_error('DATA_TYPE_BOOLEAN');
+			
+		default:
+			throw Error(`Unsupported convert error '${code}'`);
 		}
 	}
 	
