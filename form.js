@@ -68,9 +68,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 		html_field(name, label=null, width=null){
 			const id = prepare_field_id(name);
 			return `
-				<div class="field-label" style="width:${width ? width+'px' : '100%'}">
+				<div class="field-container ${label ? 'field-label' : ''}" style="width:${width ? width+'px' : '100%'}">
 					${label ? `<label>${fmt.html(label)}</label>` : ''}
-					<div id="${id}" class="field-input"></div>
+					<div id="${id}" class="${label ? 'field-input' : ''}"></div>
 					<div id="${field_error_id(id)}" class="field-error"></div>
 				</div>
 			`;
@@ -78,7 +78,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		html_field_inline(name, label, width){
 			const id = prepare_field_id(name);
 			return `
-				<div class="field-label-inline">
+				<div class="field-container field-label-inline">
 					${fields.get(name).type === TYPE_CHECKBOX ? `
 						<label>${fmt.html(label)}</label>
 						<div id="${id}" class="field-input"></div>
@@ -336,7 +336,6 @@ export function fieldset(store, fields, buttons, model_input=null){
 				return;
 			}
 		}
-		
 		for(const key of BTN_CTA_NAMES){
 			const button = buttons[key];
 			if(button){
@@ -672,14 +671,14 @@ function set_field_error(id, msg){
 	const elm = document.getElementById(field_error_id(id));
 	if(elm){
 		elm.innerHTML = fmt.html(msg);
-		elm.style.display = 'block';
+		elm.classList.add('active');
 	}
 }
 
 function clear_field_error(id){
 	const elm = document.getElementById(field_error_id(id));
 	if(elm){
-		elm.style.display = 'none';
+		elm.classList.remove('active');
 		elm.innerHTML = '';
 	}
 }
