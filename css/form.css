@@ -220,6 +220,7 @@ textarea,
 .field-error {
 	position: absolute;
 	top: calc(100% + .3rem);
+	left: 0;
 	width: max-content;
 	max-width: min(22rem, calc(100vw - 2rem));
 	padding: .5rem .6rem;
@@ -233,6 +234,7 @@ textarea,
 	transform: translateY(-.2rem);
 	transition: opacity .2s, transform .2s, visibility 0s linear .2s;
 	overflow-wrap: anywhere;
+	pointer-events: none;
 }
 
 .field-container:focus-within .field-error.active {
