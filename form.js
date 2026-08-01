@@ -12,14 +12,21 @@ export const
 	TYPE_CHECKBOX = 'checkbox',
 	TYPE_DROPDOWN = 'dropdown',
 	
+	DROPDOWN_CALENDAR = 'calendar',
+	
 	BTN_ACTION = 'action',
 	BTN_BACK = 'back',
 	BTN_CANCEL = 'cancel',
 	BTN_NEXT = 'next',
-	BTN_PUT = 'put';
+	BTN_PUT = 'put',
+	
+	KEY_TAB = 'Tab',
+	KEY_ESC = 'Escape',
+	KEY_ENTER = 'Enter',
+	KEY_ARROW_DOWN = 'ArrowDown',
+	KEY_ARROW_UP = 'ArrowUp';
 
-const KEY_TAB='Tab', KEY_ESC='Escape', KEY_ENTER='Enter', KEY_ARROW_DOWN='ArrowDown', KEY_ARROW_UP='ArrowUp',
-	EVENT_INPUT='input',
+const EVENT_INPUT='input',
 	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
 
@@ -352,6 +359,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 		case TYPE_HIDDEN:
 		case TYPE_BLIND:
 			value = field.value || '';
+			break;
+			
 		default:
 			value = field.Field.val();
 		}
@@ -414,10 +423,12 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					</div>
 				`;
 				break;
+				
 			case TYPE_DROPDOWN:
 				field.Dropdown = frm_dropdown.create(field);
-				elm.innerHTML = field.Dropdown.html(input_id);
+				field.Dropdown.render(elm, input_id);
 				break;
+				
 			default:
 				const maxlength = input_maxlength();
 				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(render_value())}">`;
@@ -427,14 +438,19 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			if(!input) return;
 			
 			input.addEventListener('keydown', async e=>{
+				if(field.Dropdown?.keydown(e)) return;
+				
 				switch(e.key){
 				case KEY_TAB:
 					e.preventDefault();
 					o.tab(e);
 					break;
+					
 				case KEY_ESC:
+					e.preventDefault();
 					await button_click(fieldset.buttons(BTN_CANCEL));
 					break;
+					
 				case KEY_ENTER:
 					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
 						e.preventDefault();
@@ -556,18 +572,22 @@ function create_button(fieldset, name, send){
 				icon = button.icon || 'check-lg';
 				text = fieldset.store.t(button.text || 'BTN_OK');
 				break;
+				
 			case BTN_BACK:
 				icon = button.icon || 'chevron-left';
 				text = fieldset.store.t(button.text || 'BTN_BACK');
 				break;
+				
 			case BTN_CANCEL:
 				icon = button.icon || 'x-lg';
 				text = fieldset.store.t(button.text || 'BTN_CANCEL');
 				break;
+				
 			case BTN_NEXT:
 				icon = button.icon || 'chevron-right';
 				text = fieldset.store.t(button.text || 'BTN_NEXT');
 				break;
+				
 			case BTN_PUT:
 				icon = button.icon || 'check-lg';
 				text = fieldset.store.t(button.text || 'BTN_SAVE');
