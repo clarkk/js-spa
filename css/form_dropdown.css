@@ -2,10 +2,6 @@
 	position: fixed;
 	z-index: 1000;
 	display: none;
-	min-width: 12rem;
-	max-width: min(32rem, calc(100vw - 2rem));
-	max-height: min(20rem, calc(100vh - 2rem));
-	overflow: auto;
 	background: #fff;
 	border-radius: .6rem;
 	box-shadow: 0 .3rem 1rem hsl(0 0% 0% / 12%);
@@ -15,15 +11,26 @@
 	display: block;
 }
 
-.field-dropdown-list,
-.field-dropdown-calendar {
-	padding: 1rem;
+.field-dropdown-label {
+	font-weight: 600;
 }
 
-.field-dropdown-list {
+.field-dropdown-list,
+.field-dropdown-calendar {
 	margin: 0;
 	padding: 0;
 	list-style: none;
+	overflow: auto;
+}
+
+.field-dropdown-list {
+	width: 18rem;
+	height: 15rem;
+}
+
+.field-dropdown-calendar {
+	width: 18rem;
+	height: 15rem;
 }
 
 .field-dropdown-list > li {

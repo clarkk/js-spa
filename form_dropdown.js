@@ -84,7 +84,6 @@ export function create(store, parent){
 		}
 		
 		panel.style.left = rect.left+'px';
-		panel.style.width = rect.width+'px';
 		
 		const panel_height = panel.offsetHeight, space_below = window.innerHeight - rect.bottom, space_above = rect.top;
 		if(space_below >= panel_height || space_below >= space_above) panel.style.top = rect.bottom+'px';
@@ -130,6 +129,7 @@ function create_list(store, def){
 			const panel = get_panel();
 			panel.innerHTML = `
 				<ul class="field-dropdown-list">
+					<div class="field-dropdown-label">${store.t(def.label)}</div>
 					${def.options.map(option=>`
 						<li data-value="${option[0]}">${store.t(option[1])}</li>
 					`).join('')}
