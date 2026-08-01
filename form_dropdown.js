@@ -2,11 +2,29 @@ import * as dom from 'dom';
 import * as fmt from 'fmt';
 import * as frm from 'frm';
 
-let active = null;
+let active = null, position_frame = null, panel = null;
 
-export function create(field){
-	let container = null, input = null, rendered = false, opened = false;
-	const calendar = field.dropdown === frm.DROPDOWN_CALENDAR, o = {
+export function create(){
+	let container = null, input = null, rendered = false, opened = false, component = null, definition = null;
+	
+	const o = {
+		definition(def){
+			if(!arguments.length) return definition;
+			
+			if(def == null) throw Error('Dropdown definition must be defined');
+			
+			if(def === definition) return o;
+			
+			definition = def;
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar() : create_list(def);
+			
+			if(opened && active?.container === container){
+				component.render(input);
+				position();
+			}
+			
+			return o;
+		},
 		render(elm, input_id){
 			if(rendered) throw Error(`Dropdown is already rendered`);
 			
@@ -24,6 +42,7 @@ export function create(field){
 			input.addEventListener('focus', _=>{
 				open();
 			});
+			return o;
 		},
 		keydown(e){
 			switch(e.key){
@@ -47,57 +66,127 @@ export function create(field){
 				e.preventDefault();
 				return true;
 			}
+			
+			return false;
 		}
 	};
+	
+	function position(){
+		if(!opened || !input?.isConnected || !panel?.isConnected) return;
+		
+		const rect = input.getBoundingClientRect();
+		
+		if(rect.bottom <= 0 || rect.top >= window.innerHeight || rect.right <= 0 || rect.left >= window.innerWidth){
+			close();
+			return;
+		}
+		
+		panel.style.left = rect.left+'px';
+		panel.style.width = rect.width+'px';
+		
+		const panel_height = panel.offsetHeight, space_below = window.innerHeight - rect.bottom, space_above = rect.top;
+		if(space_below >= panel_height || space_below >= space_above) panel.style.top = rect.bottom+'px';
+		else panel.style.top = Math.max(0, rect.top-panel_height)+'px';
+	}
 	
 	function open(){
 		if(opened) return;
 		
+		if(!component) throw Error('Dropdown definition is not defined');
+		
 		if(active && active.container !== container) active.close();
 		
+		component.render(input);
+		
 		opened = true;
+		panel.classList.add('active');
 		active = {
 			container,
+			position,
 			close
 		};
 		
-		if(calendar){
-			create_calendar();
-		}
-		else{
-			create_list();
-		}
+		position();
 	}
 	
 	function close(){
 		if(!opened) return;
 		
 		opened = false;
-		if(active?.container === container) active = null;
+		if(active?.container === container){
+			panel?.classList.remove('active');
+			active = null;
+		}
 	}
 	
 	return Object.freeze(o);
 }
 
-function create_list(){
-	const o = {};
+function create_list(def){
+	const o = {
+		render(input){
+			const panel = get_panel();
+			panel.innerHTML = `
+				<div class="field-dropdown-list"></div>
+			`;
+			return o;
+		}
+	};
 	return Object.freeze(o);
 }
 
 function create_calendar(){
-	const o = {};
+	const o = {
+		render(input){
+			const panel = get_panel();
+			panel.innerHTML = `
+				<div class="field-dropdown-calendar"></div>
+			`;
+			return o;
+		}
+	};
 	return Object.freeze(o);
 }
 
+function get_panel(){
+	if(panel?.isConnected) return panel;
+	
+	panel = document.createElement('div');
+	panel.className = 'field-dropdown-panel';
+	document.body.append(panel);
+	return panel;
+}
+
 document.addEventListener('pointerdown', e=>{
-	if(!active) return;
+	if(inactivate()) return;
 	
-	if(!active.container.isConnected){
-		active = null;
-		return;
-	}
-	
-	if(active.container.contains(e.target)) return;
+	if(active.container.contains(e.target) || panel.contains(e.target)) return;
 	
 	active.close();
 });
+
+document.addEventListener('scroll', schedule_position, true);
+window.addEventListener('resize', schedule_position);
+
+function schedule_position(){
+	if(!active || position_frame !== null) return;
+	
+	position_frame = requestAnimationFrame(_=>{
+		position_frame = null;
+		
+		if(inactivate()) return;
+		
+		active.position();
+	});
+}
+
+function inactivate(){
+	if(!active) return true;
+	
+	if(!active.container.isConnected || !panel?.isConnected){
+		active.close();
+		return true;
+	}
+	
+	return false;
+}
