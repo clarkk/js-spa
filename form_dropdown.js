@@ -128,8 +128,8 @@ function create_list(store, def){
 		render(input){
 			const panel = get_panel();
 			panel.innerHTML = `
+				<div class="field-dropdown-label">${store.t(def.label)}</div>
 				<ul class="field-dropdown-list">
-					<div class="field-dropdown-label">${store.t(def.label)}</div>
 					${def.options.map(option=>`
 						<li data-value="${option[0]}">${store.t(option[1])}</li>
 					`).join('')}
