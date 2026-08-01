@@ -425,7 +425,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				break;
 				
 			case TYPE_DROPDOWN:
-				field.Dropdown = frm_dropdown.create()
+				field.Dropdown = frm_dropdown.create(fieldset.store, o)
 					.render(elm, input_id)
 					.definition(field.dropdown);
 				break;

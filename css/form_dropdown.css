@@ -19,3 +19,18 @@
 .field-dropdown-calendar {
 	padding: 1rem;
 }
+
+.field-dropdown-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.field-dropdown-list > li {
+	display: flex;
+	align-items: center;
+	padding: .45rem .7rem;
+	cursor: pointer;
+	user-select: none;
+	white-space: nowrap;
+}

@@ -4,7 +4,7 @@ import * as frm from 'frm';
 
 let active = null, position_frame = null, panel = null;
 
-export function create(){
+export function create(store, parent){
 	let container = null, input = null, rendered = false, opened = false, component = null, definition = null;
 	
 	const o = {
@@ -16,7 +16,7 @@ export function create(){
 			if(def === definition) return o;
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar() : create_list(def);
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store) : create_list(store, def);
 			
 			if(opened && active?.container === container){
 				component.render(input);
@@ -64,6 +64,8 @@ export function create(){
 				if(!opened) return false;
 				
 				e.preventDefault();
+				close();
+				parent.tab(e);
 				return true;
 			}
 			
@@ -122,12 +124,16 @@ export function create(){
 	return Object.freeze(o);
 }
 
-function create_list(def){
+function create_list(store, def){
 	const o = {
 		render(input){
 			const panel = get_panel();
 			panel.innerHTML = `
-				<div class="field-dropdown-list"></div>
+				<ul class="field-dropdown-list">
+					${def.options.map(option=>`
+						<li data-value="${option[0]}">${store.t(option[1])}</li>
+					`).join('')}
+				</ul>
 			`;
 			return o;
 		}
@@ -135,7 +141,7 @@ function create_list(def){
 	return Object.freeze(o);
 }
 
-function create_calendar(){
+function create_calendar(store){
 	const o = {
 		render(input){
 			const panel = get_panel();
