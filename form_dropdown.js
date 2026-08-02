@@ -17,6 +17,7 @@ export function create(store, parent){
 			
 			definition = def;
 			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store) : create_list(store, def);
+			input.readOnly = o.select();
 			
 			if(opened && active?.container === container){
 				component.render(input);
@@ -43,6 +44,9 @@ export function create(store, parent){
 				open();
 			});
 			return o;
+		},
+		select(){
+			return !!definition.select;
 		},
 		keydown(e){
 			switch(e.key){

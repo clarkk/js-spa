@@ -489,7 +489,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			}
 		},
 		readonly(bool){
-			if(!o.enabled()) return;
+			if(!o.enabled() || field.Dropdown?.select()) return;
 			input.readOnly = !!bool;
 		},
 		enabled(visible){
@@ -628,14 +628,18 @@ function create_button(fieldset, name, send){
 	button.Button = o;
 	
 	function set_loading(bool){
-		input.classList.toggle('loading', !!bool);
+		const b = !!bool;
+		input.classList.toggle('loading', b);
 		
 		const fields = fieldset.fields();
 		if(fields) fields.forEach(field=>{
-			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) field.Field.readonly(bool);
+			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)){
+				field.Field.readonly(bool);
+				field.Field.input().classList.toggle('sending', b);
+			}
 		});
 			
-		loading = !!bool;
+		loading = b;
 	}
 	
 	return Object.freeze(o);

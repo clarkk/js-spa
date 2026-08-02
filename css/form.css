@@ -122,6 +122,17 @@ input[type='checkbox'] {
 	--size: 10px;
 }
 
+input.sending,
+textarea.sending {
+	cursor: default;
+}
+
+input:read-only,
+textarea:read-only {
+	user-select: none;
+	background: hsl(0 0% 97%);
+}
+
 /*.inp-checkbox,
 .inp-checkbox-row{
 	display:flex;
@@ -221,6 +232,7 @@ textarea,
 	position: absolute;
 	top: calc(100% + .3rem);
 	left: 0;
+	z-index: 2;
 	width: max-content;
 	max-width: min(22rem, calc(100vw - 2rem));
 	padding: .5rem .6rem;
@@ -513,12 +525,6 @@ textarea:focus,
 	border-color:#fff;
 	box-shadow:0 0 0 3px hsl(0 0% 100% / 40%);
 }*/
-
-input:read-only,
-textarea:read-only {
-	cursor: default;
-	opacity: .7;
-}
 
 /*button:disabled,
 input:disabled,
