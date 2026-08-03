@@ -125,6 +125,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(!arguments.length){
 				const data = {};
 				fields.forEach((field, name)=>{
+					if(field.type === TYPE_BLIND) return;
+					
 					data[name] = get_input_value(name);
 				});
 				return data;
@@ -155,7 +157,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		reset(values={}){
 			fields.forEach((field, name)=>{
 				if(field.Field?.enabled()){
-					if(values[name] != null) field.Field.val(values[name]);
+					if(values[name] !== undefined) field.Field.val(values[name]);
 					else field.Field.reset();
 				}
 			});
@@ -358,7 +360,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		const field = fields.get(name);
 		switch(field.type){
 		case TYPE_BLIND:
-			return null;
+			throw Error(`Field '${name}' is blind`);
 		
 		case TYPE_HIDDEN:
 			return field.value;
@@ -414,6 +416,12 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			
 			let checkbox_id, checkbox_inner_id;
 			switch(field.type){
+			case TYPE_BLIND:
+				throw Error(`Field '${name}' is blind and can not be rendered`);
+				
+			case TYPE_HIDDEN:
+				throw Error(`Field '${name}' is hidden and can not be rendered`);
+			
 			case TYPE_CHECKBOX:
 				checkbox_id = dom.id();
 				checkbox_inner_id = dom.id();
@@ -496,6 +504,9 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		val(value){
 			if(!arguments.length){
 				switch(field.type){
+				case TYPE_HIDDEN:
+					return field.value;
+				
 				case TYPE_CHECKBOX:
 					return !!input.checked;
 					
@@ -507,21 +518,23 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				}
 			}
 			
-			if(input){
-				switch(field.type){
-				case TYPE_CHECKBOX:
-					input.checked = !!value;
-					break;
-					
-				case TYPE_DROPDOWN:
-					field.Dropdown.val(value);
-					break;
-					
-				default:
-					input.value = value ?? '';
-				}
-				input.dispatchEvent(new Event(EVENT_INPUT));
+			switch(field.type){
+			case TYPE_HIDDEN:
+				field.value = value;
+				break;
+			
+			case TYPE_CHECKBOX:
+				input.checked = !!value;
+				break;
+				
+			case TYPE_DROPDOWN:
+				field.Dropdown.val(value);
+				break;
+				
+			default:
+				input.value = value ?? '';
 			}
+			if(input) input.dispatchEvent(new Event(EVENT_INPUT));
 			return o;
 		},
 		reset(){
@@ -533,7 +546,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	};
 	
 	field.Field = o;
-	if(value != null) field.value = value;
+	if(value !== undefined) field.value = value;
 	if('tabindex' in field) set_tabindex_field(field.tabindex, o);
 	
 	async function button_click(button){
@@ -648,7 +661,7 @@ function create_button(fieldset, name, send){
 				field.Field.input().classList.toggle('sending', b);
 			}
 		});
-			
+		
 		loading = b;
 	}
 	
