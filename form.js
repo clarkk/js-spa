@@ -78,7 +78,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				<div class="field-container ${label ? 'field-label' : ''}" style="width:${width ? width+'px' : '100%'}">
 					${label ? `<label>${fmt.html(label)}</label>` : ''}
 					<div id="${id}" class="${label ? 'field-input' : ''}"></div>
-					<div id="${field_error_id(id)}" class="field-error"></div>
+					${fields.get(name).type === TYPE_DROPDOWN ? '' : `<div id="${field_error_id(id)}" class="field-error"></div>`}
 				</div>
 			`;
 		},
@@ -107,7 +107,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(fields) fields.forEach((field, name)=>{
 				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
 				
-				const value = values[name] ?? null;
+				const value = values[name] === undefined ? '' : values[name];
 				prepare_field(name, value).render();
 			});
 			return o;
@@ -180,8 +180,10 @@ export function fieldset(store, fields, buttons, model_input=null){
 						let input_error = error[name] || null;
 						input.classList.toggle(CLASS_ERROR, !!input_error);
 						if(input_error){
-							if(convert_error) input_error = convert_error_message(input_error)
-							set_field_error(field.id, input_error);
+							if(field.type !== TYPE_CHECKBOX){
+								if(convert_error) input_error = convert_error_message(input_error);
+								set_field_error(field.id, input_error);
+							}
 							has_error = true;
 						}
 						else clear_field_error(field.id);
@@ -353,18 +355,17 @@ export function fieldset(store, fields, buttons, model_input=null){
 	}
 	
 	function get_input_value(name){
-		let value;
 		const field = fields.get(name);
 		switch(field.type){
-		case TYPE_HIDDEN:
 		case TYPE_BLIND:
-			value = field.value || '';
-			break;
+			return null;
+		
+		case TYPE_HIDDEN:
+			return field.value;
 			
 		default:
-			value = field.Field.val();
+			return field.Field.val();
 		}
-		return value;
 	}
 	
 	function focus_button(){
@@ -425,14 +426,14 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				break;
 				
 			case TYPE_DROPDOWN:
-				field.Dropdown = frm_dropdown.create(fieldset.store, o)
+				field.Dropdown = frm_dropdown.create(fieldset.store, o, field.value)
 					.render(elm, input_id)
 					.definition(field.dropdown);
 				break;
 				
 			default:
 				const maxlength = input_maxlength();
-				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(render_value())}">`;
+				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(field.value ?? '')}">`;
 			}
 			
 			input = document.getElementById(input_id);
@@ -469,11 +470,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				clear_field_error(field.id);
 			});
 			
-			switch(field.type){
-			case TYPE_CHECKBOX:
-				init_checkbox(checkbox_id, checkbox_inner_id);
-				break;
-			}
+			if(field.type === TYPE_CHECKBOX) init_checkbox(checkbox_id, checkbox_inner_id);
 			
 			return o;
 		},
@@ -498,14 +495,31 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		},
 		val(value){
 			if(!arguments.length){
-				if(field.type === TYPE_CHECKBOX) return !!input.checked;
-				return input.value || '';
+				switch(field.type){
+				case TYPE_CHECKBOX:
+					return !!input.checked;
+					
+				case TYPE_DROPDOWN:
+					return field.Dropdown.val();
+					
+				default:
+					return input.value;
+				}
 			}
 			
-			if(value == null) value = '';
 			if(input){
-				if(field.type === TYPE_CHECKBOX) input.checked = !!value;
-				else input.value = value;
+				switch(field.type){
+				case TYPE_CHECKBOX:
+					input.checked = !!value;
+					break;
+					
+				case TYPE_DROPDOWN:
+					field.Dropdown.val(value);
+					break;
+					
+				default:
+					input.value = value ?? '';
+				}
 				input.dispatchEvent(new Event(EVENT_INPUT));
 			}
 			return o;
@@ -552,10 +566,6 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		}
 		
 		throw Error(`DB schema '${model_input.name}.${name}' does not exist`);
-	}
-	
-	function render_value(){
-		return field.value ?? '';
 	}
 	
 	return Object.freeze(o);
@@ -634,7 +644,7 @@ function create_button(fieldset, name, send){
 		const fields = fieldset.fields();
 		if(fields) fields.forEach(field=>{
 			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)){
-				field.Field.readonly(bool);
+				field.Field.readonly(b);
 				field.Field.input().classList.toggle('sending', b);
 			}
 		});

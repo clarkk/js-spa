@@ -4,10 +4,10 @@ import * as frm from 'frm';
 
 let active = null, position_frame = null, panel = null;
 
-export function create(store, parent){
-	let container = null, input = null, rendered = false, opened = false, component = null, definition = null;
+export function create(store, parent, value){
+	let container = null, input = null, input_select = null, rendered = false, opened = false, component = null, definition = null;
 	
-	const o = {
+	const input_select_id = dom.id(), o = {
 		definition(def){
 			if(!arguments.length) return definition;
 			
@@ -20,7 +20,7 @@ export function create(store, parent){
 			input.readOnly = o.select();
 			
 			if(opened && active?.container === container){
-				component.render(input);
+				component.render(input, input_select);
 				position();
 			}
 			
@@ -34,11 +34,13 @@ export function create(store, parent){
 			elm.innerHTML = `
 				<div id="${container_id}">
 					<input id="${input_id}" type="text" autocomplete="nope">
+					<input id="${input_select_id}" type="hidden">
 				</div>
 			`;
 			
 			container = document.getElementById(container_id);
 			input = document.getElementById(input_id);
+			input_select = document.getElementById(input_select_id);
 			
 			input.addEventListener('focus', _=>{
 				open();
@@ -47,6 +49,15 @@ export function create(store, parent){
 		},
 		select(){
 			return !!definition.select;
+		},
+		val(value){
+			if(!arguments.length){
+				if(o.select()) return input_select.value || '';
+				return input.value || '';
+			}
+			
+			if(o.select()) input_select.value = value;
+			else input.value = value;
 		},
 		keydown(e){
 			switch(e.key){
@@ -129,7 +140,7 @@ export function create(store, parent){
 
 function create_list(store, def){
 	const o = {
-		render(input){
+		render(input, input_select){
 			const panel = get_panel();
 			panel.innerHTML = `
 				<div class="field-dropdown-label">${store.t(def.label)}</div>
@@ -147,7 +158,7 @@ function create_list(store, def){
 
 function create_calendar(store){
 	const o = {
-		render(input){
+		render(input, input_select){
 			const panel = get_panel();
 			panel.innerHTML = `
 				<div class="field-dropdown-calendar"></div>
