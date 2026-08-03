@@ -107,8 +107,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(fields) fields.forEach((field, name)=>{
 				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
 				
-				const value = values[name] === undefined ? '' : values[name];
-				prepare_field(name, value).render();
+				prepare_field(name, values[name]).render();
 			});
 			return o;
 		},

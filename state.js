@@ -142,6 +142,9 @@ export function deep_freeze(obj){
 }
 
 function create_schema(){
+	const id = crypto.randomUUID();
+	console.log('Schema created', id);
+	
 	const data = {
 		db: {},
 		table: {},
@@ -151,14 +154,30 @@ function create_schema(){
 	};
 	return Object.freeze({
 		load(update){
+			console.group('schema.load', id);
+			console.trace();
+			console.log('tables:', Object.keys(update.table || {}));
+			console.log('has table.account:', !!update.table?.account);
+			console.log('table.account:', Object.keys(update.table?.account || {}));
+			
 			data.db = deep_freeze(update.db || {});
 			data.table = deep_freeze(update.table || {});
 			data.table_resources = deep_freeze(update.table_resources || {});
 			data.action = deep_freeze(update.action || {});
 			data.query = deep_freeze(update.query || {});
+			
+			console.groupEnd();
 		},
 		get(type, name){
-			return data[type]?.[name] ?? null;
+			const value = data[type]?.[name] ?? null;
+			
+			if(type === 'table' && name === 'account' && value === null){
+				console.error('GET table.account -> NULL', id);
+				console.trace();
+				console.log('tables:', Object.keys(data.table || {}));
+			}
+			
+			return value;
 		},
 		get_db_column(table, column){
 			return data.db[table]?.[column] ?? null;
