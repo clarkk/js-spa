@@ -11,16 +11,16 @@ export function init_csrf(csrf){
 }
 
 export const client = Object.freeze({
-	get: path=>request(path, {
+	get: (signal, path)=>request(signal, path, {
 		method: 'GET'
 	}),
-	post: (path, data, etag=null)=>request(path, {
+	post: (signal, path, data, etag=null)=>request(signal, path, {
 		method: 'POST',
 		headers: create_headers().if_match(etag).build(),
 		body: JSON.stringify(data)
 	}),
-	post_idempotency(path, data, etag=null){
-		const headers = create_headers().idempotency().if_match(etag).build(), data_send = JSON.stringify(data), exec = _=>request(path, {
+	post_idempotency(signal, path, data, etag=null){
+		const headers = create_headers().idempotency().if_match(etag).build(), data_send = JSON.stringify(data), exec = _=>request(signal, path, {
 			method: 'POST',
 			headers,
 			body: data_send
@@ -59,7 +59,7 @@ export function Response_JSON_error(status, err, text){
 Response_JSON_error.prototype = Object.create(Error.prototype);
 Response_JSON_error.prototype.constructor = Response_JSON_error;
 
-async function request(path, options={}){
+async function request(signal, path, options={}){
 	if(typeof _api_url !== 'string') throw Error('API client has not been initialized');
 	
 	const headers = {...options.headers};
@@ -70,29 +70,36 @@ async function request(path, options={}){
 		if(csrf_headers) Object.assign(headers, csrf_headers);
 	}
 	
-	const res = await fetch(_api_url+path, {
-		...options,
-		headers
-	});
-	
-	const text = await res.text(), is_json = res.headers.get(content_type)?.includes(type_json);
-	
-	let data = null;
-	if(text.trim()){
-		if(is_json){
-			try{
-				data = JSON.parse(text);
+	try{
+		const res = await fetch(_api_url+path, {
+			...options,
+			signal,
+			headers
+		});
+		
+		const text = await res.text(), is_json = res.headers.get(content_type)?.includes(type_json);
+		
+		let data = null;
+		if(text.trim()){
+			if(is_json){
+				try{
+					data = JSON.parse(text);
+				}
+				catch(err){
+					throw new Response_JSON_error(res.status, err, text);
+				}
 			}
-			catch(err){
-				throw new Response_JSON_error(res.status, err, text);
-			}
+			else data = text;
 		}
-		else data = text;
+		
+		if(!res.ok) throw new HTTP_error(res.status, data);
+		
+		return data;
 	}
-	
-	if(!res.ok) throw new HTTP_error(res.status, data);
-	
-	return data;
+	catch(err){
+		if(signal?.aborted) return;
+		throw err;
+	}
 }
 
 function create_headers(){

@@ -26,25 +26,24 @@ export function create_router(handler){
 }
 
 export const controller = (_=>{
-	let container = null, subscription = null, cleanup = null, render_id = 0, o = {
+	let container = null, subscription = null, cleanup = null, abort = null, o = {
 		init(elm){
 			container = elm;
 		},
 		render(store, view){
 			o.clear();
 			
-			const current_render_id = ++render_id;
+			abort = new AbortController();
+			const signal = abort.signal;
 			
 			subscription = store.subscribe(_=>{
-				if(active()) view(container, active);
+				if(!signal.aborted) view(container, signal);
 			});
-			view(container, active);
-			
-			function active(){
-				return current_render_id === render_id;
-			}
+			view(container, signal);
 		},
 		clear(){
+			abort?.abort();
+			
 			if(subscription){
 				subscription();
 				subscription = null;
@@ -53,6 +52,8 @@ export const controller = (_=>{
 				cleanup();
 				cleanup = null;
 			}
+			
+			abort = null;
 		},
 		cleanup(fn){
 			cleanup = fn;
