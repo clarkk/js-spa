@@ -142,42 +142,34 @@ export function deep_freeze(obj){
 }
 
 function create_schema(){
-	const id = crypto.randomUUID();
-	console.log('Schema created', id);
-	
 	const data = {
 		db: {},
 		table: {},
 		table_resources: {},
 		action: {},
 		query: {}
-	};
+	}, required = Object.keys(data);
+	
 	return Object.freeze({
 		load(update){
-			console.group('schema.load', id);
-			console.trace();
-			console.log('tables:', Object.keys(update.table || {}));
-			console.log('has table.account:', !!update.table?.account);
-			console.log('table.account:', Object.keys(update.table?.account || {}));
-			
-			data.db = deep_freeze(update.db || {});
-			data.table = deep_freeze(update.table || {});
-			data.table_resources = deep_freeze(update.table_resources || {});
-			data.action = deep_freeze(update.action || {});
-			data.query = deep_freeze(update.query || {});
-			
-			console.groupEnd();
-		},
-		get(type, name){
-			const value = data[type]?.[name] ?? null;
-			
-			if(type === 'table' && name === 'account' && value === null){
-				console.error('GET table.account -> NULL', id);
+			if(!update){
+				console.error('Invalid schema update', update);
 				console.trace();
-				console.log('tables:', Object.keys(data.table || {}));
+				throw new Error('Schema update is empty');
 			}
 			
-			return value;
+			for(const key of required){
+				if(!update[key] || Object.keys(update[key]).length === 0){
+					console.error(`Invalid schema: ${key} is empty`, update);
+					console.trace();
+					throw new Error(`Schema ${key} is empty`);
+				}
+			}
+			
+			for(const key of required) data[key] = deep_freeze(update[key]);
+		},
+		get(type, name){
+			return data[type]?.[name] ?? null;
 		},
 		get_db_column(table, column){
 			return data.db[table]?.[column] ?? null;
