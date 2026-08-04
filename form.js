@@ -505,7 +505,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				switch(field.type){
 				case TYPE_HIDDEN:
 					return field.value;
-				
+					
 				case TYPE_CHECKBOX:
 					return !!input.checked;
 					
@@ -517,23 +517,25 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				}
 			}
 			
-			switch(field.type){
-			case TYPE_HIDDEN:
-				field.value = value;
-				break;
-			
-			case TYPE_CHECKBOX:
-				input.checked = !!value;
-				break;
+			if(value !== undefined){
+				switch(field.type){
+				case TYPE_HIDDEN:
+					field.value = value;
+					break;
 				
-			case TYPE_DROPDOWN:
-				field.Dropdown.val(value);
-				break;
-				
-			default:
-				input.value = value ?? '';
+				case TYPE_CHECKBOX:
+					input.checked = !!value;
+					break;
+					
+				case TYPE_DROPDOWN:
+					field.Dropdown.val(value);
+					break;
+					
+				default:
+					input.value = value ?? '';
+				}
+				if(input) input.dispatchEvent(new Event(EVENT_INPUT));
 			}
-			if(input) input.dispatchEvent(new Event(EVENT_INPUT));
 			return o;
 		},
 		reset(){
@@ -666,25 +668,6 @@ function create_button(fieldset, name, send){
 	
 	return Object.freeze(o);
 }
-
-/*export function Fieldset(fields, buttons={}){
-	const _field_names = {}, _tabs = Tabs(), f = {
-		
-		reapply_fields(apply_fields){
-			for(const k in _field_names) delete _field_names[k];
-			_tabs.clear();
-			fields = null;
-			f.apply_fields(apply_fields);
-		},
-		
-		hide_button(name, bool){
-			$('#'+o.button_id(name)).css('display', !!bool ? 'block' : 'none');
-			o.buttons(name).Button.hide(bool);
-		},
-		
-	};
-	
-}*/
 
 function create_tabs(){
 	let tabindex = 0, tabs = {};

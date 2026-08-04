@@ -12,11 +12,12 @@ export function create(store, parent, value){
 			if(!arguments.length) return definition;
 			
 			if(def == null) throw Error('Dropdown definition must be defined');
+			if(!rendered) throw Error(`Dropdown is not rendered`);
 			
 			if(def === definition) return o;
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store) : create_list(store, def);
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, value) : create_list(store, def, value);
 			input.readOnly = o.select();
 			
 			if(opened && active?.container === container){
@@ -48,16 +49,15 @@ export function create(store, parent, value){
 			return o;
 		},
 		select(){
-			return !!definition.select;
+			return component.select();
 		},
 		val(value){
-			if(!arguments.length){
-				if(o.select()) return input_select.value || '';
-				return input.value || '';
-			}
+			if(!arguments.length) return o.select() ? input_select.value : input.value;
 			
-			if(o.select()) input_select.value = value;
-			else input.value = value;
+			if(value !== undefined){
+				if(o.select()) input_select.value = value;
+				else input.value = value;
+			}
 		},
 		keydown(e){
 			switch(e.key){
@@ -138,7 +138,7 @@ export function create(store, parent, value){
 	return Object.freeze(o);
 }
 
-function create_list(store, def){
+function create_list(store, def, value){
 	const o = {
 		render(input, input_select){
 			const panel = get_panel();
@@ -150,13 +150,28 @@ function create_list(store, def){
 					`).join('')}
 				</ul>
 			`;
+			
+			if(o.select()){
+				console.log(value)
+				console.log(def.options)
+			}
+			else{
+				
+			}
+			
+			//input.value = '';
+			//input_select.value = '';
+			
 			return o;
+		},
+		select(){
+			return !!def.select;
 		}
 	};
 	return Object.freeze(o);
 }
 
-function create_calendar(store){
+function create_calendar(store, value){
 	const o = {
 		render(input, input_select){
 			const panel = get_panel();
