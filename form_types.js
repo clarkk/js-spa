@@ -1,4 +1,5 @@
-export const ERROR_NULL = 'null',
+export const
+	ERROR_NULL = 'null',
 	ERROR_STRING = 'string',
 	ERROR_DECIMAL = 'decimal',
 	ERROR_INT32 = 'int32',
