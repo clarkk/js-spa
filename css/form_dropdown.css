@@ -41,3 +41,7 @@
 	user-select: none;
 	white-space: nowrap;
 }
+
+.field-dropdown-list > li.selected {
+	background: hsl(0 0% 80%);
+}
