@@ -17,11 +17,12 @@ export function create(store, parent, value){
 			if(def === definition) return o;
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, value) : create_list(store, def, value);
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select) : create_list(store, def, input, input_select);
+			component.init(value);
 			input.readOnly = o.select();
 			
 			if(opened && active?.container === container){
-				component.render(input, input_select);
+				component.render();
 				position();
 			}
 			
@@ -46,10 +47,13 @@ export function create(store, parent, value){
 			input.addEventListener('focus', _=>{
 				open();
 			});
+			input.addEventListener('click', _=>{
+				open();
+			});
 			return o;
 		},
 		select(){
-			return component.select();
+			return !!component?.select?.();
 		},
 		val(value){
 			if(!arguments.length) return o.select() ? input_select.value : input.value;
@@ -112,7 +116,7 @@ export function create(store, parent, value){
 		
 		if(active && active.container !== container) active.close();
 		
-		component.render(input);
+		component.render();
 		
 		opened = true;
 		panel.classList.add('active');
@@ -138,45 +142,66 @@ export function create(store, parent, value){
 	return Object.freeze(o);
 }
 
-function create_list(store, def, value){
+function create_list(store, def, input, input_select){
+	let options = [], filtered = [], selected = -1;
 	const o = {
-		render(input, input_select){
+		init(value){
+			options = def.options.map(([value, text])=>({
+				value: String(value),
+				text: store.t(text)
+			}));
+			
+			if(o.select()){
+				const option = value === undefined ? options[0] : options.find(option=>option.value === String(value)) ?? options[0];
+				input_select.value = option?.value ?? '';
+				input.value = option?.text ?? '';
+			}
+			else input.value = value ?? '';
+			
+			filter();
+		},
+		render(){
 			const panel = get_panel();
 			panel.innerHTML = `
 				<div class="field-dropdown-label">${store.t(def.label)}</div>
 				<ul class="field-dropdown-list">
-					${def.options.map(option=>`
-						<li data-value="${option[0]}">${store.t(option[1])}</li>
+					${filtered.map((option, i)=>`
+						<li data-index="${i}">${fmt.html(option.text)}</li>
 					`).join('')}
 				</ul>
 			`;
-			
-			if(o.select()){
-				console.log(value)
-				console.log(def.options)
-			}
-			else{
-				
-			}
-			
-			//input.value = '';
-			//input_select.value = '';
-			
 			return o;
 		},
 		select(){
 			return !!def.select;
 		}
 	};
+	
+	function filter(){
+		if(o.select()) filtered = options;
+		else{
+			const search = input.value.trim().toLowerCase();
+			filtered = options.filter(option=>
+				option.text.toLowerCase().includes(search)
+			);
+		}
+		selected = filtered.length ? 0 : -1;
+	}
+	
 	return Object.freeze(o);
 }
 
-function create_calendar(store, value){
+function create_calendar(store, input, input_select){
 	const o = {
-		render(input, input_select){
+		init(value){
+			
+		},
+		render(){
 			const panel = get_panel();
 			panel.innerHTML = `
-				<div class="field-dropdown-calendar"></div>
+				<div class="field-dropdown-calendar">
+					
+				</div>
 			`;
 			return o;
 		}
