@@ -44,7 +44,7 @@ export function create_auth_store(init_state, url_trans, create_extension=null){
 	load_trans(url_trans);
 	
 	function load_trans(url){
-		api.client.get(url).then(trans=>{
+		api.client.get(null, url).then(trans=>{
 			trans_lang = trans?.lang || {};
 			trans_lang_error = trans?.lang_error || {};
 			o.update();
