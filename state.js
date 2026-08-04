@@ -152,17 +152,10 @@ function create_schema(){
 	
 	return Object.freeze({
 		load(update){
-			if(!update){
-				console.error('Invalid schema update', update);
-				console.trace();
-				throw new Error('Schema update is empty');
-			}
-			
 			for(const key of required){
 				if(!update[key] || Object.keys(update[key]).length === 0){
 					console.error(`Invalid schema: ${key} is empty`, update);
-					console.trace();
-					throw new Error(`Schema ${key} is empty`);
+					return;
 				}
 			}
 			
