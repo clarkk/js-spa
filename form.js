@@ -169,7 +169,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				switch(err.status){
 				case 400:
 				case 422:
-					const error = err.body?.error || {}, convert_error = err.body?.source === frm_types.SOURCE;
+					const error = err.body?.error ?? {}, convert_error = err.body?.source === frm_types.SOURCE;
 					if(error.request){
 						console.error(`HTTP ${err.status}:`, err);
 						return true;

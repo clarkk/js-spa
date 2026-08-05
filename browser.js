@@ -63,7 +63,7 @@ export function browser_version(data){
 
 export function browser_fallback(){
 	return {
-		ua: navigator.userAgent || '',
+		ua: navigator.userAgent ?? '',
 		name: null,
 		version: null,
 		os: null
