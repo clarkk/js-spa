@@ -168,6 +168,9 @@ function create_schema(){
 		},
 		table_resource(name){
 			return data.table_resources[name] ?? null;
+		},
+		dropdown(table, column){
+			//return data.table.
 		}
 	});
 }
