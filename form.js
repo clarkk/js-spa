@@ -575,7 +575,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		
 		if(!Array.isArray(resource)) resource = [resource];
 		for(const table of resource){
-			const column = fieldset.store.schema.get_db_column(table, name);
+			const column = fieldset.store.schema.db_column(table, name);
 			if(column) return column.length || null;
 		}
 		

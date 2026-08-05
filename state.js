@@ -163,14 +163,14 @@ function create_schema(){
 		get(type, name){
 			return data[type]?.[name] ?? null;
 		},
-		get_db_column(table, column){
+		table_enum(name, field){
+			return data.table[name]?.enums?.[field] ?? null;
+		},
+		db_column(table, column){
 			return data.db[table]?.[column] ?? null;
 		},
 		table_resource(name){
 			return data.table_resources[name] ?? null;
-		},
-		dropdown(table, column){
-			//return data.table.
 		}
 	});
 }

@@ -8,7 +8,6 @@ const CLASS_SELECTED='selected';
 
 export function create(store, parent, value){
 	let container = null, input = null, input_select = null, rendered = false, opened = false, component = null, definition = null;
-	
 	const input_select_id = dom.id(), o = {
 		definition(def){
 			if(!arguments.length) return definition;
@@ -162,7 +161,7 @@ function create_list(store, def, input, input_select){
 	let options = [], filtered = [], selected = -1, items = null;
 	const o = {
 		init(value){
-			options = def.options.map(([value, text])=>({
+			options = (typeof def.options === 'function' ? def.options(store) : def.options).map(([value, text])=>({
 				value: String(value),
 				text: store.t(text)
 			}));
