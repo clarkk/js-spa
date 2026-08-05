@@ -158,7 +158,6 @@ function create_schema(){
 					return;
 				}
 			}
-			
 			for(const key of required) data[key] = deep_freeze(update[key]);
 		},
 		get(type, name){
