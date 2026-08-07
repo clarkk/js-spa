@@ -11,19 +11,22 @@ export function create(){
 				if(!set.size) delete listeners[table];
 			};
 		},
+		get(table){
+			return get(table);
+		},
 		put(table, entry){
 			(data[table] ||= new Map()).set(entry.id, entry);
 			notify(table);
 		},
 		delete(table, id){
-			if(data[table]){
-				data[table].delete(id);
-				notify(table);
-			}
+			const map = data[table];
+			if(!map) return;
+			
+			if(map.delete(id)) notify(table);
 		},
 		replace(table, entries){
 			data[table] = new Map(
-				(entries || []).map(entry=>[entry.id, entry])
+				entries.map(entry=>[entry.id, entry])
 			);
 			notify(table);
 		},
@@ -35,11 +38,15 @@ export function create(){
 		}
 	};
 	
+	function get(table){
+		return Array.from(data[table]?.values() || []);
+	}
+	
 	function notify(table){
 		const set = listeners[table];
 		if(!set) return;
 		
-		const values = Array.from(data[table]?.values() || []);
+		const values = get(table);
 		for(const callback of [...set]) callback(values);
 	}
 	
