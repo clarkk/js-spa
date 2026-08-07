@@ -1,5 +1,5 @@
 export function create(){
-	const data = {}, listeners = {}, o = {
+	const data = Object.create(null), cache = Object.create(null), listeners = Object.create(null), o = {
 		subscribe(table, callback){
 			(listeners[table] ||= new Set()).add(callback);
 			
@@ -15,31 +15,39 @@ export function create(){
 			return get(table);
 		},
 		put(table, entry){
-			(data[table] ||= new Map()).set(entry.id, entry);
+			(data[table] ||= new Map()).set(entry.id, Object.freeze(entry));
+			delete cache[table];
 			notify(table);
 		},
 		delete(table, id){
 			const map = data[table];
 			if(!map) return;
 			
-			if(map.delete(id)) notify(table);
+			if(map.delete(id)){
+				delete cache[table];
+				notify(table);
+			}
 		},
 		replace(table, entries){
 			data[table] = new Map(
-				entries.map(entry=>[entry.id, entry])
+				entries.map(entry=>[entry.id, Object.freeze(entry)])
 			);
+			delete cache[table];
 			notify(table);
 		},
 		clear(){
 			for(const table of Object.keys(data)){
-				data[table].clear();
+				data[table] = new Map();
+				delete cache[table];
 				notify(table);
 			}
 		}
 	};
 	
 	function get(table){
-		return Array.from(data[table]?.values() || []);
+		return cache[table] ||= Object.freeze(
+			Array.from(data[table]?.values() || [])
+		);
 	}
 	
 	function notify(table){

@@ -158,13 +158,10 @@ export function create(store, parent, value){
 }
 
 function create_list(store, def, input, input_select){
-	let options = [], filtered = [], selected = -1, items = null;
+	let options = [], filtered = [], selected = -1, searching = false, items = null;
 	const o = {
 		init(value){
-			options = (typeof def.options === 'function' ? def.options(store) : def.options).map(([value, text])=>({
-				value: String(value),
-				text: store.t(text)
-			}));
+			load_options();
 			
 			if(o.select()){
 				const option = value === undefined ? options[0] : options.find(option=>option.value === String(value)) ?? options[0];
@@ -172,8 +169,6 @@ function create_list(store, def, input, input_select){
 				input.value = option?.text ?? '';
 			}
 			else input.value = value ?? '';
-			
-			filter();
 		},
 		render(){
 			const panel = get_panel();
@@ -210,6 +205,15 @@ function create_list(store, def, input, input_select){
 			return !!def.select;
 		}
 	};
+	
+	function load_options(){
+		options = def.options(store).map(([value, text])=>({
+			value: String(value),
+			text
+		}));
+		
+		filter();
+	}
 	
 	function move(direction){
 		if(!filtered.length) return;
