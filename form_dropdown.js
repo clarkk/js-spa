@@ -17,12 +17,15 @@ export function create(store, parent, value){
 			
 			if(def === definition) return o;
 			
+			component?.close?.();
+			
 			definition = def;
 			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select) : create_list(store, input, input_select, def);
 			component.init(value);
 			input.readOnly = o.select();
 			
 			if(opened && active?.container === container){
+				component.open?.();
 				component.render();
 				position();
 			}
