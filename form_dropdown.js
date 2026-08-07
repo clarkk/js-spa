@@ -134,6 +134,7 @@ export function create(store, parent, value){
 		
 		if(active && active.container !== container) active.close();
 		
+		component.open?.();
 		component.render();
 		
 		opened = true;
@@ -148,10 +149,10 @@ export function create(store, parent, value){
 	}
 	
 	function close(){
-		if(!opened) return;
+		component.close?.();
 		
 		opened = false;
-		if(active?.container === container){
+		if(active?.container === container){	
 			panel?.classList.remove('active');
 			active = null;
 		}
@@ -161,13 +162,11 @@ export function create(store, parent, value){
 }
 
 function create_list(store, input, input_select, def){
-	let options = [], filtered = [], selected = -1, searching = false, items = null;
+	let options = [], filtered = [], selected = -1, searching = false, items = null, unsubscribe = null;
 	const o = {
 		init(value){
 			searching = false;
-			options = def.options(store);
-			
-			filter();
+			load_options();
 			
 			if(o.select()){
 				const option = value === undefined ? options[0] : options.find(option=>option.value === String(value)) ?? options[0];
@@ -188,6 +187,20 @@ function create_list(store, input, input_select, def){
 			`;
 			items = panel.querySelectorAll('li');
 			return o;
+		},
+		open(){
+			if(unsubscribe || !def.entries) return;
+			
+			unsubscribe = store.entries.subscribe(def.entries, _=>{
+				if(active?.container === container){
+					load_options();
+					o.render();
+				}
+			});
+		},
+		close(){
+			unsubscribe?.();
+			unsubscribe = null;
 		},
 		input(){
 			if(o.select()) return;
@@ -218,6 +231,11 @@ function create_list(store, input, input_select, def){
 			return !!def.select;
 		}
 	};
+	
+	function load_options(){
+		options = def.options(store);
+		filter();
+	}
 	
 	function move(direction){
 		if(!filtered.length) return;
