@@ -18,7 +18,7 @@ export function create(store, parent, value){
 			if(def === definition) return o;
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select) : create_list(store, def, input, input_select);
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select) : create_list(store, input, input_select, def);
 			component.init(value);
 			input.readOnly = o.select();
 			
@@ -157,11 +157,13 @@ export function create(store, parent, value){
 	return Object.freeze(o);
 }
 
-function create_list(store, def, input, input_select){
+function create_list(store, input, input_select, def){
 	let options = [], filtered = [], selected = -1, searching = false, items = null;
 	const o = {
 		init(value){
-			load_options();
+			options = def.options(store);
+			
+			filter();
 			
 			if(o.select()){
 				const option = value === undefined ? options[0] : options.find(option=>option.value === String(value)) ?? options[0];
@@ -206,15 +208,6 @@ function create_list(store, def, input, input_select){
 		}
 	};
 	
-	function load_options(){
-		options = def.options(store).map(([value, text])=>({
-			value: String(value),
-			text
-		}));
-		
-		filter();
-	}
-	
 	function move(direction){
 		if(!filtered.length) return;
 		
@@ -231,11 +224,11 @@ function create_list(store, def, input, input_select){
 	}
 	
 	function filter(){
-		if(o.select()) filtered = options;
+		if(o.select() || !searching) filtered = options;
 		else{
 			const search = input.value.trim().toLowerCase();
 			filtered = options.filter(option=>
-				option.text.toLowerCase().includes(search)
+				option.search.includes(search)
 			);
 		}
 		selected = filtered.length ? 0 : -1;
