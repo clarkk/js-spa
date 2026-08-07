@@ -29,7 +29,7 @@ export function create(){
 		},
 		clear(){
 			for(const table of Object.keys(data)){
-				data[table] = new Map();
+				data[table].clear();
 				notify(table);
 			}
 		}
