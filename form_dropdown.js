@@ -51,6 +51,9 @@ export function create(store, parent, value){
 			input.addEventListener('click', _=>{
 				open();
 			});
+			input.addEventListener('input', e=>{
+				component?.input?.(e);
+			});
 			return o;
 		},
 		select(){
@@ -161,6 +164,7 @@ function create_list(store, input, input_select, def){
 	let options = [], filtered = [], selected = -1, searching = false, items = null;
 	const o = {
 		init(value){
+			searching = false;
 			options = def.options(store);
 			
 			filter();
@@ -185,6 +189,13 @@ function create_list(store, input, input_select, def){
 			items = panel.querySelectorAll('li');
 			return o;
 		},
+		input(){
+			if(o.select()) return;
+			
+			searching = true;
+			filter();
+			o.render();
+		},
 		down(){
 			move(1);
 		},
@@ -199,9 +210,9 @@ function create_list(store, input, input_select, def){
 				input_select.value = option.value;
 				input.value = option.text;
 			}
-			else{
-				
-			}
+			else input.value = option.value;
+			
+			searching = false;
 		},
 		select(){
 			return !!def.select;
@@ -231,7 +242,7 @@ function create_list(store, input, input_select, def){
 				option.search.includes(search)
 			);
 		}
-		selected = filtered.length ? 0 : -1;
+		selected = filtered.length === 1 ? 0 : -1;
 	}
 	
 	return Object.freeze(o);
