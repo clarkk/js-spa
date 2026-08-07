@@ -197,8 +197,8 @@ function create_list(store, input, input_select, close, def){
 					`).join('')}
 				</ul>
 			`;
-			
 			items = panel.querySelectorAll('li');
+			
 			panel.querySelector('.field-dropdown-list').addEventListener('click', e=>{
 				const item = e.target.closest('li');
 				if(!item) return;
@@ -212,6 +212,7 @@ function create_list(store, input, input_select, close, def){
 				if(e.target.closest('li')) return;
 				
 				e.preventDefault();
+				e.stopPropagation();
 				input.focus();
 			});
 			
