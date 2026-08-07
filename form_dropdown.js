@@ -98,7 +98,7 @@ export function create(store, parent, value){
 				e.preventDefault();
 				component.choose();
 				close();
-				return true;
+				return false;
 				
 			case frm.KEY_TAB:
 				if(!opened) return false;
