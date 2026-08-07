@@ -4,7 +4,7 @@ import * as frm from 'frm';
 
 let active = null, position_frame = null, panel = null;
 
-const CLASS_SELECTED='selected';
+const CLASS_ACTIVE='active', CLASS_SELECTED='selected';
 
 export function create(store, parent, value){
 	let container = null, input = null, input_select = null, rendered = false, opened = false, component = null, definition = null;
@@ -28,6 +28,7 @@ export function create(store, parent, value){
 				component.open?.();
 				component.render();
 				position();
+				component.scroll_selected?.();
 			}
 			
 			return o;
@@ -137,11 +138,12 @@ export function create(store, parent, value){
 		
 		if(active && active.container !== container) active.close();
 		
+		opened = true;
+		
 		component.open?.();
 		component.render();
 		
-		opened = true;
-		panel.classList.add('active');
+		panel.classList.add(CLASS_ACTIVE);
 		active = {
 			container,
 			position,
@@ -149,14 +151,16 @@ export function create(store, parent, value){
 		};
 		
 		position();
+		component.scroll_selected?.();
 	}
 	
 	function close(){
+		opened = false;
+		
 		component.close?.();
 		
-		opened = false;
 		if(active?.container === container){	
-			panel?.classList.remove('active');
+			panel?.classList.remove(CLASS_ACTIVE);
 			active = null;
 		}
 	}
@@ -169,7 +173,7 @@ function create_list(store, input, input_select, def){
 	const o = {
 		init(value){
 			searching = false;
-			load_options();
+			options = def.options(store);
 			
 			if(o.select()){
 				const option = value === undefined ? options[0] : options.find(option=>option.value === String(value)) ?? options[0];
@@ -177,6 +181,8 @@ function create_list(store, input, input_select, def){
 				input.value = option?.text ?? '';
 			}
 			else input.value = value ?? '';
+			
+			filter();
 		},
 		render(){
 			const panel = get_panel();
@@ -191,13 +197,20 @@ function create_list(store, input, input_select, def){
 			items = panel.querySelectorAll('li');
 			return o;
 		},
+		scroll_selected(){
+			items?.[selected]?.scrollIntoView({
+				block: 'nearest'
+			});
+		},
 		open(){
 			if(unsubscribe || !def.entries) return;
 			
 			unsubscribe = store.entries.subscribe(def.entries, _=>{
 				if(active?.container === container){
-					load_options();
+					options = def.options(store);
+					filter();
 					o.render();
+					o.scroll_selected();
 				}
 			});
 		},
@@ -235,11 +248,6 @@ function create_list(store, input, input_select, def){
 		}
 	};
 	
-	function load_options(){
-		options = def.options(store);
-		filter();
-	}
-	
 	function move(direction){
 		if(!filtered.length) return;
 		
@@ -250,9 +258,7 @@ function create_list(store, input, input_select, def){
 		
 		items[previous]?.classList.remove(CLASS_SELECTED);
 		items[selected]?.classList.add(CLASS_SELECTED);
-		items[selected]?.scrollIntoView({
-			block: 'nearest'
-		});
+		o.scroll_selected();
 	}
 	
 	function filter(){
@@ -263,7 +269,18 @@ function create_list(store, input, input_select, def){
 				option.search.includes(search)
 			);
 		}
-		selected = filtered.length === 1 ? 0 : -1;
+		if(o.select()){
+			selected = filtered.findIndex(option=>
+				option.value === input_select.value
+			);
+		}
+		else{
+			const value = input.value.trim().toLowerCase();
+			selected = value ? filtered.findIndex(option=>
+				option.value.toLowerCase() === value
+			) : -1;
+			if(selected === -1 && filtered.length === 1) selected = 0;
+		}
 	}
 	
 	return Object.freeze(o);
