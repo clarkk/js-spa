@@ -11,8 +11,19 @@
 	display: block;
 }
 
+.field-dropdown-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: .4rem .5rem;
+}
+
 .field-dropdown-label {
 	font-weight: 600;
+}
+
+.field-dropdown-count {
+	font-size: .8rem;
 }
 
 .field-dropdown-list,
@@ -24,8 +35,8 @@
 }
 
 .field-dropdown-list {
-	width: 18rem;
-	height: 10rem;
+	width: 20rem;
+	height: 12rem;
 }
 
 .field-dropdown-calendar {

@@ -4,7 +4,7 @@ import * as frm from 'frm';
 
 let active = null, position_frame = null, panel = null;
 
-const CLASS_ACTIVE='active', CLASS_SELECTED='selected';
+const CLASS_ACTIVE='active', CLASS_SELECTED='selected', PADDING=4;
 
 export function create(store, parent, value){
 	let container = null, input = null, input_select = null, rendered = false, opened = false, component = null, definition = null;
@@ -20,7 +20,7 @@ export function create(store, parent, value){
 			component?.close?.();
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select) : create_list(store, input, input_select, def);
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select, close) : create_list(store, input, input_select, close, def);
 			component.init(value);
 			input.readOnly = o.select();
 			
@@ -127,8 +127,8 @@ export function create(store, parent, value){
 		panel.style.left = rect.left+'px';
 		
 		const panel_height = panel.offsetHeight, space_below = window.innerHeight - rect.bottom, space_above = rect.top;
-		if(space_below >= panel_height || space_below >= space_above) panel.style.top = rect.bottom+'px';
-		else panel.style.top = Math.max(0, rect.top-panel_height)+'px';
+		if(space_below >= panel_height || space_below >= space_above) panel.style.top = (rect.bottom + PADDING)+'px';
+		else panel.style.top = Math.max(0, rect.top - panel_height - PADDING)+'px';
 	}
 	
 	function open(){
@@ -168,7 +168,7 @@ export function create(store, parent, value){
 	return Object.freeze(o);
 }
 
-function create_list(store, input, input_select, def){
+function create_list(store, input, input_select, close, def){
 	let options = [], filtered = [], selected = -1, searching = false, items = null, unsubscribe = null;
 	const o = {
 		init(value){
@@ -187,14 +187,34 @@ function create_list(store, input, input_select, def){
 		render(){
 			const panel = get_panel();
 			panel.innerHTML = `
-				<div class="field-dropdown-label">${store.t(def.label)}</div>
+				<div class="field-dropdown-header">
+					<div class="field-dropdown-label">${store.t(def.label)}</div>
+					${o.select() ? '' : `<div class="field-dropdown-count">${filtered.length} / ${options.length}</div>`}
+				</div>
 				<ul class="field-dropdown-list">
 					${filtered.map((option, i)=>`
-						<li class="${i === selected ? CLASS_SELECTED : ''}">${fmt.html(option.text)}</li>
+						<li class="${i === selected ? CLASS_SELECTED : ''}" data-index="${i}">${fmt.html(option.text)}</li>
 					`).join('')}
 				</ul>
 			`;
+			
 			items = panel.querySelectorAll('li');
+			panel.querySelector('.field-dropdown-list').addEventListener('click', e=>{
+				const item = e.target.closest('li');
+				if(!item) return;
+				
+				selected = Number(item.dataset.index);
+				o.choose();
+				close();
+			});
+			
+			panel.addEventListener('pointerdown', e=>{
+				if(e.target.closest('li')) return;
+				
+				e.preventDefault();
+				input.focus();
+			});
+			
 			return o;
 		},
 		scroll_selected(){
@@ -286,7 +306,7 @@ function create_list(store, input, input_select, def){
 	return Object.freeze(o);
 }
 
-function create_calendar(store, input, input_select){
+function create_calendar(store, input, input_select, close){
 	const o = {
 		init(value){
 			
