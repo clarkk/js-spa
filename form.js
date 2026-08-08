@@ -107,7 +107,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			fields?.forEach((field, name)=>{
 				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, values[name]).render();
 			});
-			fields?.forEach(field=>field.Field.apply_handler());
+			fields?.forEach(field=>field.Field?.apply_handler());
 			return o;
 		},
 		render_buttons(){
@@ -583,7 +583,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	}
 	
 	function value_change(value, init){
-		if(field.type === TYPE_DROPDOWN && field.Dropdown?.select()) dropdown_select_unset();
+		if(field.type === TYPE_DROPDOWN && field.Dropdown?.select() && model_input) dropdown_select_unset();
 		if(o.enabled()){
 			field.handler?.call(fieldset, value, init);
 			current_value = value;
@@ -591,12 +591,30 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	}
 	
 	function dropdown_select_unset(){
-		if(!model_input) return;
+		const stack = [];
+		apply(name);
 		
-		const rules = fieldset.store.schema.enum_unsets(model_input.type, model_input.name, name);
-		if(!rules) return;
-		
-		console.log(rules)
+		function apply(name){
+			const index = stack.indexOf(name);
+			if(index !== -1){
+				const cycle = [...stack.slice(index), name].join(' -> ');
+				throw Error(`Circular unset dependency: ${cycle}`);
+			}
+			
+			stack.push(name);
+			
+			const rules = fieldset.store.schema.enum_unsets(model_input.type, model_input.name, name);
+			if(rules){
+				const source = fieldset.fields(name), value = source.Field.val();
+				for(const [target_name, rule] of Object.entries(rules)){
+					const target = fieldset.fields(target_name), disabled = rule.values.includes(value) === rule.in;
+					target.Field.disable(disabled);
+					apply(target_name);
+				}
+			}
+			
+			stack.pop();
+		}
 	}
 	
 	function init_checkbox(checkbox_id, checkbox_inner_id){
