@@ -153,15 +153,6 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			return data;
 		},
-		reset(values={}){
-			fields.forEach((field, name)=>{
-				if(field.Field?.enabled()){
-					if(values[name] !== undefined) field.Field.val(values[name]);
-					else field.Field.reset();
-				}
-			});
-			return o;
-		},
 		error(err){
 			switch(true){
 			case err instanceof api.HTTP_error:
@@ -254,6 +245,21 @@ export function fieldset(store, fields, buttons, model_input=null){
 					}
 				}
 			}
+			return o;
+		},
+		disable(name, bool=true, keep_value=false){
+			valid_field_name(name);
+			const f = fields.get(name).Field;
+			f.disable(bool, keep_value);
+			return f;
+		},
+		reset(values={}){
+			fields.forEach((field, name)=>{
+				if(field.Field?.enabled()){
+					if(values[name] !== undefined) field.Field.val(values[name]);
+					else field.Field.reset();
+				}
+			});
 			return o;
 		}
 	};
@@ -487,18 +493,28 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			fieldset.tab(field.tabindex, e);
 		},
 		focus(no_selection=false){
-			if(!input) return;
-			if(no_selection || input.readOnly) input.focus();
-			else{
-				input.select();
-				input.focus();
+			if(input){
+				if(no_selection || input.readOnly) input.focus();
+				else{
+					input.select();
+					input.focus();
+				}
 			}
+			return o;
 		},
-		readonly(bool){
-			if(!o.enabled() || field.Dropdown?.select()) return;
-			input.readOnly = !!bool;
+		readonly(bool=true){
+			if(o.enabled() && !field.Dropdown?.select()) input.readOnly = !!bool;
+			return o;
 		},
-		enabled(visible){
+		disable(bool=true, keep_value=false){
+			if(input && input.disabled !== !!bool){
+				if(bool && has_focus()) o.tab();
+				input.disabled = !!bool;
+				if(bool && !keep_value && !field.Dropdown?.select()) o.val('');
+			}
+			return o;
+		},
+		enabled(visible=false){
 			if(!input || input.disabled) return false;
 			return visible && !elm_visible(input) ? false : true;
 		},
@@ -542,6 +558,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		},
 		reset(){
 			o.val(field.value);
+			return o;
 		},
 		input(){
 			return input;
@@ -582,6 +599,10 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		}
 		
 		throw Error(`DB schema '${model_input.name}.${name}' does not exist`);
+	}
+	
+	function has_focus(){
+		return input && document.activeElement === input;
 	}
 	
 	return Object.freeze(o);

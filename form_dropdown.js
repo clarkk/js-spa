@@ -60,9 +60,6 @@ export function create(store, parent, value){
 			});
 			return o;
 		},
-		select(){
-			return !!component?.select?.();
-		},
 		keydown(e){
 			switch(e.key){
 			case frm.KEY_ESC:
@@ -103,6 +100,9 @@ export function create(store, parent, value){
 			}
 			
 			return false;
+		},
+		select(){
+			return !!component?.select?.();
 		}
 	};
 	
@@ -225,11 +225,6 @@ function create_list(store, input, input_select, field_val, close, def){
 			
 			return o;
 		},
-		scroll_selected(){
-			items?.[selected]?.scrollIntoView({
-				block: 'nearest'
-			});
-		},
 		open(){
 			if(unsubscribe || !def.entries) return;
 			
@@ -246,24 +241,29 @@ function create_list(store, input, input_select, field_val, close, def){
 			unsubscribe?.();
 			unsubscribe = null;
 		},
-		input(){
-			if(o.select()) return;
-			
-			searching = true;
-			filter();
-			o.render();
-		},
 		down(){
 			move(1);
 		},
 		up(){
 			move(-1);
 		},
+		scroll_selected(){
+			items?.[selected]?.scrollIntoView({
+				block: 'nearest'
+			});
+		},
 		choose(){
 			if(selected === -1) return;
 			
 			field_val(filtered[selected]?.value);
 			searching = false;
+		},
+		input(){
+			if(o.select()) return;
+			
+			searching = true;
+			filter();
+			o.render();
 		},
 		select_option(value){
 			return value === undefined ? options[0] : options.find(option=>
