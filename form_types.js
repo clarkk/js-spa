@@ -97,9 +97,7 @@ function convert_integer(field, value){
 }
 
 function convert_boolean(value){
-	if(typeof value === TYPE_BOOL){
-		return result(value);
-	}
+	if(typeof value === TYPE_BOOL) return result(value);
 	return error(ERROR_BOOL);
 }
 
@@ -110,15 +108,11 @@ function convert_format_decimal(value){
 }
 
 function result(value){
-	return {
-		value
-	};
+	return {value};
 }
 
 function error(error){
-	return {
-		error
-	};
+	return {error};
 }
 
 function error_int(format){

@@ -57,7 +57,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	const model_schema = model_input ? store.schema.get(model_input.type, model_input.name) : null;
 	if(model_input && !model_schema) throw Error(`Model input '${model_input.type}.${model_input.name}' does not exist`);
 	
-	const field_names = {}, tabs = create_tabs(), o = {
+	const field_names = Object.create(null), tabs = create_tabs(), o = {
 		store,
 		sending(){
 			return sending;
@@ -399,7 +399,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 }
 
 function create_field(fieldset, name, value, model_input, set_tabindex_field){
-	let input = null, rendered = false;
+	let input = null, rendered = false, dropdown_val = null;
 	const field = fieldset.fields(name), o = {
 		render(){
 			if(rendered) throw Error(`Field '${name}' is already rendered`);
@@ -433,9 +433,11 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				break;
 				
 			case TYPE_DROPDOWN:
-				field.Dropdown = frm_dropdown.create(fieldset.store, o, field.value)
+				const d = frm_dropdown.create(fieldset.store, o, field.value);
+				field.Dropdown = d.api
 					.render(elm, input_id)
 					.definition(field.dropdown);
+				dropdown_val = d.input_val;
 				break;
 				
 			default:
@@ -510,7 +512,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					return !!input.checked;
 					
 				case TYPE_DROPDOWN:
-					return field.Dropdown.val();
+					return dropdown_val();
 					
 				default:
 					return input.value;
@@ -522,13 +524,13 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				case TYPE_HIDDEN:
 					field.value = value;
 					break;
-				
+					
 				case TYPE_CHECKBOX:
 					input.checked = !!value;
 					break;
 					
 				case TYPE_DROPDOWN:
-					field.Dropdown.val(value);
+					dropdown_val(value);
 					break;
 					
 				default:
@@ -670,7 +672,7 @@ function create_button(fieldset, name, send){
 }
 
 function create_tabs(){
-	let tabindex = 0, tabs = {};
+	let tabindex = 0, tabs = Object.create(null);
 	return {
 		tabindex(){
 			return tabindex++;
@@ -688,10 +690,6 @@ function create_tabs(){
 					break;
 				}
 			}
-		},
-		clear(){
-			tabindex = 0;
-			tabs = {};
 		}
 	};
 }

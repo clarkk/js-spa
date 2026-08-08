@@ -1,6 +1,6 @@
 .field-dropdown-panel {
 	position: fixed;
-	z-index: 1;
+	z-index: 3;
 	display: none;
 	background: #fff;
 	border-radius: .6rem;

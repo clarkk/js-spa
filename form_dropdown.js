@@ -20,7 +20,7 @@ export function create(store, parent, value){
 			component?.close?.();
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select, close) : create_list(store, input, input_select, close, def);
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select, parent.val, close) : create_list(store, input, input_select, parent.val, close, def);
 			component.init(value);
 			input.readOnly = o.select();
 			
@@ -62,14 +62,6 @@ export function create(store, parent, value){
 		},
 		select(){
 			return !!component?.select?.();
-		},
-		val(value){
-			if(!arguments.length) return o.select() ? input_select.value : input.value;
-			
-			if(value !== undefined){
-				if(o.select()) input_select.value = value;
-				else input.value = value;
-			}
 		},
 		keydown(e){
 			switch(e.key){
@@ -113,6 +105,19 @@ export function create(store, parent, value){
 			return false;
 		}
 	};
+	
+	function input_val(value){
+		if(!arguments.length) return o.select() ? input_select.value : input.value;
+		
+		if(value !== undefined){
+			if(o.select()){
+				const option = component.select_option(value);
+				input_select.value = option.value;
+				input.value = option.text;
+			}
+			else input.value = value ?? '';
+		}
+	}
 	
 	function position(){
 		if(!opened || !input?.isConnected || !panel?.isConnected) return;
@@ -165,20 +170,22 @@ export function create(store, parent, value){
 		}
 	}
 	
-	return Object.freeze(o);
+	return {
+		api: Object.freeze(o),
+		input_val
+	};
 }
 
-function create_list(store, input, input_select, close, def){
+function create_list(store, input, input_select, field_val, close, def){
 	let options = [], filtered = [], selected = -1, searching = false, items = null, unsubscribe = null;
 	const o = {
 		init(value){
-			searching = false;
 			options = def.options(store);
 			
 			if(o.select()){
-				const option = value === undefined ? options[0] : options.find(option=>option.value === String(value)) ?? options[0];
-				input_select.value = option?.value ?? '';
-				input.value = option?.text ?? '';
+				const option = o.select_option(value);
+				input_select.value = option.value;
+				input.value = option.text;
 			}
 			else input.value = value ?? '';
 			
@@ -255,14 +262,13 @@ function create_list(store, input, input_select, close, def){
 		choose(){
 			if(selected === -1) return;
 			
-			const option = filtered[selected];
-			if(o.select()){
-				input_select.value = option.value;
-				input.value = option.text;
-			}
-			else input.value = option.value;
-			
+			field_val(filtered[selected]?.value);
 			searching = false;
+		},
+		select_option(value){
+			return value === undefined ? options[0] : options.find(option=>
+				option.value === String(value)
+			) ?? options[0];
 		},
 		select(){
 			return !!def.select;
@@ -300,14 +306,14 @@ function create_list(store, input, input_select, close, def){
 			selected = value ? filtered.findIndex(option=>
 				option.value.toLowerCase() === value
 			) : -1;
-			if(selected === -1 && filtered.length === 1) selected = 0;
+			if(searching && filtered.length === 1) selected = 0;
 		}
 	}
 	
 	return Object.freeze(o);
 }
 
-function create_calendar(store, input, input_select, close){
+function create_calendar(store, input, input_select, field_val, close){
 	const o = {
 		init(value){
 			
