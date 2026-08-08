@@ -547,6 +547,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					
 				case TYPE_DROPDOWN:
 					dropdown_val(value);
+					if(field.Dropdown?.select()) dropdown_select_unset();
 					break;
 					
 				default:
@@ -574,6 +575,15 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		
 		await button.Button.click();
 		return false;
+	}
+	
+	function dropdown_select_unset(){
+		if(!model_input) return;
+		
+		const rules = fieldset.store.schema.enum_unsets(model_input.type, model_input.name, name);
+		if(!rules) return;
+		
+		console.log(rules)
 	}
 	
 	function init_checkbox(checkbox_id, checkbox_inner_id){

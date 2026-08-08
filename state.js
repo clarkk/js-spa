@@ -148,9 +148,7 @@ function create_schema(){
 		table_resources: {},
 		action: {},
 		query: {}
-	}, required = Object.keys(data);
-	
-	return Object.freeze({
+	}, required = Object.keys(data), o = {
 		load(update){
 			for(const key of required){
 				if(!update[key] || Object.keys(update[key]).length === 0){
@@ -163,8 +161,11 @@ function create_schema(){
 		get(type, name){
 			return data[type]?.[name] ?? null;
 		},
-		table_enum(name, field){
-			return data.table[name]?.enums?.[field] ?? null;
+		enum_values(type, name, field){
+			return o.get(type, name)?.enums?.[field]?.values ?? null;
+		},
+		enum_unsets(type, name, field){
+			return o.get(type, name)?.enums?.[field]?.unsets ?? null;
 		},
 		db_column(table, column){
 			return data.db[table]?.[column] ?? null;
@@ -172,5 +173,6 @@ function create_schema(){
 		table_resource(name){
 			return data.table_resources[name] ?? null;
 		}
-	});
+	};
+	return Object.freeze(o);
 }
