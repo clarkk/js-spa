@@ -212,6 +212,7 @@ function create_list(store, input, input_select, field_val, close, def){
 				
 				selected = Number(item.dataset.index);
 				o.choose();
+				input.focus();
 				close();
 			});
 			

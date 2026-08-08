@@ -104,11 +104,10 @@ export function fieldset(store, fields, buttons, model_input=null){
 			return o;
 		},
 		render_fields(values={}){
-			if(fields) fields.forEach((field, name)=>{
-				if([TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) return;
-				
-				prepare_field(name, values[name]).render();
+			fields?.forEach((field, name)=>{
+				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, values[name]).render();
 			});
+			fields?.forEach(field=>field.Field.apply_handler());
 			return o;
 		},
 		render_buttons(){
@@ -405,7 +404,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 }
 
 function create_field(fieldset, name, value, model_input, set_tabindex_field){
-	let input = null, rendered = false, dropdown_val = null;
+	let input = null, rendered = false, dropdown_val = null, current_value = null;
 	const field = fieldset.fields(name), o = {
 		render(){
 			if(rendered) throw Error(`Field '${name}' is already rendered`);
@@ -483,11 +482,17 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			input.addEventListener(EVENT_INPUT, _=>{
 				input.classList.remove(CLASS_ERROR);
 				clear_field_error(field.id);
+				
+				const value = o.val();
+				if(current_value !== value) value_change(value, false);
 			});
 			
 			if(field.type === TYPE_CHECKBOX) init_checkbox(checkbox_id, checkbox_inner_id);
 			
 			return o;
+		},
+		apply_handler(){
+			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) value_change(o.val(), true);
 		},
 		tab(e){
 			fieldset.tab(field.tabindex, e);
@@ -547,12 +552,12 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					
 				case TYPE_DROPDOWN:
 					dropdown_val(value);
-					if(field.Dropdown?.select()) dropdown_select_unset();
 					break;
 					
 				default:
 					input.value = value ?? '';
 				}
+				
 				if(input) input.dispatchEvent(new Event(EVENT_INPUT));
 			}
 			return o;
@@ -575,6 +580,14 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		
 		await button.Button.click();
 		return false;
+	}
+	
+	function value_change(value, init){
+		if(field.type === TYPE_DROPDOWN && field.Dropdown?.select()) dropdown_select_unset();
+		if(o.enabled()){
+			field.handler?.call(fieldset, value, init);
+			current_value = value;
+		}
 	}
 	
 	function dropdown_select_unset(){
