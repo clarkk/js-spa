@@ -692,7 +692,10 @@ function create_button(fieldset, name, send){
 				break;
 			}
 			
-			elm.innerHTML = `<button id="${input_id}" ${render_css(button.css)}><i class="bi bi-${icon}"></i>${text}</button>`;
+			elm.innerHTML = `<button id="${input_id}" ${render_css(button.css)}>
+				<i class="bi bi-${icon}"></i>
+				${text}
+			</button>`;
 			input = document.getElementById(input_id);
 			if(!input) return;
 			
