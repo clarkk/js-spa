@@ -138,7 +138,13 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(data === null) return null;
 			
 			for(const k in data){
-				if(!fields.get(k).Field?.enabled()){
+				const field = fields.get(k);
+				if(!field.Field?.enabled()){
+					data[k] = null;
+					continue;
+				}
+				
+				if(field.type === TYPE_DROPDOWN && !field.Dropdown?.select() && data[k] === ''){
 					data[k] = null;
 					continue;
 				}
