@@ -1,5 +1,5 @@
 export function create(){
-	const data = Object.create(null), cache = Object.create(null), listeners = Object.create(null), o = {
+	const data = Object.create(null), sort = Object.create(null), cache = Object.create(null), dirty = Object.create(null), listeners = Object.create(null), o = {
 		subscribe(table, callback){
 			(listeners[table] ||= new Set()).add(callback);
 			
@@ -18,6 +18,7 @@ export function create(){
 			const map = data[table] ||= new Map();
 			for(const entry of entries) map.set(entry.id, Object.freeze(entry));
 			delete cache[table];
+			dirty[table] = true;
 			notify(table);
 		},
 		delete(table, ids){
@@ -34,24 +35,40 @@ export function create(){
 		},
 		replace(table, entries){
 			data[table] = new Map(
-				entries.map(entry=>[entry.id, Object.freeze(entry)])
+				entries.data.map(entry=>[entry.id, Object.freeze(entry)])
 			);
+			sort[table] = entries.sort;
 			delete cache[table];
+			dirty[table] = false;
 			notify(table);
 		},
 		clear(){
 			for(const table of Object.keys(data)){
 				data[table] = new Map();
+				delete sort[table];
 				delete cache[table];
+				delete dirty[table];
 				notify(table);
 			}
 		}
 	};
 	
 	function get(table){
-		return cache[table] ||= Object.freeze(
-			Array.from(data[table]?.values() || [])
-		);
+		if(cache[table]) return cache[table];
+		
+		const values = Array.from(data[table]?.values() || []);
+		if(dirty[table]){
+			const key = sort[table];
+			if(key){
+				values.sort((a, b)=>{
+					if(a[key] < b[key]) return -1;
+					if(a[key] > b[key]) return 1;
+					return 0;
+				});
+			}
+			dirty[table] = false;
+		}
+		return cache[table] = Object.freeze(values);
 	}
 	
 	function notify(table){
