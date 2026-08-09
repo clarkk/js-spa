@@ -14,16 +14,20 @@ export function create(){
 		get(table){
 			return get(table);
 		},
-		put(table, entry){
-			(data[table] ||= new Map()).set(entry.id, Object.freeze(entry));
+		put(table, entries){
+			const map = data[table] ||= new Map();
+			for(const entry of entries) map.set(entry.id, Object.freeze(entry));
 			delete cache[table];
 			notify(table);
 		},
-		delete(table, id){
+		delete(table, ids){
 			const map = data[table];
 			if(!map) return;
 			
-			if(map.delete(id)){
+			let changed = false;
+			for(const id of ids) changed ||= map.delete(id);
+			
+			if(changed){
 				delete cache[table];
 				notify(table);
 			}
