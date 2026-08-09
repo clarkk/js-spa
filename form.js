@@ -138,8 +138,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(data === null) return null;
 			
 			for(const k in data){
-				const field = fields.get(k);
-				if(!field.Field?.enabled()){
+				if(!fields.get(k).Field?.enabled()){
 					data[k] = null;
 					continue;
 				}
@@ -369,7 +368,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		switch(field.type){
 		case TYPE_BLIND:
 			return null;
-		
+			
 		case TYPE_HIDDEN:
 			return field.value;
 			
@@ -587,14 +586,14 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	}
 	
 	function value_change(value, init){
-		if(field.type === TYPE_DROPDOWN && field.Dropdown?.select() && model_input) dropdown_select_unset();
+		if(field.type === TYPE_DROPDOWN && model_input && field.Dropdown?.select()) dropdown_select_unsets();
 		if(o.enabled()){
 			field.handler?.call(fieldset, value, init);
 			current_value = value;
 		}
 	}
 	
-	function dropdown_select_unset(){
+	function dropdown_select_unsets(){
 		const stack = [];
 		apply(name);
 		
