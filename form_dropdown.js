@@ -137,7 +137,7 @@ export function create(store, parent, value){
 	}
 	
 	function open(){
-		if(opened) return;
+		if(input.disabled || opened) return;
 		
 		if(!component) throw Error('Dropdown definition is not defined');
 		
@@ -227,7 +227,7 @@ function create_list(store, input, input_select, field_val, close, def){
 			return o;
 		},
 		open(){
-			if(unsubscribe || !def.entries) return;
+			if(input.disabled || unsubscribe || !def.entries) return;
 			
 			unsubscribe = store.entries.subscribe(def.entries, _=>{
 				if(active?.container === container){

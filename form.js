@@ -123,8 +123,6 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(!arguments.length){
 				const data = {};
 				fields.forEach((field, name)=>{
-					if(field.type === TYPE_BLIND) return;
-					
 					data[name] = get_input_value(name);
 				});
 				return data;
@@ -140,6 +138,12 @@ export function fieldset(store, fields, buttons, model_input=null){
 			if(data === null) return null;
 			
 			for(const k in data){
+				const field = fields.get(k);
+				if(!field.Field?.enabled()){
+					data[k] = null;
+					continue;
+				}
+				
 				const result = frm_types.convert(model_schema, k, data[k]);
 				if(result.error) error[k] = result.error;
 				else data[k] = result.value;
@@ -364,7 +368,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		const field = fields.get(name);
 		switch(field.type){
 		case TYPE_BLIND:
-			throw Error(`Field '${name}' is blind`);
+			return null;
 		
 		case TYPE_HIDDEN:
 			return field.value;
@@ -425,7 +429,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				
 			case TYPE_HIDDEN:
 				throw Error(`Field '${name}' is hidden and can not be rendered`);
-			
+				
 			case TYPE_CHECKBOX:
 				checkbox_id = dom.id();
 				checkbox_inner_id = dom.id();
@@ -454,7 +458,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			if(!input) return;
 			
 			input.addEventListener('keydown', async e=>{
-				if(field.Dropdown?.keydown(e)) return;
+				if(input.disabled || field.Dropdown?.keydown(e)) return;
 				
 				switch(e.key){
 				case KEY_TAB:
