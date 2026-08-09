@@ -23,19 +23,26 @@ export function create(){
 		},
 		delete(table, ids){
 			const map = data[table];
-			if(!map) return;
+			if(!map?.size) return;
 			
 			let changed = false;
 			for(const id of ids) changed ||= map.delete(id);
+			if(!changed) return;
 			
-			if(changed){
-				delete cache[table];
-				notify(table);
+			if(cache[table]){
+				const deleted = new Set(ids);
+				cache[table] = Object.freeze(cache[table].filter(entry=>
+					!deleted.has(entry.id)
+				));
 			}
+			notify(table);
 		},
 		replace(table, entries){
 			data[table] = new Map(
-				entries.data.map(entry=>[entry.id, Object.freeze(entry)])
+				entries.data.map(entry=>[
+					entry.id,
+					Object.freeze(entry)
+				])
 			);
 			sort[table] = entries.sort;
 			delete cache[table];
@@ -46,8 +53,8 @@ export function create(){
 			for(const table of Object.keys(data)){
 				data[table] = new Map();
 				delete sort[table];
-				delete cache[table];
 				delete dirty[table];
+				cache[table] = Object.freeze([]);
 				notify(table);
 			}
 		}
@@ -56,7 +63,10 @@ export function create(){
 	function get(table){
 		if(cache[table]) return cache[table];
 		
-		const values = Array.from(data[table]?.values() || []);
+		const map = data[table];
+		if(!map?.size) return cache[table] = Object.freeze([]);
+		
+		let values = Array.from(map.values());
 		if(dirty[table]){
 			const key = sort[table];
 			if(key){
