@@ -328,7 +328,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				}
 				if(!field.id) field.id = dom.id();
 				if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
-				if(!field.css) field.css = {style: [], class: []};
+				field.css = create_css(field.css);
 			});
 		}
 		else if(apply_fields !== null) throw Error('Fields must be defined');
@@ -405,8 +405,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	
 	function apply_button(name, button){
 		button.id = dom.id();
-		
-		if(!button.css) button.css = {style: [], class: []};
+		button.css = create_css(button.css);
 	}
 	
 	return Object.freeze(o);
@@ -425,7 +424,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			const label = elm.parentElement?.querySelector('label');
 			if(label) label.htmlFor = input_id;
 			
-			if(field.ralign) field.css.class.push('text-right');
+			if(field.ralign) field.css.class('text-right');
 			
 			let checkbox_id, checkbox_inner_id;
 			switch(field.type){
@@ -456,7 +455,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				
 			default:
 				const maxlength = input_maxlength();
-				elm.innerHTML = `<input id="${input_id}" ${render_css(field.css)} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(field.value ?? '')}">`;
+				elm.innerHTML = `<input id="${input_id}" ${field.css.render()} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(field.value ?? '')}">`;
 			}
 			
 			input = document.getElementById(input_id);
@@ -669,6 +668,7 @@ function create_button(fieldset, name, send){
 			case BTN_ACTION:
 				icon = button.icon || 'check-lg';
 				text = fieldset.store.t(button.text || 'BTN_OK');
+				button.css.class('btn-cta');
 				break;
 				
 			case BTN_BACK:
@@ -684,16 +684,18 @@ function create_button(fieldset, name, send){
 			case BTN_NEXT:
 				icon = button.icon || 'chevron-right';
 				text = fieldset.store.t(button.text || 'BTN_NEXT');
+				button.css.class('btn-cta');
 				break;
 				
 			case BTN_PUT:
 				icon = button.icon || 'check-lg';
 				text = fieldset.store.t(button.text || 'BTN_SAVE');
+				button.css.class('btn-cta');
 				break;
 			}
 			
 			elm.innerHTML = `
-				<button id="${input_id}" ${render_css(button.css)}>
+				<button id="${input_id}" ${button.css.render()}>
 					<i class="bi bi-${icon}"></i>
 					${text}
 				</button>
@@ -770,18 +772,30 @@ function create_tabs(){
 	};
 }
 
-function render_css(css){
-	if(!css) return '';
+function create_css(css={}){
+	const classes = to_array(css.class), styles = to_array(css.style), o = {
+		class(...values){
+			classes.push(...values);
+			return this;
+		},
+		style(...values){
+			styles.push(...values);
+			return this;
+		},
+		render(){
+			const list = [];
+			if(classes.length) list.push(`class="${classes.join(' ')}"`);
+			if(styles.length) list.push(`style="${styles.join('; ')}"`);
+			return list.join(' ');
+		}
+	};
 	
-	const list = [], classes = to_array(css.class), styles = to_array(css.style);
-	if(classes.length) list.push(`class="${classes.join(' ')}"`);
-	if(styles.length) list.push(`style="${styles.join('; ')}"`);
-	return list.join(' ');
-}
-
-function to_array(v){
-	if(v == null) return [];
-	return Array.isArray(v) ? v : [v];
+	function to_array(v){
+		if(v == null) return [];
+		return Array.isArray(v) ? v : [v];
+	}
+	
+	return Object.freeze(o);
 }
 
 function deep_clone(obj){

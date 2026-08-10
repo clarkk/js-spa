@@ -7,8 +7,11 @@ let active = null, position_frame = null, panel = null;
 const CLASS_ACTIVE='active', CLASS_SELECTED='selected', PADDING=4;
 
 export function create(store, parent, value){
-	let container = null, input = null, input_select = null, rendered = false, opened = false, component = null, definition = null;
-	const input_select_id = dom.id(), o = {
+	let container = null, rendered = false, opened = false, component = null, definition = null;
+	const input_select_id = dom.id(), inputs = {
+		text: null,
+		select: null
+	}, o = {
 		definition(def){
 			if(!arguments.length) return definition;
 			
@@ -20,9 +23,10 @@ export function create(store, parent, value){
 			component?.close?.();
 			
 			definition = def;
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, input, input_select, parent.val, close) : create_list(store, input, input_select, parent.val, close, def);
+			
+			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, inputs, parent.val, controls) : create_list(store, inputs, parent.val, controls, def, _=>opened);
 			component.init(value);
-			input.readOnly = o.select();
+			inputs.text.readOnly = o.select();
 			
 			if(opened && active?.container === container){
 				component.open?.();
@@ -46,16 +50,16 @@ export function create(store, parent, value){
 			`;
 			
 			container = document.getElementById(container_id);
-			input = document.getElementById(input_id);
-			input_select = document.getElementById(input_select_id);
+			inputs.text = document.getElementById(input_id);
+			inputs.select = document.getElementById(input_select_id);
 			
-			input.addEventListener('focus', _=>{
-				open();
+			inputs.text.addEventListener('focus', _=>{
+				controls.open();
 			});
-			input.addEventListener('click', _=>{
-				open();
+			inputs.text.addEventListener('click', _=>{
+				controls.open();
 			});
-			input.addEventListener('input', e=>{
+			inputs.text.addEventListener('input', e=>{
 				component?.input?.(e);
 			});
 			return o;
@@ -66,18 +70,18 @@ export function create(store, parent, value){
 				if(!opened) return false;
 				
 				e.preventDefault();
-				close();
+				controls.close();
 				return true;
 				
 			case frm.KEY_ARROW_DOWN:
 				e.preventDefault();
-				open();
+				controls.open();
 				component.down();
 				return true;
 				
 			case frm.KEY_ARROW_UP:
 				e.preventDefault();
-				open();
+				controls.open();
 				component.up();
 				return true;
 				
@@ -86,7 +90,7 @@ export function create(store, parent, value){
 				
 				e.preventDefault();
 				component.choose();
-				close();
+				controls.close();
 				return false;
 				
 			case frm.KEY_TAB:
@@ -94,7 +98,7 @@ export function create(store, parent, value){
 				
 				e.preventDefault();
 				component.choose();
-				close();
+				controls.close();
 				parent.tab(e);
 				return true;
 			}
@@ -104,28 +108,61 @@ export function create(store, parent, value){
 		select(){
 			return !!component?.select?.();
 		}
+	}, controls = {
+		open(){
+			if(inputs.text.disabled || opened) return;
+			
+			if(!component) throw Error('Dropdown definition is not defined');
+			
+			if(active && active.container !== container) active.close();
+			
+			opened = true;
+			
+			component.open?.();
+			component.render();
+			
+			panel.classList.add(CLASS_ACTIVE);
+			active = {
+				container,
+				position,
+				close: controls.close
+			};
+			
+			position();
+			component.scroll_selected?.();
+		},
+		close(){
+			opened = false;
+			
+			component.close?.();
+			
+			if(active?.container === container){	
+				panel?.classList.remove(CLASS_ACTIVE);
+				active = null;
+			}
+		}
 	};
 	
 	function input_val(value){
-		if(!arguments.length) return o.select() ? input_select.value : input.value;
+		if(!arguments.length) return o.select() ? inputs.select.value : inputs.text.value;
 		
 		if(value !== undefined){
 			if(o.select()){
 				const option = component.select_option(value);
-				input_select.value = option.value;
-				input.value = option.text;
+				inputs.select.value = option.value;
+				inputs.text.value = option.text;
 			}
-			else input.value = value ?? '';
+			else inputs.text.value = value ?? '';
 		}
 	}
 	
 	function position(){
-		if(!opened || !input?.isConnected || !panel?.isConnected) return;
+		if(!opened || !inputs.text?.isConnected || !panel?.isConnected) return;
 		
-		const rect = input.getBoundingClientRect();
+		const rect = inputs.text.getBoundingClientRect();
 		
 		if(rect.bottom <= 0 || rect.top >= window.innerHeight || rect.right <= 0 || rect.left >= window.innerWidth){
-			close();
+			controls.close();
 			return;
 		}
 		
@@ -136,47 +173,13 @@ export function create(store, parent, value){
 		else panel.style.top = Math.max(0, rect.top - panel_height - PADDING)+'px';
 	}
 	
-	function open(){
-		if(input.disabled || opened) return;
-		
-		if(!component) throw Error('Dropdown definition is not defined');
-		
-		if(active && active.container !== container) active.close();
-		
-		opened = true;
-		
-		component.open?.();
-		component.render();
-		
-		panel.classList.add(CLASS_ACTIVE);
-		active = {
-			container,
-			position,
-			close
-		};
-		
-		position();
-		component.scroll_selected?.();
-	}
-	
-	function close(){
-		opened = false;
-		
-		component.close?.();
-		
-		if(active?.container === container){	
-			panel?.classList.remove(CLASS_ACTIVE);
-			active = null;
-		}
-	}
-	
 	return {
 		api: Object.freeze(o),
 		input_val
 	};
 }
 
-function create_list(store, input, input_select, field_val, close, def){
+function create_list(store, inputs, field_val, controls, def, is_open){
 	let options = [], filtered = [], selected = -1, searching = false, items = null, unsubscribe = null;
 	const o = {
 		init(value){
@@ -184,10 +187,10 @@ function create_list(store, input, input_select, field_val, close, def){
 			
 			if(o.select()){
 				const option = o.select_option(value);
-				input_select.value = option.value;
-				input.value = option.text;
+				inputs.text.value = option.text;
+				inputs.select.value = option.value;
 			}
-			else input.value = value ?? '';
+			else inputs.text.value = value ?? '';
 			
 			filter();
 		},
@@ -212,8 +215,8 @@ function create_list(store, input, input_select, field_val, close, def){
 				
 				selected = Number(item.dataset.index);
 				o.choose();
-				input.focus();
-				close();
+				inputs.text.focus();
+				controls.close();
 			});
 			
 			panel.addEventListener('pointerdown', e=>{
@@ -221,16 +224,16 @@ function create_list(store, input, input_select, field_val, close, def){
 				
 				e.preventDefault();
 				e.stopPropagation();
-				input.focus();
+				inputs.text.focus();
 			});
 			
 			return o;
 		},
 		open(){
-			if(input.disabled || unsubscribe || !def.entries) return;
+			if(inputs.text.disabled || unsubscribe || !def.entries) return;
 			
 			unsubscribe = store.entries.subscribe(def.entries, _=>{
-				if(active?.container === container){
+				if(is_open()){
 					options = def.options(store);
 					filter();
 					o.render();
@@ -262,6 +265,7 @@ function create_list(store, input, input_select, field_val, close, def){
 		input(){
 			if(o.select()) return;
 			
+			controls.open();
 			searching = true;
 			filter();
 			o.render();
@@ -292,18 +296,18 @@ function create_list(store, input, input_select, field_val, close, def){
 	function filter(){
 		if(o.select() || !searching) filtered = options;
 		else{
-			const search = input.value.trim().toLowerCase();
+			const search = inputs.text.value.trim().toLowerCase();
 			filtered = options.filter(option=>
 				option.search.includes(search)
 			);
 		}
 		if(o.select()){
 			selected = filtered.findIndex(option=>
-				option.value === input_select.value
+				option.value === inputs.select.value
 			);
 		}
 		else{
-			const value = input.value.trim().toLowerCase();
+			const value = inputs.text.value.trim().toLowerCase();
 			selected = value ? filtered.findIndex(option=>
 				option.value.toLowerCase() === value
 			) : -1;
@@ -314,7 +318,7 @@ function create_list(store, input, input_select, field_val, close, def){
 	return Object.freeze(o);
 }
 
-function create_calendar(store, input, input_select, field_val, close){
+function create_calendar(store, inputs, field_val, controls){
 	const o = {
 		init(value){
 			

@@ -1,6 +1,5 @@
 :root {
 	--input-focus-shadow: 3px;
-	--input-focus-color: var(--color-cta);
 }
 
 /*::placeholder{
@@ -337,9 +336,9 @@ textarea.error {
 	background:hsl(var(--color-background-warning));
 }*/
 
-input.error:focus,
-textarea.error:focus {
-	box-shadow: 0 0 0 3px hsl(var(--color-error) / 40%);
+.btn-cta {
+	color: hsl(0 0 100%);
+	background: hsl(var(--color-cta));
 }
 
 /*.btn-cta{
@@ -475,14 +474,19 @@ button:focus {
 input:focus,
 textarea:focus,
 .input-checkbox.focus {
-	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--input-focus-color) / 40%);
+	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-input-focus) / 40%);
+}
+
+input.error:focus,
+textarea.error:focus {
+	box-shadow: 0 0 0 3px hsl(var(--color-error) / 40%);
 }
 
 /*input:focus,
 textarea:focus,
 .inp-checkbox.focus,
 .btn-cta:focus{
-	box-shadow:0 0 0 3px hsl(var(--input-focus-color) / 40%);
+	box-shadow:0 0 0 3px hsl(var(--color-input-focus) / 40%);
 }
 
 input:focus,
@@ -548,7 +552,7 @@ textarea:disabled,
 
 /*.btn-cta.loading{
 	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%) !important;
-	--pulse-color:var(--input-focus-color);
+	--pulse-color:var(--color-input-focus);
 	animation-name:btn-pulse;
 }
 
