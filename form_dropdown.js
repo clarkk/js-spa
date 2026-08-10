@@ -43,8 +43,9 @@ export function create(store, parent, value){
 			const container_id = dom.id();
 			rendered = true;
 			elm.innerHTML = `
-				<div id="${container_id}">
+				<div id="${container_id}" class="field-dropdown">
 					<input id="${input_id}" type="text" autocomplete="nope">
+					<i class="bi bi-chevron-down field-dropdown-icon"></i>
 					<input id="${input_select_id}" type="hidden">
 				</div>
 			`;
@@ -121,6 +122,7 @@ export function create(store, parent, value){
 			component.open?.();
 			component.render();
 			
+			container.classList.add(CLASS_ACTIVE);
 			panel.classList.add(CLASS_ACTIVE);
 			active = {
 				container,
@@ -137,6 +139,7 @@ export function create(store, parent, value){
 			component.close?.();
 			
 			if(active?.container === container){	
+				container.classList.remove(CLASS_ACTIVE);
 				panel?.classList.remove(CLASS_ACTIVE);
 				active = null;
 			}

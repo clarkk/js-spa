@@ -1,5 +1,6 @@
 :root {
 	--input-focus-shadow: 3px;
+	--input-color-background: hsl(0 0% 100%);
 }
 
 /*::placeholder{
@@ -67,7 +68,7 @@ input,
 textarea,
 .input-checkbox {
 	display: inline-block;
-	background: #fff;
+	background: var(--input-color-background);
 	border: 1px solid hsl(0 0% 15%);
 	border-radius: 2px;
 }
@@ -114,7 +115,7 @@ input[type='checkbox'] {
 	margin: auto;
 	background: hsl(0 0% 0% / 74%);
 	border-radius: 1px;
-	transition: width .2s ease, height .2s ease;
+	transition: width .2s, height .2s;
 }
 
 .input-checkbox-inner.checked {

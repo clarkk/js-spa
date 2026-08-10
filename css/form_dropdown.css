@@ -1,3 +1,29 @@
+.field-dropdown {
+	position: relative;
+}
+
+.field-dropdown > input {
+	padding-right: 1rem;
+	transition: padding-right .2s;
+}
+
+.field-dropdown-icon {
+	position: absolute;
+	top: 50%;
+	right: .3rem;
+	font-size: .6rem;
+	transform: translateY(-50%);
+	pointer-events: none;
+}
+
+.field-dropdown.active > input {
+	padding-right: revert;
+}
+
+.field-dropdown.active > .field-dropdown-icon {
+	display: none;
+}
+
 .field-dropdown-panel {
 	position: fixed;
 	z-index: 3;
