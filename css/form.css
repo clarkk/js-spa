@@ -559,11 +559,11 @@ textarea:disabled,
 	background:hsl(0 0% 92%);
 }*/
 
-/*button.loading {
+button.loading {
 	--pulse-color: 0 0% 65%;
 	cursor: default;
 	animation: btn-pulse .8s infinite;
-}*/
+}
 
 /*.btn-cta.loading{
 	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%) !important;
@@ -581,7 +581,7 @@ textarea:disabled,
 	--pulse-color:var(--color-focus-h) 100% 90%;
 }*/
 
-/*@keyframes btn-pulse {
+@keyframes btn-pulse {
 	0% {
 		box-shadow: 0 0 0 0 hsl(var(--pulse-color) / 90%);
 	}
@@ -591,7 +591,7 @@ textarea:disabled,
 	100% {
 		box-shadow: 0 0 0 0 hsl(var(--pulse-color) / 0%);
 	}
-}*/
+}
 
 .button-panel,
 .button-panel-center {
