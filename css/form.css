@@ -134,6 +134,12 @@ textarea[readonly] {
 	user-select: none;
 }
 
+button:disabled {
+	color: hsl(0 0% 50%);
+	background: hsl(0 0% 98%);
+	cursor: default;
+}
+
 input:disabled,
 textarea:disabled {
 	color: inherit;
