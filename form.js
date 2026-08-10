@@ -67,8 +67,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 			valid_field_name(name);
 			return fields.get(name);
 		},
-		buttons(name){
+		buttons(name, gracefully=false){
 			if(!arguments.length) return buttons;
+			if(gracefully) return buttons[name] || null;
 			valid_button_name(name);
 			return buttons[name];
 		},
@@ -472,7 +473,8 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					
 				case KEY_ESC:
 					e.preventDefault();
-					await button_click(fieldset.buttons(BTN_CANCEL));
+					const btn_cancel = fieldset.buttons(BTN_CANCEL, true);
+					if(btn_cancel) await button_click(btn_cancel);
 					break;
 					
 				case KEY_ENTER:

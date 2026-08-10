@@ -127,10 +127,18 @@ textarea.sending {
 	cursor: default;
 }
 
-input:read-only,
-textarea:read-only {
-	user-select: none;
+input[readonly],
+textarea[readonly] {
+	color: inherit;
 	background: hsl(0 0% 97%);
+	user-select: none;
+}
+
+input:disabled,
+textarea:disabled {
+	color: inherit;
+	background: hsl(0 0% 94%);
+	user-select: none;
 }
 
 /*.inp-checkbox,
