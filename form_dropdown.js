@@ -265,8 +265,8 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 			field_val(filtered[selected]?.value);
 			searching = false;
 		},
-		input(){
-			if(o.select()) return;
+		input(e){
+			if(e.programmatic) return;
 			
 			controls.open();
 			searching = true;

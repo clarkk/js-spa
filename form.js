@@ -568,7 +568,9 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					input.value = value ?? '';
 				}
 				
-				if(input) input.dispatchEvent(new Event(EVENT_INPUT));
+				const event = new Event(EVENT_INPUT);
+				event.programmatic = true;
+				input.dispatchEvent(event);
 			}
 			return o;
 		},
