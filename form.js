@@ -58,13 +58,20 @@ export function fields_val_reset(fields){
 }
 
 export function fieldset(store, fields, buttons, model_input=null){
-	let has_error = false, sending = false;
+	let active = true, has_error = false, sending = false;
 	
 	const model_schema = model_input ? store.schema.get(model_input.type, model_input.name) : null;
 	if(model_input && !model_schema) throw Error(`Model input '${model_input.type}.${model_input.name}' does not exist`);
 	
 	const field_names = Object.create(null), tabs = create_tabs(), o = {
 		store,
+		active(){
+			return active;
+		},
+		activate(bool=true){
+			active = !!bool;
+			return o;
+		},
 		sending(){
 			return sending;
 		},
@@ -716,7 +723,7 @@ function create_button(fieldset, name, send){
 			input.addEventListener('click', _=>o.click());
 		},
 		async click(){
-			if(loading || fieldset.sending()) return false;
+			if(!fieldset.active() || loading || fieldset.sending()) return false;
 			
 			if(!button.click) throw Error(`Button '${name}' has no action`);
 			

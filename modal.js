@@ -1,4 +1,5 @@
 import * as dom from 'dom';
+import * as frm from 'frm';
 
 const stack = [], type_dialog = 'dialog', type_error = 'error';
 
@@ -15,18 +16,23 @@ export function init(elm){
 	modal_stack = document.getElementById(stack_id);
 }
 
-export function dialog(options){
-	return open(type_dialog, options);
+export function dialog(store, options){
+	return open(store, type_dialog, options);
 }
 
-export function error(options){
-	return open(type_error, options);
+export function error(store, options){
+	return open(store, type_error, options);
 }
 
-function open(type, options){
-	const modal = create_modal(type, options);
+function open(store, type, options){
+	const modal = create_modal(store, type, options);
+	
+	stack.at(-1)?.activate(false);
 	stack.push(modal);
+	modal.activate();
+	
 	set_backdrop();
+	
 	return {
 		close(){
 			close(modal);
@@ -35,17 +41,29 @@ function open(type, options){
 }
 
 function close(modal){
-	const i = stack.indexOf(modal);
-	if(i !== -1) stack.splice(i, 1);
+	if(stack.at(-1) !== modal) return;
+	
+	stack.pop();
+	stack.at(-1)?.activate();
+	modal.remove();
+	
 	set_backdrop();
 }
 
-function create_modal(type, options){
+function create_modal(store, type, options){
 	const elm = document.createElement('div');
 	elm.className = 'modal';
 	modal_stack.append(elm);
+	
+	const fieldset = frm.fieldset(store, options.fields || null);
+	
 	return {
-		elm
+		activate(bool=true){
+			fieldset.activate(!!bool);
+		},
+		remove(){
+			elm.remove();
+		}
 	};
 }
 
