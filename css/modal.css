@@ -27,7 +27,7 @@
 	height: 100%;
 }
 
-.modal-stack > .modal {
+.modal {
 	grid-area: 1 / 1;
 	pointer-events: auto;
 }
