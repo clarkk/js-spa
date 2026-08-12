@@ -33,10 +33,8 @@ function open(store, type, options){
 	
 	set_backdrop();
 	
-	return {
-		close(){
-			close(modal);
-		}
+	return close(){
+		close(modal);
 	};
 }
 
@@ -74,7 +72,7 @@ function create_modal(store, type, options, callback){
 }
 
 function handle_keydown(e){
-	if(e.key !== 'Escape' || stack.length === 0) return;
+	if(e.key !== frm.KEY_ESC || stack.length === 0) return;
 	
 	const modal = top_modal();
 	if(modal) close(modal);
