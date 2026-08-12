@@ -1,4 +1,4 @@
-#modals {
+#modal {
 	position: fixed;
 	inset: 0;
 	z-index: 1000;
@@ -45,4 +45,8 @@
 	background: hsl(0 0% 100%);
 	padding: 1rem;
 	border-radius: .5rem;
+}
+
+.modal-buttons {
+	
 }

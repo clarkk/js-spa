@@ -112,6 +112,11 @@ export function fieldset(store, fields, buttons, model_input=null){
 		html_button(name){
 			return `<div id="${prepare_button_id(name)}"></div>`;
 		},
+		html_buttons(){
+			return Object.keys(o.buttons()).map(button=>
+				o.html_button(button)
+			).join('');
+		},
 		render(values={}){
 			o.render_fields(values);
 			o.render_buttons();
@@ -121,7 +126,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 			fields?.forEach((field, name)=>{
 				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, values[name]).render();
 			});
-			fields?.forEach(field=>field.Field?.apply_handler());
+			fields?.forEach(field=>
+				field.Field?.apply_handler()
+			);
 			return o;
 		},
 		render_buttons(){

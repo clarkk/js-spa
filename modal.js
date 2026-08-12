@@ -16,16 +16,16 @@ export function init(container){
 	window.addEventListener('keydown', handle_keydown);
 }
 
-export function dialog(store, options){
-	return open(store, type_dialog, options);
+export function dialog(store, content, options={}){
+	return open(store, type_dialog, content, options);
 }
 
-export function error(store, options){
-	return open(store, type_error, options);
+export function error(store, content, options={}){
+	return open(store, type_error, content, options);
 }
 
-function open(store, type, options){
-	const modal = create_modal(store, type, options);
+function open(store, type, content, options){
+	const modal = create_modal(store, type, content, options);
 	
 	top_modal()?.activate(false);
 	stack.push(modal);
@@ -33,7 +33,7 @@ function open(store, type, options){
 	
 	set_backdrop();
 	
-	return close(){
+	return function close(){
 		close(modal);
 	};
 }
@@ -48,27 +48,52 @@ function close(modal){
 	set_backdrop();
 }
 
-function create_modal(store, type, options, callback){
-	const elm = document.createElement('div');
+function create_modal(store, type, content, options){
+	let fieldset = null;
+	const content_id = dom.id(), buttons_id = dom.id(), elm = document.createElement('div');
 	elm.className = `modal modal-${type}`;
 	elm.innerHTML = `
-		<div class="modal-content">
-			test
-		</div>
+		<div id="${content_id}" class="modal-content"></div>
+		<div id="${buttons_id}" class="modal-buttons"></div>
 	`;
-	
 	modal_stack.append(elm);
 	
-	//const fieldset = frm.fieldset(store, options.fields || null);
+	const elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), content_api = Object.freeze({
+		html(html){
+			elm_content.innerHTML = html;
+		},
+		buttons(fieldset){
+			elm_buttons.innerHTML = fieldset.html_buttons();
+		}
+	});
 	
-	return {
+	switch(typeof content){
+	case 'string':
+		fieldset = frm.fieldset(store, null, {
+			[frm.BTN_ACTION]: {
+				click(){
+					console.log('click modal ok')
+					close(modal);
+				}
+			}
+		});
+		content_api.html(`<p>${content}</p>`);
+		content_api.buttons(fieldset);
+		break;
+		
+	case 'function':
+		fieldset = content.call(content_api);
+		break;
+	}
+	
+	return Object.freeze({
 		activate(bool=true){
-			//fieldset.activate(!!bool);
+			fieldset.activate(!!bool);
 		},
 		remove(){
 			elm.remove();
 		}
-	};
+	});
 }
 
 function handle_keydown(e){
