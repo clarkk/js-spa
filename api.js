@@ -11,8 +11,9 @@ export function init_csrf(csrf){
 }
 
 export const client = Object.freeze({
-	get: (signal, path)=>request(signal, path, {
-		method: 'GET'
+	get: (signal, path, etag=null)=>request(signal, path, {
+		method: 'GET',
+		headers: create_headers().if_match(etag).build()
 	}),
 	post: (signal, path, data, etag=null)=>request(signal, path, {
 		method: 'POST',
