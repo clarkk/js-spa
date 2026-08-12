@@ -51,6 +51,12 @@ fieldset.query = function(store, name, fields, buttons){
 	}));
 };
 
+export function fields_val_reset(fields){
+	const data = {};
+	for(const [name, field] of fields) data[name] = field?.value ?? '';
+	return data;
+}
+
 export function fieldset(store, fields, buttons, model_input=null){
 	let has_error = false, sending = false;
 	
