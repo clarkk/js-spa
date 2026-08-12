@@ -3,17 +3,17 @@ import * as frm from 'frm';
 
 const stack = [], type_dialog = 'dialog', type_error = 'error';
 
-let container = null, modal_backdrop = null, modal_stack = null;
+let modal_backdrop = null, modal_stack = null;
 
-export function init(elm){
+export function init(container){
 	const backdrop_id = dom.id(), stack_id = dom.id();
-	elm.innerHTML = `
+	container.innerHTML = `
 		<div id="${backdrop_id}" class="modal-backdrop"></div>
 		<div id="${stack_id}" class="modal-stack"></div>
 	`;
-	container = elm;
 	modal_backdrop = document.getElementById(backdrop_id);
 	modal_stack = document.getElementById(stack_id);
+	window.addEventListener('keydown', handle_keydown);
 }
 
 export function dialog(store, options){
@@ -27,7 +27,7 @@ export function error(store, options){
 function open(store, type, options){
 	const modal = create_modal(store, type, options);
 	
-	stack.at(-1)?.activate(false);
+	top_modal()?.activate(false);
 	stack.push(modal);
 	modal.activate();
 	
@@ -41,25 +41,31 @@ function open(store, type, options){
 }
 
 function close(modal){
-	if(stack.at(-1) !== modal) return;
+	if(top_modal() !== modal) return;
 	
 	stack.pop();
-	stack.at(-1)?.activate();
+	top_modal()?.activate();
 	modal.remove();
 	
 	set_backdrop();
 }
 
-function create_modal(store, type, options){
+function create_modal(store, type, options, callback){
 	const elm = document.createElement('div');
-	elm.className = 'modal';
+	elm.className = `modal modal-${type}`;
+	elm.innerHTML = `
+		<div class="modal-content">
+			test
+		</div>
+	`;
+	
 	modal_stack.append(elm);
 	
-	const fieldset = frm.fieldset(store, options.fields || null);
+	//const fieldset = frm.fieldset(store, options.fields || null);
 	
 	return {
 		activate(bool=true){
-			fieldset.activate(!!bool);
+			//fieldset.activate(!!bool);
 		},
 		remove(){
 			elm.remove();
@@ -67,6 +73,17 @@ function create_modal(store, type, options){
 	};
 }
 
+function handle_keydown(e){
+	if(e.key !== 'Escape' || stack.length === 0) return;
+	
+	const modal = top_modal();
+	if(modal) close(modal);
+}
+
+function top_modal(){
+	return stack.at(-1);
+}
+
 function set_backdrop(){
-	modal_backdrop.style.display = stack.length ? 'block' : 'none';
+	modal_backdrop.classList.toggle('active', !!stack.length);
 }

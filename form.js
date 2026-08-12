@@ -601,7 +601,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	if('tabindex' in field) set_tabindex_field(field.tabindex, o);
 	
 	async function button_click(button){
-		if(!button?.Button || button.Button.hidden()) return false;
+		if(!button?.Button) return false;
 		
 		await button.Button.click();
 		return false;
@@ -675,7 +675,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 }
 
 function create_button(fieldset, name, send){
-	let icon = '', text = '', input = null, loading = false, hidden = false;
+	let icon = '', text = '', input = null, loading = false;
 	const button = fieldset.buttons(name), o = {
 		render(){
 			const elm = document.getElementById(button.id), input_id = dom.id();
@@ -734,12 +734,6 @@ function create_button(fieldset, name, send){
 			finally{
 				set_loading(false);
 			}
-		},
-		hide(bool){
-			hidden = !!bool;
-		},
-		hidden(){
-			return hidden;
 		},
 		focus(){
 			input.focus();

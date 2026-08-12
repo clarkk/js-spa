@@ -1,23 +1,48 @@
 #modals {
 	position: fixed;
 	inset: 0;
-	/*z-index: 1000;*/
+	z-index: 1000;
 	pointer-events: none;
 }
 
 .modal-backdrop {
-	display: none;
 	position: absolute;
 	inset: 0;
-	background: hsl(0 0% 100% / .75);
+	background: hsl(0 0% 100% / .8);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .2s;
+}
+
+.modal-backdrop.active {
+	opacity: 1;
+	visibility: visible;
 }
 
 .modal-stack {
 	position: relative;
+	display: grid;
+	place-items: center;
 	width: 100%;
 	height: 100%;
 }
 
 .modal-stack > .modal {
+	grid-area: 1 / 1;
 	pointer-events: auto;
+}
+
+.modal-dialog {
+	width: 20rem;
+	border: 1px solid #000;
+}
+
+.modal-error {
+	
+}
+
+.modal-content {
+	background: hsl(0 0% 100%);
+	padding: 1rem;
+	border-radius: .5rem;
 }
