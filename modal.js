@@ -3,10 +3,10 @@ import * as frm from 'frm';
 
 const stack = [], type_dialog = 'dialog', type_error = 'error';
 
-let main_container = null, modal_backdrop = null, modal_stack = null;
+let app_container = null, modal_backdrop = null, modal_stack = null;
 
 export function init(main, modal_container){
-	main_container = main;
+	app_container = main;
 	const backdrop_id = dom.id(), stack_id = dom.id();
 	modal_container.innerHTML = `
 		<div id="${backdrop_id}" class="modal-backdrop"></div>
@@ -109,5 +109,5 @@ function top_modal(){
 function set_backdrop(){
 	const active = !!stack.length;
 	modal_backdrop.classList.toggle('active', active);
-	main_container.classList.toggle('modal-open', active);
+	app_container.classList.toggle('modal-open', active);
 }
