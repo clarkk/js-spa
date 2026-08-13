@@ -62,5 +62,9 @@
 }
 
 .modal-buttons {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	justify-content: flex-end;
 	padding: 1rem;
 }

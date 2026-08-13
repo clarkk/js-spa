@@ -45,7 +45,7 @@ function create_modal(store, type, content){
 	elm.innerHTML = `
 		<div id="${title_id}" class="modal-title"></div>
 		<div id="${content_id}" class="modal-content"></div>
-		<div id="${buttons_id}" class="modal-buttons button-panel-right"></div>
+		<div id="${buttons_id}" class="modal-buttons"></div>
 	`;
 	modal_stack.append(elm);
 	
