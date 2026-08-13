@@ -3,11 +3,12 @@ import * as frm from 'frm';
 
 const stack = [], type_dialog = 'dialog', type_error = 'error';
 
-let modal_backdrop = null, modal_stack = null;
+let main_container = null, modal_backdrop = null, modal_stack = null;
 
-export function init(container){
+export function init(main, modal_container){
+	main_container = main;
 	const backdrop_id = dom.id(), stack_id = dom.id();
-	container.innerHTML = `
+	modal_container.innerHTML = `
 		<div id="${backdrop_id}" class="modal-backdrop"></div>
 		<div id="${stack_id}" class="modal-stack"></div>
 	`;
@@ -90,7 +91,7 @@ function create_modal(store, type, content){
 	}
 	
 	document.getElementById(buttons_id).innerHTML = fieldset.html_buttons();
-	fieldset.render();
+	fieldset.render().focus();
 	
 	return modal;
 }
@@ -106,5 +107,7 @@ function top_modal(){
 }
 
 function set_backdrop(){
-	modal_backdrop.classList.toggle('active', !!stack.length);
+	const active = !!stack.length;
+	modal_backdrop.classList.toggle('active', active);
+	main_container.classList.toggle('modal-open', active);
 }

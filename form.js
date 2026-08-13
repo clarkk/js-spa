@@ -405,7 +405,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	}
 	
 	function focus_button(){
-		for(const button of buttons){
+		for(const button of Object.values(buttons)){
 			if(button.focus){
 				button.Button.focus();
 				return;
