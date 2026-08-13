@@ -40,20 +40,24 @@ function open(store, type, content){
 
 function create_modal(store, type, content){
 	let fieldset = null;
-	const content_id = dom.id(), buttons_id = dom.id(), elm = document.createElement('div');
+	const title_id = dom.id(), content_id = dom.id(), buttons_id = dom.id(), elm = document.createElement('div');
 	elm.className = `modal modal-${type}`;
 	elm.innerHTML = `
+		<div id="${title_id}" class="modal-title"></div>
 		<div id="${content_id}" class="modal-content"></div>
-		<div id="${buttons_id}" class="modal-buttons"></div>
+		<div id="${buttons_id}" class="modal-buttons button-panel-right"></div>
 	`;
 	modal_stack.append(elm);
 	
-	const elm_content = document.getElementById(content_id), modal = Object.freeze({
+	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), modal = Object.freeze({
 		activate(bool=true){
 			fieldset.activate(!!bool);
 		},
-		html(html){
-			elm_content.innerHTML = html;
+		title_html(html){
+			elm_title.innerHTML = html || '';
+		},
+		content_html(html){
+			elm_content.innerHTML = html || '';
 		},
 		close(){
 			if(top_modal() !== modal) return;
@@ -75,7 +79,7 @@ function create_modal(store, type, content){
 				}
 			}
 		});
-		modal.html(`<p>${content}</p>`);
+		modal.title_html(content);
 		break;
 		
 	case 'function':

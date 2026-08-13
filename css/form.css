@@ -251,7 +251,7 @@ textarea,
 	max-width: min(22rem, calc(100vw - 2rem));
 	padding: .5rem .6rem;
 	font-size: .9rem;
-	color: #fff;
+	color: hsl(0 0% 100%);
 	background: hsl(var(--color-error));
 	border-radius: .4rem;
 	box-shadow: 0 .3rem 1rem hsl(0 0% 0% / 12%);
@@ -594,7 +594,8 @@ button.loading {
 }
 
 .button-panel,
-.button-panel-center {
+.button-panel-center,
+.button-panel-right {
 	display: flex;
 	align-items: center;
 	gap: .5rem;
@@ -603,6 +604,10 @@ button.loading {
 
 .button-panel-center {
 	justify-content: center;
+}
+
+.button-panel-right {
+	justify-content: flex-end;
 }
 
 /*.button-panel,

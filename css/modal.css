@@ -29,24 +29,38 @@
 
 .modal {
 	grid-area: 1 / 1;
+	display: flex;
+	flex-direction: column;
+	width: 20rem;
+	border-radius: .5rem;
 	pointer-events: auto;
 }
 
 .modal-dialog {
-	width: 20rem;
-	border: 1px solid #000;
+	background: hsl(0 0% 100%);
+	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-cta) / 40%);
 }
 
 .modal-error {
-	
+	color: hsl(0 0% 100%);
+	background: hsl(var(--color-error));
+}
+
+.modal-error .btn-cta {
+	color: hsl(var(--color-error));
+	background: hsl(0 0% 100%);
+}
+
+.modal-title {
+	padding: 1rem;
+	font-size: 1.4rem;
+	font-weight: 600;
 }
 
 .modal-content {
-	background: hsl(0 0% 100%);
 	padding: 1rem;
-	border-radius: .5rem;
 }
 
 .modal-buttons {
-	
+	padding: 1rem;
 }
