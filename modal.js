@@ -16,16 +16,16 @@ export function init(container){
 	window.addEventListener('keydown', handle_keydown);
 }
 
-export function dialog(store, content, options={}){
-	return open(store, type_dialog, content, options);
+export function dialog(store, content){
+	return open(store, type_dialog, content);
 }
 
-export function error(store, content, options={}){
-	return open(store, type_error, content, options);
+export function error(store, content){
+	return open(store, type_error, content);
 }
 
-function open(store, type, content, options){
-	const modal = create_modal(store, type, content, options);
+function open(store, type, content){
+	const modal = create_modal(store, type, content);
 	
 	top_modal()?.activate(false);
 	stack.push(modal);
@@ -38,7 +38,7 @@ function open(store, type, content, options){
 	};
 }
 
-function create_modal(store, type, content, options){
+function create_modal(store, type, content){
 	let fieldset = null;
 	const content_id = dom.id(), buttons_id = dom.id(), elm = document.createElement('div');
 	elm.className = `modal modal-${type}`;
@@ -48,7 +48,7 @@ function create_modal(store, type, content, options){
 	`;
 	modal_stack.append(elm);
 	
-	const modal = Object.freeze({
+	const elm_content = document.getElementById(content_id), modal = Object.freeze({
 		activate(bool=true){
 			fieldset.activate(!!bool);
 		},
@@ -64,7 +64,7 @@ function create_modal(store, type, content, options){
 			
 			set_backdrop();
 		}
-	}), elm_content = document.getElementById(content_id);
+	});
 	
 	switch(typeof content){
 	case 'string':
@@ -81,6 +81,8 @@ function create_modal(store, type, content, options){
 	case 'function':
 		fieldset = content.call(modal);
 		break;
+		
+	default: throw Error('Modal content must be a string or function');
 	}
 	
 	document.getElementById(buttons_id).innerHTML = fieldset.html_buttons();
