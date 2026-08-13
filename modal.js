@@ -34,18 +34,8 @@ function open(store, type, content, options){
 	set_backdrop();
 	
 	return function close(){
-		close(modal);
+		modal.close();
 	};
-}
-
-function close(modal){
-	if(top_modal() !== modal) return;
-	
-	stack.pop();
-	top_modal()?.activate();
-	modal.remove();
-	
-	set_backdrop();
 }
 
 function create_modal(store, type, content, options){
@@ -58,49 +48,51 @@ function create_modal(store, type, content, options){
 	`;
 	modal_stack.append(elm);
 	
-	const elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), content_api = Object.freeze({
+	const modal = Object.freeze({
+		activate(bool=true){
+			fieldset.activate(!!bool);
+		},
 		html(html){
 			elm_content.innerHTML = html;
 		},
-		buttons(fieldset){
-			elm_buttons.innerHTML = fieldset.html_buttons();
+		close(){
+			if(top_modal() !== modal) return;
+			
+			stack.pop();
+			top_modal()?.activate();
+			elm.remove();
+			
+			set_backdrop();
 		}
-	});
+	}), elm_content = document.getElementById(content_id);
 	
 	switch(typeof content){
 	case 'string':
 		fieldset = frm.fieldset(store, null, {
 			[frm.BTN_ACTION]: {
 				click(){
-					console.log('click modal ok')
-					close(modal);
+					modal.close();
 				}
 			}
 		});
-		content_api.html(`<p>${content}</p>`);
-		content_api.buttons(fieldset);
+		modal.html(`<p>${content}</p>`);
 		break;
 		
 	case 'function':
-		fieldset = content.call(content_api);
+		fieldset = content.call(modal);
 		break;
 	}
 	
-	return Object.freeze({
-		activate(bool=true){
-			fieldset.activate(!!bool);
-		},
-		remove(){
-			elm.remove();
-		}
-	});
+	document.getElementById(buttons_id).innerHTML = fieldset.html_buttons();
+	fieldset.render();
+	
+	return modal;
 }
 
 function handle_keydown(e){
 	if(e.key !== frm.KEY_ESC || stack.length === 0) return;
 	
-	const modal = top_modal();
-	if(modal) close(modal);
+	top_modal()?.close();
 }
 
 function top_modal(){
