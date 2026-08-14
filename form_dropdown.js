@@ -27,6 +27,7 @@ export function create(store, parent, value){
 			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, inputs, parent.val, controls) : create_list(store, inputs, parent.val, controls, def, _=>opened);
 			component.init(value);
 			inputs.text.readOnly = o.select();
+			inputs.text.classList.toggle('input-dropdown-select', o.select());
 			
 			if(opened && active?.container === container){
 				component.open?.();

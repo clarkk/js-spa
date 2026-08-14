@@ -73,6 +73,10 @@ textarea,
 	border-radius: 2px;
 }
 
+.input-dropdown-select {
+	cursor: pointer;
+}
+
 input,
 textarea {
 	width: 100%;
