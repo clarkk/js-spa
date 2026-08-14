@@ -846,7 +846,7 @@ function clear_field_error(id){
 	if(!elm) return;
 	
 	elm.classList.remove('active');
-	dom.event_transitionend_once(elm, function(){
+	dom.event_transitionend(elm, function(){
 		if(!elm.classList.contains('active')) elm.innerHTML = '';
 		this.remove();
 	});

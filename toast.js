@@ -63,7 +63,7 @@ function show(message, type, duration){
 		closing = true;
 		clearTimeout(timeout);
 		
-		dom.event_transitionend_once(elm, function(){
+		dom.event_transitionend(elm, function(){
 			elm.remove();
 			this.remove();
 		});

@@ -24,7 +24,7 @@ export function html_append(elm, html, mounted=null){
 	if(mounted) for(const fn of mounted) fn();
 }
 
-export function event_transitionend_once(elm, handler){
+export function event_transitionend(elm, handler){
 	const event = {
 		remove(){
 			elm.removeEventListener('transitionend', fn);
