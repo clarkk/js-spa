@@ -1,6 +1,6 @@
 import * as frm from 'frm';
 
-export function fieldset_group(store){
+export function group(store){
 	let active = null;
 	const items = new Map(), o = {
 		add(name, container_fields, container_buttons){
@@ -9,6 +9,17 @@ export function fieldset_group(store){
 			const item = fieldset_item(store, container_fields, container_buttons);
 			items.set(name, item);
 			return item;
+		},
+		activate(name, bool=true){
+			const item = items.get(name);
+			if(!item) throw Error(`Fieldset '${name}' does not exist`);
+			
+			if(active === item) return o;
+			
+			active?.activate(false);
+			active = item;
+			active.activate(true);
+			return o;
 		}
 	};
 	return Object.freeze(o);
