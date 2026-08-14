@@ -843,10 +843,13 @@ function set_field_error(id, msg){
 
 function clear_field_error(id){
 	const elm = document.getElementById(field_error_id(id));
-	if(elm){
-		elm.classList.remove('active');
-		elm.innerHTML = '';
-	}
+	if(!elm) return;
+	
+	elm.classList.remove('active');
+	dom.event_transitionend_once(elm, function(){
+		if(!elm.classList.contains('active')) elm.innerHTML = '';
+		this.remove();
+	});
 }
 
 function field_error_id(id){

@@ -1,3 +1,5 @@
+import * as dom from 'dom';
+
 let container;
 
 const type_success = 'success', type_warning = 'warning', type_error = 'error', type_info = 'info', types = {
@@ -61,10 +63,9 @@ function show(message, type, duration){
 		closing = true;
 		clearTimeout(timeout);
 		
-		elm.addEventListener('transitionend', _=>{
+		dom.event_transitionend_once(elm, function(){
 			elm.remove();
-		}, {
-			once: true
+			this.remove();
 		});
 		
 		elm.classList.remove('toast-show');

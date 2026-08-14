@@ -24,6 +24,15 @@ export function html_append(elm, html, mounted=null){
 	if(mounted) for(const fn of mounted) fn();
 }
 
+export function event_transitionend_once(elm, handler){
+	const event = {
+		remove(){
+			elm.removeEventListener('transitionend', fn);
+		}
+	}, fn = handler.bind(event);
+	elm.addEventListener('transitionend', fn);
+}
+
 /*export function scrollbar_width(elm){
 	return elm.offsetWidth - elm.clientWidth;
 }
