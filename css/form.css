@@ -164,7 +164,7 @@ input,
 textarea,
 .inp-checkbox,
 .inp-checkbox-row{
-	box-shadow:0 1px 3px hsl(0 0% 0% / 5%);
+	box-shadow:0 1px var(--input-focus-shadow) hsl(0 0% 0% / 5%);
 }
 
 input,
@@ -483,25 +483,30 @@ body.debtor #page_content .inp-checkbox-row,
 }*/
 
 button:focus {
-	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(0 0% 76% / 60%);
+	--color-shadow: 0 0% 76%;
+	--opacity-shadow: 60%;
+	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
 }
 
 input:focus,
 textarea:focus,
 .input-checkbox.focus {
-	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-input-focus) / 40%);
+	--color-shadow: var(--color-input-focus);
+	--opacity-shadow: 40%;
+	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
 }
 
 input.error:focus,
 textarea.error:focus {
-	box-shadow: 0 0 0 3px hsl(var(--color-error) / 40%);
+	--color-shadow: var(--color-error);
+	--opacity-shadow: 40%;
 }
 
 /*input:focus,
 textarea:focus,
 .inp-checkbox.focus,
 .btn-cta:focus{
-	box-shadow:0 0 0 3px hsl(var(--color-input-focus) / 40%);
+	box-shadow:0 0 0 var(--input-focus-shadow) hsl(var(--color-input-focus) / 40%);
 }
 
 input:focus,
@@ -512,7 +517,7 @@ textarea:focus,
 
 .input-dropdown.focus:not(:focus){
 	border:1px solid hsl(0 0% 52%);
-	box-shadow:0 0 0 3px hsl(0 0% 0% / 20%);
+	box-shadow:0 0 0 var(--input-focus-shadow) hsl(0 0% 0% / 20%);
 }
 
 .btn-cta:focus{
@@ -522,7 +527,7 @@ textarea:focus,
 .body-invert input:focus,
 .body-invert .btn-cta:focus,
 .body-invert .inp-checkbox.focus{
-	box-shadow:0 0 0 3px hsl(var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) + 25%) / 60%);
+	box-shadow:0 0 0 var(--input-focus-shadow) hsl(var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) + 25%) / 60%);
 }
 
 .body-invert input:focus,
@@ -532,7 +537,7 @@ textarea:focus,
 
 .body-invert button:focus{
 	--opacity-border:70%;
-	box-shadow:0 0 0 3px hsl(0 0% 100% / 30%);
+	box-shadow:0 0 0 var(--input-focus-shadow) hsl(0 0% 100% / 30%);
 }
 
 .body-invert .btn-cta:focus{
@@ -542,7 +547,7 @@ textarea:focus,
 .modal-error button:focus,
 .modal-success button:focus{
 	border-color:#fff;
-	box-shadow:0 0 0 3px hsl(0 0% 100% / 40%);
+	box-shadow:0 0 0 var(--input-focus-shadow) hsl(0 0% 100% / 40%);
 }*/
 
 /*button:disabled,
