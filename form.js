@@ -231,16 +231,6 @@ export function fieldset(store, fields, buttons, model_input=null){
 			
 			return false;
 		},
-		clear_error(){
-			if(!has_error) return o;
-			
-			has_error = false;
-			fields.forEach(field=>{
-				field.Field?.input()?.classList.remove(CLASS_ERROR);
-				clear_field_error(field.id);
-			});
-			return o
-		},
 		focus(){
 			if(fields === null){
 				focus_button();
@@ -302,6 +292,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		if(sending) return false;
 		
 		sending = true;
+		clear_error();
 		try{
 			await run();
 			return true;
@@ -309,6 +300,16 @@ export function fieldset(store, fields, buttons, model_input=null){
 		finally{
 			sending = false;
 		}
+	}
+	
+	function clear_error(){
+		if(!has_error) return;
+		
+		has_error = false;
+		fields.forEach(field=>{
+			field.Field?.input()?.classList.remove(CLASS_ERROR);
+			clear_field_error(field.id);
+		});
 	}
 	
 	function convert_error_message(code){
