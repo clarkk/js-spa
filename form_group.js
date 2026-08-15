@@ -10,18 +10,27 @@ export function group(store){
 			items.set(name, item);
 			return item;
 		},
-		activate(name, bool=true){
-			const item = items.get(name);
-			if(!item) throw Error(`Fieldset '${name}' does not exist`);
-			
-			if(active === item) return o;
-			
-			active?.activate(false);
-			active = item;
-			active.activate(true);
+		activate(bool=true, name=null){
+			const item = get_item(name);
+			if(active !== item){
+				active = item;
+				items.forEach(item=>{
+					item.activate(active === item);
+				});
+			}
 			return o;
 		}
 	};
+	
+	function get_item(name=null){
+		if(name === null){
+			if(!items.size) throw Error(`Fieldset group is empty`);
+			return items.values().next().value;
+		}
+		if(!items.has(name)) throw Error(`Fieldset '${name}' does not exist`);
+		return items.get(name);
+	}
+	
 	return Object.freeze(o);
 }
 

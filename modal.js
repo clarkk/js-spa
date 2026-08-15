@@ -50,7 +50,7 @@ function create_modal(store, type, content){
 	`;
 	modal_stack.append(elm);
 	
-	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), modal = Object.freeze({
+	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), modal = Object.freeze({
 		activate(bool=true){
 			fieldset.activate(!!bool);
 		},
@@ -73,6 +73,7 @@ function create_modal(store, type, content){
 	
 	switch(typeof content){
 	case 'string':
+		modal.title_html(content);
 		fieldset = frm.fieldset(store, null, {
 			[frm.BTN_ACTION]: {
 				click(){
@@ -80,18 +81,28 @@ function create_modal(store, type, content){
 				}
 			}
 		});
-		modal.title_html(content);
+		elm_buttons.innerHTML = fieldset.html_buttons();
+		fieldset.render().focus();
 		break;
 		
 	case 'function':
 		fieldset = content.call(modal);
+		if(fieldset_group()){
+			console.log('group')
+		}
+		else{
+			elm_buttons.innerHTML = fieldset.html_buttons();
+			fieldset.render().focus();
+		}
 		break;
 		
-	default: throw Error('Modal content must be a string or function');
+	default:
+		throw Error('Modal content must be a string or function');
 	}
 	
-	document.getElementById(buttons_id).innerHTML = fieldset.html_buttons();
-	fieldset.render().focus();
+	function fieldset_group(){
+		return !!fieldset.add;
+	}
 	
 	return modal;
 }
