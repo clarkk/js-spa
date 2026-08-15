@@ -1,13 +1,13 @@
 import * as dom from 'dom';
 import * as frm from 'frm';
 
-export function group(store){
+export function group(){
 	let active = null;
 	const items = new Map(), o = {
 		add(name, content){
 			if(items.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const item = fieldset_item(store, content);
+			const item = fieldset_item(content);
 			items.set(name, item);
 			return item;
 		},
@@ -45,7 +45,7 @@ export function group(store){
 	return Object.freeze(o);
 }
 
-function fieldset_item(store, content){
+function fieldset_item(content){
 	let item_html = '';
 	const id = dom.id(), m = Object.freeze({
 		content_html(html){
