@@ -58,7 +58,12 @@ function create_modal(store, type, content){
 	
 	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), modal = Object.freeze({
 		activate(bool=true){
-			fieldset.activate(!!bool);
+			if(fieldset_group()){
+				/*
+					- need to disable/enable only one.. (maybe force all to be disabled and afterward only enable one)
+				*/
+			}
+			else fieldset.activate(!!bool);
 		},
 		title_html(html){
 			elm_title.innerHTML = html || '';
@@ -93,18 +98,23 @@ function create_modal(store, type, content){
 		
 	case 'function':
 		fieldset = content.call(modal);
-		if(!!fieldset.add){
+		elm_buttons.innerHTML = fieldset.html_buttons();
+		
+		if(fieldset_group()){
 			console.log('group')
-			elm_buttons.innerHTML = fieldset.html_buttons();
+			//fieldset.activate();
 		}
 		else{
-			elm_buttons.innerHTML = fieldset.html_buttons();
 			fieldset.render().focus();
 		}
 		break;
 		
 	default:
 		throw Error('Modal content must be a string or function');
+	}
+	
+	function fieldset_group(){
+		return !!fieldset.add;
 	}
 	
 	return modal;

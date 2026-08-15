@@ -9,16 +9,19 @@ export function group(){
 			
 			const item = fieldset_item(content);
 			items.set(name, item);
+			if(!active){
+				active = item;
+				item.activate(true, true);
+			}
+			else item.activate(false, true);
 			return item;
 		},
-		activate(bool=true, name=null){
+		activate(name=null){
 			const item = get_item(name);
-			if(active !== item){
-				active = item;
-				items.forEach(item=>
-					item.activate(active === item)
-				);
-			}
+			active = item;
+			items.forEach(item=>
+				item.activate(active === item)
+			);
 			return o;
 		},
 		html_content(){
@@ -27,9 +30,7 @@ export function group(){
 			).join('');
 		},
 		html_buttons(){
-			/*return Array.from(items.values(), item=>
-				item.get().html_buttons()
-			).join('');*/
+			return active.html_buttons();
 		}
 	};
 	
@@ -55,13 +56,13 @@ function fieldset_item(content){
 		html(){
 			return `<div id="${id}" style="display:none">${item_html}</div>`;
 		},
-		activate(bool=true){
-			document.getElementById(id).style.display = bool ? '' : 'none';
+		activate(bool=true, skip_dom=false){
+			if(!skip_dom) document.getElementById(id).style.display = bool ? '' : 'none';
 			fieldset.activate(bool);
+		},
+		html_buttons(){
+			return fieldset.html_buttons();
 		}
-		/*html_buttons(){
-			
-		}*/
 		/*fieldset(fields, buttons){
 			if(fieldset) throw Error('Fieldset is already created');
 			
@@ -88,9 +89,6 @@ function fieldset_item(content){
 		get(){
 			return fieldset;
 		}*/
-	};
-	
-	const fieldset = content.call(m);
-	
+	}, fieldset = content.call(m);
 	return Object.freeze(o);
 }
