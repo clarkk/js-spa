@@ -94,8 +94,8 @@ function create_modal(store, type, content){
 	case 'function':
 		fieldset = content.call(modal);
 		if(fieldset_group()){
-			elm_buttons.innerHTML = fieldset.html_buttons();
 			console.log('group')
+			elm_buttons.innerHTML = fieldset.html_buttons();
 		}
 		else{
 			elm_buttons.innerHTML = fieldset.html_buttons();

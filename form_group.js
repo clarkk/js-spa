@@ -1,12 +1,13 @@
+import * as dom from 'dom';
 import * as frm from 'frm';
 
 export function group(store){
 	let active = null;
 	const items = new Map(), o = {
-		add(name, container_fields){
+		add(name, content){
 			if(items.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const item = fieldset_item(store, container_fields);
+			const item = fieldset_item(store, content);
 			items.set(name, item);
 			return item;
 		},
@@ -20,10 +21,15 @@ export function group(store){
 			}
 			return o;
 		},
-		html_buttons(){
+		html(){
 			return Array.from(items.values(), item=>
-				item.get().html_buttons()
+				item.html()
 			).join('');
+		},
+		html_buttons(){
+			/*return Array.from(items.values(), item=>
+				item.get().html_buttons()
+			).join('');*/
 		}
 	};
 	
@@ -39,10 +45,20 @@ export function group(store){
 	return Object.freeze(o);
 }
 
-function fieldset_item(store, container_fields){
-	let fieldset = null;
-	const o = {
-		fieldset(fields, buttons){
+function fieldset_item(store, content){
+	let item_html = '';
+	const id = dom.id(), m = Object.freeze({
+		content_html(html){
+			item_html = html || '';
+		}
+	}), o = {
+		html(){
+			return `<div id="${id}">${item_html}</div>`;
+		}
+		/*html_buttons(){
+			
+		}*/
+		/*fieldset(fields, buttons){
 			if(fieldset) throw Error('Fieldset is already created');
 			
 			fieldset = frm.fieldset(store, fields, buttons);
@@ -60,14 +76,17 @@ function fieldset_item(store, container_fields){
 			callback.call({
 				fieldset,
 				fields_html(html){
-					container_fields.innerHTML = html;
+					//container_fields.innerHTML = html;
 				}
 			});
 			fieldset.render();
 		},
 		get(){
 			return fieldset;
-		}
+		}*/
 	};
+	
+	const fieldset = content.call(m);
+	
 	return Object.freeze(o);
 }
