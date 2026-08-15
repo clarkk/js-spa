@@ -3,10 +3,10 @@ import * as frm from 'frm';
 export function group(store){
 	let active = null;
 	const items = new Map(), o = {
-		add(name, container_fields, container_buttons){
+		add(name, container_fields){
 			if(items.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const item = fieldset_item(store, container_fields, container_buttons);
+			const item = fieldset_item(store, container_fields);
 			items.set(name, item);
 			return item;
 		},
@@ -19,6 +19,11 @@ export function group(store){
 				});
 			}
 			return o;
+		},
+		html_buttons(){
+			return Array.from(items.values(), item=>
+				item.get().html_buttons()
+			).join('');
 		}
 	};
 	
@@ -34,9 +39,15 @@ export function group(store){
 	return Object.freeze(o);
 }
 
-function fieldset_item(store, container_fields, container_buttons){
+function fieldset_item(store, container_fields){
 	let fieldset = null;
 	const o = {
+		fieldset(fields, buttons){
+			if(fieldset) throw Error('Fieldset is already created');
+			
+			fieldset = frm.fieldset(store, fields, buttons);
+			return o;
+		},
 		fieldset_action(name, fields, buttons){
 			if(fieldset) throw Error('Fieldset is already created');
 			
@@ -50,12 +61,12 @@ function fieldset_item(store, container_fields, container_buttons){
 				fieldset,
 				fields_html(html){
 					container_fields.innerHTML = html;
-				},
-				buttons_html(html){
-					container_buttons.innerHTML = html;
 				}
 			});
 			fieldset.render();
+		},
+		get(){
+			return fieldset;
 		}
 	};
 	return Object.freeze(o);

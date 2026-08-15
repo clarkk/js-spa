@@ -25,6 +25,12 @@ export function error(store, content){
 	return open(store, type_error, content);
 }
 
+export function clear(){
+	stack.length = 0;
+	modal_stack.innerHTML = '';
+	set_backdrop();
+}
+
 function open(store, type, content){
 	const modal = create_modal(store, type, content);
 	
@@ -88,6 +94,7 @@ function create_modal(store, type, content){
 	case 'function':
 		fieldset = content.call(modal);
 		if(fieldset_group()){
+			elm_buttons.innerHTML = fieldset.html_buttons();
 			console.log('group')
 		}
 		else{
