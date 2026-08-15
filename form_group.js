@@ -15,13 +15,13 @@ export function group(store){
 			const item = get_item(name);
 			if(active !== item){
 				active = item;
-				items.forEach(item=>{
-					item.activate(active === item);
-				});
+				items.forEach(item=>
+					item.activate(active === item)
+				);
 			}
 			return o;
 		},
-		html(){
+		html_content(){
 			return Array.from(items.values(), item=>
 				item.html()
 			).join('');
@@ -53,7 +53,11 @@ function fieldset_item(store, content){
 		}
 	}), o = {
 		html(){
-			return `<div id="${id}">${item_html}</div>`;
+			return `<div id="${id}" style="display:none">${item_html}</div>`;
+		},
+		activate(bool=true){
+			document.getElementById(id).style.display = bool ? '' : 'none';
+			fieldset.activate(bool);
 		}
 		/*html_buttons(){
 			

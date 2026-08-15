@@ -93,7 +93,7 @@ function create_modal(store, type, content){
 		
 	case 'function':
 		fieldset = content.call(modal);
-		if(fieldset_group()){
+		if(!!fieldset.add){
 			console.log('group')
 			elm_buttons.innerHTML = fieldset.html_buttons();
 		}
@@ -105,10 +105,6 @@ function create_modal(store, type, content){
 		
 	default:
 		throw Error('Modal content must be a string or function');
-	}
-	
-	function fieldset_group(){
-		return !!fieldset.add;
 	}
 	
 	return modal;
