@@ -13,6 +13,10 @@ export function group(){
 		active(){
 			return active;
 		},
+		item(name){
+			if(!items.has(name)) throw Error(`Fieldset '${name}' does not exist`);
+			return items.get(name);
+		},
 		activate(name=null){
 			const item = get_item(name);
 			active = item;
@@ -34,8 +38,7 @@ export function group(){
 	function get_item(name=null){
 		if(!items.size) throw Error(`Fieldset group is empty`);
 		if(name === null) return items.values().next().value;
-		if(!items.has(name)) throw Error(`Fieldset '${name}' does not exist`);
-		return items.get(name);
+		return o.item(name);
 	}
 	
 	return Object.freeze(o);
@@ -47,12 +50,14 @@ function fieldset_item(content){
 		content_html(html){
 			item_html = html || '';
 		}
-	}), o = {
+	}), fieldset = content.call(m);
+	return Object.freeze({
 		html(){
 			return `<div id="${id}" style="display:none">${item_html}</div>`;
 		},
 		activate(bool=true){
-			document.getElementById(id).style.display = bool ? '' : 'none';
+			const elm = document.getElementById(id);
+			if(elm) elm.style.display = bool ? '' : 'none';
 			fieldset.activate(bool);
 		},
 		html_buttons(){
@@ -61,6 +66,5 @@ function fieldset_item(content){
 		fieldset(){
 			return fieldset;
 		}
-	}, fieldset = content.call(m);
-	return Object.freeze(o);
+	});
 }
