@@ -9,12 +9,10 @@ export function group(){
 			
 			const item = fieldset_item(content);
 			items.set(name, item);
-			if(!active){
-				active = item;
-				item.activate(true, true);
-			}
-			else item.activate(false, true);
 			return item;
+		},
+		active(){
+			return active;
 		},
 		activate(name=null){
 			const item = get_item(name);
@@ -56,39 +54,16 @@ function fieldset_item(content){
 		html(){
 			return `<div id="${id}" style="display:none">${item_html}</div>`;
 		},
-		activate(bool=true, skip_dom=false){
-			if(!skip_dom) document.getElementById(id).style.display = bool ? '' : 'none';
+		activate(bool=true){
+			document.getElementById(id).style.display = bool ? '' : 'none';
 			fieldset.activate(bool);
 		},
 		html_buttons(){
 			return fieldset.html_buttons();
-		}
-		/*fieldset(fields, buttons){
-			if(fieldset) throw Error('Fieldset is already created');
-			
-			fieldset = frm.fieldset(store, fields, buttons);
-			return o;
 		},
-		fieldset_action(name, fields, buttons){
-			if(fieldset) throw Error('Fieldset is already created');
-			
-			fieldset = frm.fieldset.action(store, name, fields, buttons);
-			return o;
-		},
-		render(callback){
-			if(!fieldset) throw Error('Fieldset has not been created');
-			
-			callback.call({
-				fieldset,
-				fields_html(html){
-					//container_fields.innerHTML = html;
-				}
-			});
-			fieldset.render();
-		},
-		get(){
+		fieldset(){
 			return fieldset;
-		}*/
+		}
 	}, fieldset = content.call(m);
 	return Object.freeze(o);
 }

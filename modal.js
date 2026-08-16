@@ -58,11 +58,7 @@ function create_modal(store, type, content){
 	
 	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), modal = Object.freeze({
 		activate(bool=true){
-			if(fieldset_group()){
-				/*
-					- need to disable/enable only one.. (maybe force all to be disabled and afterward only enable one)
-				*/
-			}
+			if(fieldset_group()) fieldset.active().activate(!!bool);
 			else fieldset.activate(!!bool);
 		},
 		title_html(html){
@@ -98,13 +94,13 @@ function create_modal(store, type, content){
 		
 	case 'function':
 		fieldset = content.call(modal);
-		elm_buttons.innerHTML = fieldset.html_buttons();
-		
 		if(fieldset_group()){
-			console.log('group')
-			//fieldset.activate();
+			fieldset.activate();
+			elm_buttons.innerHTML = fieldset.html_buttons();
+			fieldset.active().fieldset().render().focus();
 		}
 		else{
+			elm_buttons.innerHTML = fieldset.html_buttons();
 			fieldset.render().focus();
 		}
 		break;
