@@ -1,5 +1,4 @@
 import * as dom from 'dom';
-import * as frm from 'frm';
 
 export function group(){
 	let active = null;
@@ -33,10 +32,8 @@ export function group(){
 	};
 	
 	function get_item(name=null){
-		if(name === null){
-			if(!items.size) throw Error(`Fieldset group is empty`);
-			return items.values().next().value;
-		}
+		if(!items.size) throw Error(`Fieldset group is empty`);
+		if(name === null) return items.values().next().value;
 		if(!items.has(name)) throw Error(`Fieldset '${name}' does not exist`);
 		return items.get(name);
 	}
