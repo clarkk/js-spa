@@ -14,7 +14,8 @@ export function tabs(buttons_html){
 			return group.active();
 		},
 		activate(name=null){
-			if(!group.activate(name)) return false;
+			name = group.activate(name);
+			if(!name) return false;
 			
 			tabs.forEach((tab, key)=>{
 				document.getElementById(tab.id).classList.toggle('active', key === name);
@@ -61,7 +62,7 @@ function fieldset_group(){
 		add(name, content){
 			if(items.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const item = fieldset_item(content);
+			const item = fieldset_item(name, content);
 			items.set(name, item);
 			return item;
 		},
@@ -77,14 +78,15 @@ function fieldset_group(){
 		},
 		activate(name=null){
 			const item = get_item(name);
-			if(item === active) return true;
-			if(fieldset_sending()) return false;
-			
-			active = item;
-			items.forEach(item=>
-				item.activate(active === item)
-			);
-			return true;
+			if(item !== active){
+				if(fieldset_sending()) return null;
+				
+				active = item;
+				items.forEach(item=>
+					item.activate(active === item)
+				);
+			}
+			return active.name;
 		},
 		html_content(){
 			return Array.from(o.items(), item=>
@@ -112,7 +114,7 @@ function fieldset_group(){
 	return Object.freeze(o);
 }
 
-function fieldset_item(content){
+function fieldset_item(name, content){
 	let item_html = '';
 	const id = dom.id(), m = Object.freeze({
 		content_html(html){
@@ -120,6 +122,7 @@ function fieldset_item(content){
 		}
 	}), fieldset = content.call(m);
 	return Object.freeze({
+		name,
 		html(){
 			return `<div id="${id}" style="display:none">${item_html}</div>`;
 		},
