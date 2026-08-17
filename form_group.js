@@ -1,6 +1,56 @@
 import * as dom from 'dom';
 
-export function group(){
+export function tabs(){
+	const group = fieldset_group(), tabs = new Map(), o = {
+		add(name, title, content){
+			const item = group.add(name, content), id = dom.id();
+			tabs.set(name, {
+				id,
+				title
+			});
+			return item;
+		},
+		active(){
+			return group.active();
+		},
+		activate(name=null){
+			group.activate(name);
+			tabs.forEach((tab, key)=>{
+				document.getElementById(tab.id).classList.toggle('active', key === name);
+			});
+			return o;
+		},
+		html_tabs(){
+			return Array.from(tabs.entries(), ([name, tab])=>
+				`<a id="${tab.id}" href="#${name}">${tab.title}</a>`
+			).join('');
+		},
+		html_content(){
+			return group.html_content();
+		},
+		mount(){
+			tabs.forEach((tab, name)=>{
+				const elm = document.getElementById(tab.id);
+				elm.addEventListener('click', e=>{
+					e.preventDefault();
+					o.activate(name);
+					group.html_buttons();
+				});
+			});
+			o.activate();
+			
+			group.items().forEach(item=>{
+				item.fieldset().render_fields();
+			});
+			group.html_buttons();
+			
+			return o;
+		}
+	};
+	return Object.freeze(o);
+}
+
+function fieldset_group(){
 	let active = null;
 	const items = new Map(), o = {
 		add(name, content){
@@ -17,6 +67,9 @@ export function group(){
 			if(!items.has(name)) throw Error(`Fieldset '${name}' does not exist`);
 			return items.get(name);
 		},
+		items(){
+			return items.values();
+		},
 		activate(name=null){
 			const item = get_item(name);
 			active = item;
@@ -26,7 +79,7 @@ export function group(){
 			return o;
 		},
 		html_content(){
-			return Array.from(items.values(), item=>
+			return Array.from(o.items(), item=>
 				item.html()
 			).join('');
 		},
@@ -37,7 +90,7 @@ export function group(){
 	
 	function get_item(name=null){
 		if(!items.size) throw Error(`Fieldset group is empty`);
-		if(name === null) return items.values().next().value;
+		if(name === null) return o.items().next().value;
 		return o.item(name);
 	}
 	

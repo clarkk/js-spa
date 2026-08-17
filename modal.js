@@ -67,6 +67,9 @@ function create_modal(store, type, content){
 		content_html(html){
 			elm_content.innerHTML = html || '';
 		},
+		buttons_html(html){
+			elm_buttons.innerHTML = html;
+		},
 		close(){
 			if(top_modal() !== modal) return;
 			
@@ -88,19 +91,15 @@ function create_modal(store, type, content){
 				}
 			}
 		});
-		elm_buttons.innerHTML = fieldset.html_buttons();
+		modal.buttons_html(fieldset.html_buttons());
 		fieldset.render().focus();
 		break;
 		
 	case 'function':
 		fieldset = content.call(modal);
-		if(fieldset_group()){
-			fieldset.activate();
-			elm_buttons.innerHTML = fieldset.html_buttons();
-			fieldset.active().fieldset().render().focus();
-		}
+		if(fieldset_group()) fieldset.activate().mount();
 		else{
-			elm_buttons.innerHTML = fieldset.html_buttons();
+			modal.buttons_html(fieldset.html_buttons());
 			fieldset.render().focus();
 		}
 		break;
