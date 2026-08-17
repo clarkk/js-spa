@@ -22,7 +22,7 @@ export function stepper(buttons_html){
 		},
 		html_steps(){
 			return Array.from(steps.entries(), ([name, step])=>
-				`<a id="${step.id}" href="#${name}">${step.title}</a>`
+				`<div id="${step.id}">${step.title}</div>`
 			).join('');
 		},
 		html_content(){
@@ -41,8 +41,8 @@ export function stepper(buttons_html){
 	};
 	
 	function direction(move){
-		const current_index = index(group.active().name), target_index = current_index + move;
-		if(current_index < 0 || target_index >= step_names.length) return false;
+		const target_index = index(group.active().name) + move;
+		if(target_index < 0 || target_index >= step_names.length) return false;
 		
 		if(group.activate(step_names[target_index]) === null) return false;
 		
@@ -52,11 +52,13 @@ export function stepper(buttons_html){
 	}
 	
 	function render(){
+		let step_index = 0;
 		const active = group.active(), active_index = index(active.name);
 		steps.forEach((step, name)=>{
-			const elm = document.getElementById(step.id), step_index = index(name);
+			const elm = document.getElementById(step.id);
 			elm.classList.toggle('active', name === active.name);
 			elm.classList.toggle('complete', step_index < active_index);
+			step_index++;
 		});
 		
 		buttons_html(active.html_buttons());
