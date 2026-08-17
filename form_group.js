@@ -1,5 +1,75 @@
 import * as dom from 'dom';
 
+export function stepper(buttons_html){
+	const group = fieldset_group(), steps = new Map(), step_names = [], o = {
+		add(name, title, content){
+			const item = group.add(name, content), id = dom.id();
+			steps.set(name, {
+				id,
+				title
+			});
+			step_names.push(name);
+			return item;
+		},
+		active(){
+			return group.active();
+		},
+		next(){
+			return direction(1);
+		},
+		previous(){
+			return direction(-1);
+		},
+		html_steps(){
+			return Array.from(steps.entries(), ([name, step])=>
+				`<a id="${step.id}" href="#${name}">${step.title}</a>`
+			).join('');
+		},
+		html_content(){
+			return group.html_content();
+		},
+		mount(){
+			group.items().forEach(item=>{
+				item.fieldset().render_fields();
+			});
+			
+			group.activate();
+			render();
+			
+			return o;
+		}
+	};
+	
+	function direction(move){
+		const current_index = index(group.active().name), target_index = current_index + move;
+		if(current_index < 0 || target_index >= step_names.length) return false;
+		
+		if(group.activate(step_names[target_index]) === null) return false;
+		
+		render();
+		
+		return true;
+	}
+	
+	function render(){
+		const active = group.active(), active_index = index(active.name);
+		steps.forEach((step, name)=>{
+			const elm = document.getElementById(step.id), step_index = index(name);
+			elm.classList.toggle('active', name === active.name);
+			elm.classList.toggle('complete', step_index < active_index);
+		});
+		
+		buttons_html(active.html_buttons());
+		active.fieldset().render_buttons().focus();
+	}
+	
+	function index(name){
+		return step_names.indexOf(name);
+	}
+	
+	return Object.freeze(o);
+}
+
 export function tabs(buttons_html){
 	const group = fieldset_group(), tabs = new Map(), o = {
 		add(name, title, content){
@@ -15,14 +85,14 @@ export function tabs(buttons_html){
 		},
 		activate(name=null){
 			name = group.activate(name);
-			if(!name) return false;
+			if(name === null) return false;
 			
 			tabs.forEach((tab, key)=>{
 				document.getElementById(tab.id).classList.toggle('active', key === name);
 			});
 			
 			buttons_html(group.html_buttons());
-			group.active().fieldset().render_buttons();
+			group.active().fieldset().render_buttons().focus();
 			
 			return true;
 		},
