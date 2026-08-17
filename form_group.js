@@ -1,6 +1,6 @@
 import * as dom from 'dom';
 
-export function tabs(){
+export function tabs(buttons_html){
 	const group = fieldset_group(), tabs = new Map(), o = {
 		add(name, title, content){
 			const item = group.add(name, content), id = dom.id();
@@ -14,11 +14,16 @@ export function tabs(){
 			return group.active();
 		},
 		activate(name=null){
-			group.activate(name);
+			if(!group.activate(name)) return false;
+			
 			tabs.forEach((tab, key)=>{
 				document.getElementById(tab.id).classList.toggle('active', key === name);
 			});
-			return o;
+			
+			buttons_html(group.html_buttons());
+			group.active().fieldset().render_buttons();
+			
+			return true;
 		},
 		html_tabs(){
 			return Array.from(tabs.entries(), ([name, tab])=>
@@ -34,19 +39,19 @@ export function tabs(){
 				elm.addEventListener('click', e=>{
 					e.preventDefault();
 					o.activate(name);
-					group.html_buttons();
 				});
 			});
-			o.activate();
 			
 			group.items().forEach(item=>{
 				item.fieldset().render_fields();
 			});
-			group.html_buttons();
+			
+			o.activate();
 			
 			return o;
 		}
 	};
+	
 	return Object.freeze(o);
 }
 
@@ -72,11 +77,14 @@ function fieldset_group(){
 		},
 		activate(name=null){
 			const item = get_item(name);
+			if(item === active) return true;
+			if(fieldset_sending()) return false;
+			
 			active = item;
 			items.forEach(item=>
 				item.activate(active === item)
 			);
-			return o;
+			return true;
 		},
 		html_content(){
 			return Array.from(o.items(), item=>
@@ -87,6 +95,13 @@ function fieldset_group(){
 			return active.html_buttons();
 		}
 	};
+	
+	function fieldset_sending(){
+		for(const item of o.items()){
+			if(item.fieldset().sending()) return true;
+		}
+		return false;
+	}
 	
 	function get_item(name=null){
 		if(!items.size) throw Error(`Fieldset group is empty`);

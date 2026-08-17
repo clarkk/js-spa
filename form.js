@@ -686,14 +686,14 @@ function create_button(fieldset, name, send){
 	let icon = '', text = '', input = null, loading = false;
 	const button = fieldset.buttons(name), o = {
 		render(){
-			const elm = document.getElementById(button.id), input_id = dom.id();
+			const elm = document.getElementById(button.id), input_id = dom.id(), button_css = button.css.copy();
 			if(!elm) throw Error(`Button '${name}' is not found in DOM`);
 			
 			switch(name){
 			case BTN_ACTION:
 				icon = button.icon || 'check-lg';
 				text = fieldset.store.t(button.text || 'BTN_OK');
-				button.css.class('btn-cta');
+				button_css.class('btn-cta');
 				break;
 				
 			case BTN_BACK:
@@ -709,18 +709,18 @@ function create_button(fieldset, name, send){
 			case BTN_NEXT:
 				icon = button.icon || 'chevron-right';
 				text = fieldset.store.t(button.text || 'BTN_NEXT');
-				button.css.class('btn-cta');
+				button_css.class('btn-cta');
 				break;
 				
 			case BTN_PUT:
 				icon = button.icon || 'check-lg';
 				text = fieldset.store.t(button.text || 'BTN_SAVE');
-				button.css.class('btn-cta');
+				button_css.class('btn-cta');
 				break;
 			}
 			
 			elm.innerHTML = `
-				<button id="${input_id}" ${button.css.render()}>
+				<button id="${input_id}" ${button_css.render()}>
 					<i class="bi bi-${icon}"></i>
 					${text}
 				</button>
@@ -793,6 +793,12 @@ function create_tabs(){
 
 function create_css(css={}){
 	const classes = to_array(css.class), styles = to_array(css.style), o = {
+		copy(){
+			return create_css({
+				class: [...classes],
+				style: [...styles]
+			});
+		},
 		class(...values){
 			classes.push(...values);
 			return this;

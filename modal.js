@@ -97,7 +97,7 @@ function create_modal(store, type, content){
 		
 	case 'function':
 		fieldset = content.call(modal);
-		if(fieldset_group()) fieldset.activate().mount();
+		if(fieldset_group()) fieldset.mount();
 		else{
 			modal.buttons_html(fieldset.html_buttons());
 			fieldset.render().focus();
