@@ -3,6 +3,7 @@ export function host(handlers){
 	const o = {
 		mount(parent){
 			host = parent;
+			console.log('mount:', host)
 			//handlers.mount();
 			//return o;
 		},

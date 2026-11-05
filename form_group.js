@@ -139,10 +139,10 @@ export function tabs(buttons_html){
 function fieldset_group(){
 	let active = null;
 	const scopes = new Map(), o = {
-		add(name, content){
+		add(name, factory){
 			if(scopes.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const scope = fieldset_scope(name, content);
+			const scope = fieldset_scope(name, factory);
 			scopes.set(name, scope);
 			return scope;
 		},
@@ -194,13 +194,13 @@ function fieldset_group(){
 	return Object.freeze(o);
 }
 
-function fieldset_scope(name, content){
+function fieldset_scope(name, factory){
 	let scope_html = '';
 	const id = dom.id(), m = Object.freeze({
 		content_html(html){
 			scope_html = html || '';
 		}
-	}), fieldset = content.call(m);
+	}), fieldset = factory.call(m);
 	return Object.freeze({
 		name,
 		activate(bool=true){
