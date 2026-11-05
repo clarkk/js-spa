@@ -1,15 +1,18 @@
+import * as inf from 'inf';
 import * as dom from 'dom';
 
 export function stepper(buttons_html){
 	const group = fieldset_group(), steps = new Map(), step_names = [], o = {
-		add(name, title, content){
-			const item = group.add(name, content), id = dom.id();
+		add(name, icon, title, content){
+			const scope = group.add(name, content), id = dom.id();
 			steps.set(name, {
 				id,
-				title
+				icon,
+				title,
+				//data: {}
 			});
 			step_names.push(name);
-			return item;
+			return scope;
 		},
 		active(){
 			return group.active();
@@ -17,20 +20,23 @@ export function stepper(buttons_html){
 		next(){
 			return direction(1);
 		},
-		previous(){
+		back(){
 			return direction(-1);
 		},
-		html_steps(){
-			return Array.from(steps.entries(), ([name, step])=>
-				`<div id="${step.id}">${step.title}</div>`
-			).join('');
+		html_navigation(){
+			return Array.from(steps.entries(), ([name, step])=>`
+				<div id="${step.id}" class="step">
+					<i class="bi bi-${step.icon}"></i>
+					${step.title}
+				</div>
+			`).join('');
 		},
 		html_content(){
 			return group.html_content();
 		},
 		mount(){
-			group.items().forEach(item=>{
-				item.fieldset().render_fields();
+			group.scopes().forEach(scope=>{
+				scope.fieldset().render_fields();
 			});
 			
 			group.activate();
@@ -75,12 +81,12 @@ export function stepper(buttons_html){
 export function tabs(buttons_html){
 	const group = fieldset_group(), tabs = new Map(), o = {
 		add(name, title, content){
-			const item = group.add(name, content), id = dom.id();
+			const scope = group.add(name, content), id = dom.id();
 			tabs.set(name, {
 				id,
 				title
 			});
-			return item;
+			return scope;
 		},
 		active(){
 			return group.active();
@@ -98,10 +104,12 @@ export function tabs(buttons_html){
 			
 			return true;
 		},
-		html_tabs(){
-			return Array.from(tabs.entries(), ([name, tab])=>
-				`<a id="${tab.id}" href="#${name}">${tab.title}</a>`
-			).join('');
+		html_navigation(){
+			return Array.from(tabs.entries(), ([name, tab])=>`
+				<a id="${tab.id}" href="#${name}">
+					${tab.title}
+				</a>
+			`).join('');
 		},
 		html_content(){
 			return group.html_content();
@@ -115,8 +123,8 @@ export function tabs(buttons_html){
 				});
 			});
 			
-			group.items().forEach(item=>{
-				item.fieldset().render_fields();
+			group.scopes().forEach(scope=>{
+				scope.fieldset().render_fields();
 			});
 			
 			o.activate();
@@ -130,39 +138,39 @@ export function tabs(buttons_html){
 
 function fieldset_group(){
 	let active = null;
-	const items = new Map(), o = {
+	const scopes = new Map(), o = {
 		add(name, content){
-			if(items.has(name)) throw Error(`Fieldset '${name}' already exists`);
+			if(scopes.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const item = fieldset_item(name, content);
-			items.set(name, item);
-			return item;
+			const scope = fieldset_scope(name, content);
+			scopes.set(name, scope);
+			return scope;
 		},
 		active(){
 			return active;
 		},
-		item(name){
-			if(!items.has(name)) throw Error(`Fieldset '${name}' does not exist`);
-			return items.get(name);
+		scope(name){
+			if(!scopes.has(name)) throw Error(`Fieldset '${name}' does not exist`);
+			return scopes.get(name);
 		},
-		items(){
-			return items.values();
+		scopes(){
+			return scopes.values();
 		},
 		activate(name=null){
-			const item = get_item(name);
-			if(item !== active){
+			const scope = get_scope(name);
+			if(scope !== active){
 				if(fieldset_sending()) return null;
 				
-				active = item;
-				items.forEach(item=>
-					item.activate(active === item)
+				active = scope;
+				scopes.forEach(scope=>
+					scope.activate(active === scope)
 				);
 			}
 			return active.name;
 		},
 		html_content(){
-			return Array.from(o.items(), item=>
-				item.html()
+			return Array.from(o.scopes(), scope=>
+				scope.html_content()
 			).join('');
 		},
 		html_buttons(){
@@ -171,37 +179,37 @@ function fieldset_group(){
 	};
 	
 	function fieldset_sending(){
-		for(const item of o.items()){
-			if(item.fieldset().sending()) return true;
+		for(const scope of o.scopes()){
+			if(scope.fieldset().sending()) return true;
 		}
 		return false;
 	}
 	
-	function get_item(name=null){
-		if(!items.size) throw Error(`Fieldset group is empty`);
-		if(name === null) return o.items().next().value;
-		return o.item(name);
+	function get_scope(name=null){
+		if(!scopes.size) throw Error(`Fieldset group is empty`);
+		if(name === null) return o.scopes().next().value;
+		return o.scope(name);
 	}
 	
 	return Object.freeze(o);
 }
 
-function fieldset_item(name, content){
-	let item_html = '';
+function fieldset_scope(name, content){
+	let scope_html = '';
 	const id = dom.id(), m = Object.freeze({
 		content_html(html){
-			item_html = html || '';
+			scope_html = html || '';
 		}
 	}), fieldset = content.call(m);
 	return Object.freeze({
 		name,
-		html(){
-			return `<div id="${id}" style="display:none">${item_html}</div>`;
-		},
 		activate(bool=true){
 			const elm = document.getElementById(id);
 			if(elm) elm.style.display = bool ? '' : 'none';
 			fieldset.activate(bool);
+		},
+		html_content(){
+			return `<div id="${id}" style="display:none">${scope_html}</div>`;
 		},
 		html_buttons(){
 			return fieldset.html_buttons();

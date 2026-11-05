@@ -1,3 +1,4 @@
+import * as inf from 'inf';
 import * as frm_types from 'frm_types';
 import * as frm_dropdown from 'frm_dropdown';
 import * as api from 'api';
@@ -65,6 +66,11 @@ export function fieldset(store, fields, buttons, model_input=null){
 	
 	const field_names = Object.create(null), tabs = create_tabs(), o = {
 		store,
+		host: inf.host({
+			activate(bool){
+				o.activate(bool);
+			}
+		}),
 		active(){
 			return active;
 		},

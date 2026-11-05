@@ -1,0 +1,36 @@
+.stepper {
+	display: flex;
+}
+
+.step {
+	display: flex;
+	align-items: center;
+	gap: .3rem;
+}
+
+.step.active {
+	
+}
+
+.step.complete {
+	
+}
+
+.tabs {
+	display: flex;
+	gap: .6rem;
+	padding: .3rem;
+	margin-bottom: 1rem;
+}
+
+.tabs a {
+	display: block;
+	padding: .4rem;
+	border-bottom: 5px solid transparent;
+	text-decoration: none;
+	transition: border-color .2s;
+}
+
+.tabs a.active {
+	border-bottom-color: hsl(var(--color-cta) / 50%);
+}
