@@ -1,7 +1,6 @@
-import * as inf from 'inf';
 import * as dom from 'dom';
 
-export function stepper(buttons_html){
+export function stepper(host){
 	const group = fieldset_group(), steps = new Map(), step_names = [], o = {
 		add(name, icon, title, content){
 			const scope = group.add(name, content), id = dom.id();
@@ -78,7 +77,7 @@ export function stepper(buttons_html){
 	return Object.freeze(o);
 }
 
-export function tabs(buttons_html){
+export function tabs(host){
 	const group = fieldset_group(), tabs = new Map(), o = {
 		add(name, title, content){
 			const scope = group.add(name, content), id = dom.id();
@@ -99,7 +98,7 @@ export function tabs(buttons_html){
 				document.getElementById(tab.id).classList.toggle('active', key === name);
 			});
 			
-			buttons_html(group.html_buttons());
+			host.buttons(group.html_buttons());
 			group.active().fieldset().render_buttons().focus();
 			
 			return true;
@@ -196,11 +195,11 @@ function fieldset_group(){
 
 function fieldset_scope(name, factory){
 	let scope_html = '';
-	const id = dom.id(), m = Object.freeze({
-		content_html(html){
+	const id = dom.id(), scope_context = Object.freeze({
+		content(html){
 			scope_html = html || '';
 		}
-	}), fieldset = factory.call(m);
+	}), fieldset = factory.call(scope_context);
 	return Object.freeze({
 		name,
 		activate(bool=true){
