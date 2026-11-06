@@ -75,38 +75,44 @@ function create_modal(store, type, content){
 			if(top_modal() !== modal) return;
 			
 			stack.pop();
-			top_modal()?.activate();
 			elm.remove();
+			top_modal()?.activate();
 			
 			set_backdrop();
 		}
 	});
 	
-	switch(typeof content){
-	case 'string':
-		modal.write.title(content);
-		fieldset = frm.fieldset(store, null, {
-			[frm.BTN_ACTION]: {
-				click(){
-					modal.close();
+	try{
+		switch(typeof content){
+		case 'string':
+			modal.write.title(content);
+			fieldset = frm.fieldset(store, null, {
+				[frm.BTN_ACTION]: {
+					click(){
+						modal.close();
+					}
 				}
-			}
-		});
-		modal.write.buttons(fieldset.html.buttons());
-		fieldset.render().focus();
-		break;
-		
-	case 'function':
-		fieldset = content.call(modal);
-		if(fieldset_group()) fieldset.mount();
-		else{
+			});
 			modal.write.buttons(fieldset.html.buttons());
 			fieldset.render().focus();
+			break;
+			
+		case 'function':
+			fieldset = content.call(modal);
+			if(fieldset_group()) fieldset.mount();
+			else{
+				modal.write.buttons(fieldset.html.buttons());
+				fieldset.render().focus();
+			}
+			break;
+			
+		default:
+			throw Error('Modal content must be a string or function');
 		}
-		break;
-		
-	default:
-		throw Error('Modal content must be a string or function');
+	}
+	catch(err){
+		elm.remove();
+		throw err;
 	}
 	
 	function fieldset_group(){

@@ -165,12 +165,10 @@ function fieldset_group(){
 			}
 			return active.name;
 		},
-		scope(name){
+		scopes(name){
+			if(!arguments.length) return scopes.values();
 			if(!scopes.has(name)) throw Error(`Fieldset '${name}' does not exist`);
 			return scopes.get(name);
-		},
-		scopes(){
-			return scopes.values();
 		},
 		html: Object.freeze({
 			content(){
@@ -194,7 +192,7 @@ function fieldset_group(){
 	function get_scope(name=null){
 		if(!scopes.size) throw Error(`Fieldset group is empty`);
 		if(name === null) return o.scopes().next().value;
-		return o.scope(name);
+		return o.scopes(name);
 	}
 	
 	return Object.freeze(o);
