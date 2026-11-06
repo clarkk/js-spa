@@ -2,8 +2,8 @@ import * as dom from 'dom';
 
 export function stepper(host){
 	const group = fieldset_group(), steps = new Map(), step_names = [], o = {
-		add(name, icon, title, content){
-			const scope = group.add(name, content), id = dom.id();
+		add(name, icon, title, factory){
+			const scope = group.add(name, factory), id = dom.id();
 			steps.set(name, {
 				id,
 				icon,
@@ -30,9 +30,7 @@ export function stepper(host){
 					</div>
 				`).join('');
 			},
-			content(){
-				return group.html.content();
-			}
+			content: group.html.content
 		}),
 		mount(){
 			group.scopes().forEach(scope=>{
@@ -80,8 +78,8 @@ export function stepper(host){
 
 export function tabs(host){
 	const group = fieldset_group(), tabs = new Map(), o = {
-		add(name, title, content){
-			const scope = group.add(name, content), id = dom.id();
+		add(name, title, factory){
+			const scope = group.add(name, factory), id = dom.id();
 			tabs.set(name, {
 				id,
 				title
@@ -111,9 +109,7 @@ export function tabs(host){
 					</a>
 				`).join('');
 			},
-			content(){
-				return group.html.content();
-			}
+			content: group.html.content
 		}),
 		mount(){
 			tabs.forEach((tab, name)=>{

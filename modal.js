@@ -99,7 +99,7 @@ function create_modal(store, type, content){
 			
 		case 'function':
 			fieldset = content.call(modal);
-			if(fieldset_group()) fieldset.mount();
+			if(fieldset.mount) fieldset.mount();
 			else{
 				modal.write.buttons(fieldset.html.buttons());
 				fieldset.render().focus();
@@ -113,10 +113,6 @@ function create_modal(store, type, content){
 	catch(err){
 		elm.remove();
 		throw err;
-	}
-	
-	function fieldset_group(){
-		return !!fieldset.add;
 	}
 	
 	return modal;
