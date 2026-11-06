@@ -13,32 +13,33 @@ export function stepper(host){
 			step_names.push(name);
 			return scope;
 		},
-		active(){
-			return group.active();
-		},
+		active: group.active,
+		activate: group.activate,
 		next(){
 			return direction(1);
 		},
 		back(){
 			return direction(-1);
 		},
-		html_navigation(){
-			return Array.from(steps.entries(), ([name, step])=>`
-				<div id="${step.id}" class="step">
-					<i class="bi bi-${step.icon}"></i>
-					${step.title}
-				</div>
-			`).join('');
-		},
-		html_content(){
-			return group.html_content();
-		},
+		html: Object.freeze({
+			navigation(){
+				return Array.from(steps.entries(), ([name, step])=>`
+					<div id="${step.id}" class="step">
+						<i class="bi bi-${step.icon}"></i>
+						${step.title}
+					</div>
+				`).join('');
+			},
+			content(){
+				return group.html.content();
+			}
+		}),
 		mount(){
 			group.scopes().forEach(scope=>{
 				scope.fieldset().render_fields();
 			});
 			
-			group.activate();
+			group.select();
 			render();
 			
 			return o;
@@ -49,7 +50,7 @@ export function stepper(host){
 		const target_index = index(group.active().name) + move;
 		if(target_index < 0 || target_index >= step_names.length) return false;
 		
-		if(group.activate(step_names[target_index]) === null) return false;
+		if(group.select(step_names[target_index]) === null) return false;
 		
 		render();
 		
@@ -66,7 +67,7 @@ export function stepper(host){
 			step_index++;
 		});
 		
-		buttons_html(active.html_buttons());
+		host.write.buttons(active.html.buttons());
 		active.fieldset().render_buttons().focus();
 	}
 	
@@ -87,38 +88,39 @@ export function tabs(host){
 			});
 			return scope;
 		},
-		active(){
-			return group.active();
-		},
-		activate(name=null){
-			name = group.activate(name);
+		active: group.active,
+		activate: group.activate,
+		select(name=null){
+			name = group.select(name);
 			if(name === null) return false;
 			
 			tabs.forEach((tab, key)=>{
 				document.getElementById(tab.id).classList.toggle('active', key === name);
 			});
 			
-			host.buttons(group.html_buttons());
+			host.write.buttons(group.html.buttons());
 			group.active().fieldset().render_buttons().focus();
 			
 			return true;
 		},
-		html_navigation(){
-			return Array.from(tabs.entries(), ([name, tab])=>`
-				<a id="${tab.id}" href="#${name}">
-					${tab.title}
-				</a>
-			`).join('');
-		},
-		html_content(){
-			return group.html_content();
-		},
+		html: Object.freeze({
+			navigation(){
+				return Array.from(tabs.entries(), ([name, tab])=>`
+					<a id="${tab.id}" href="#${name}">
+						${tab.title}
+					</a>
+				`).join('');
+			},
+			content(){
+				return group.html.content();
+			}
+		}),
 		mount(){
 			tabs.forEach((tab, name)=>{
 				const elm = document.getElementById(tab.id);
 				elm.addEventListener('click', e=>{
 					e.preventDefault();
-					o.activate(name);
+					o.select(name);
 				});
 			});
 			
@@ -126,7 +128,7 @@ export function tabs(host){
 				scope.fieldset().render_fields();
 			});
 			
-			o.activate();
+			o.select();
 			
 			return o;
 		}
@@ -148,14 +150,10 @@ function fieldset_group(){
 		active(){
 			return active;
 		},
-		scope(name){
-			if(!scopes.has(name)) throw Error(`Fieldset '${name}' does not exist`);
-			return scopes.get(name);
+		activate(bool){
+			active.activate(bool);
 		},
-		scopes(){
-			return scopes.values();
-		},
-		activate(name=null){
+		select(name=null){
 			const scope = get_scope(name);
 			if(scope !== active){
 				if(fieldset_sending()) return null;
@@ -167,14 +165,23 @@ function fieldset_group(){
 			}
 			return active.name;
 		},
-		html_content(){
-			return Array.from(o.scopes(), scope=>
-				scope.html_content()
-			).join('');
+		scope(name){
+			if(!scopes.has(name)) throw Error(`Fieldset '${name}' does not exist`);
+			return scopes.get(name);
 		},
-		html_buttons(){
-			return active.html_buttons();
-		}
+		scopes(){
+			return scopes.values();
+		},
+		html: Object.freeze({
+			content(){
+				return Array.from(o.scopes(), scope=>
+					scope.html.content()
+				).join('');
+			},
+			buttons(){
+				return active.html.buttons();
+			}
+		})
 	};
 	
 	function fieldset_sending(){
@@ -196,9 +203,11 @@ function fieldset_group(){
 function fieldset_scope(name, factory){
 	let scope_html = '';
 	const id = dom.id(), scope_context = Object.freeze({
-		content(html){
-			scope_html = html || '';
-		}
+		write: Object.freeze({
+			content(html){
+				scope_html = html || '';
+			}
+		})
 	}), fieldset = factory.call(scope_context);
 	return Object.freeze({
 		name,
@@ -207,12 +216,14 @@ function fieldset_scope(name, factory){
 			if(elm) elm.style.display = bool ? '' : 'none';
 			fieldset.activate(bool);
 		},
-		html_content(){
-			return `<div id="${id}" style="display:none">${scope_html}</div>`;
-		},
-		html_buttons(){
-			return fieldset.html_buttons();
-		},
+		html: Object.freeze({
+			content(){
+				return `<div id="${id}" style="display:none">${scope_html}</div>`;
+			},
+			buttons(){
+				return fieldset.html.buttons();
+			}
+		}),
 		fieldset(){
 			return fieldset;
 		}

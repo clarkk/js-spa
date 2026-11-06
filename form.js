@@ -86,37 +86,39 @@ export function fieldset(store, fields, buttons, model_input=null){
 			valid_button_name(name);
 			return buttons[name];
 		},
-		html_field(name, label=null, width=null){
-			const id = prepare_field_id(name);
-			return `
-				<div class="field-container ${label ? 'field-label' : ''}" style="width:${width ? width+'px' : '100%'}">
-					${label ? `<label>${fmt.html(label)}</label>` : ''}
-					<div id="${id}" class="${label ? 'field-input' : ''}"></div>
-					${fields.get(name).type === TYPE_DROPDOWN ? '' : `<div id="${field_error_id(id)}" class="field-error"></div>`}
-				</div>
-			`;
-		},
-		html_field_inline(name, label, width){
-			const id = prepare_field_id(name);
-			return `
-				<div class="field-container field-label-inline">
-					${fields.get(name).type === TYPE_CHECKBOX ? `
-						<label>${fmt.html(label)}</label>
-						<div id="${id}" class="field-input"></div>
-					` : `
-						
-					`}
-				</div>
-			`;
-		},
-		html_button(name){
-			return `<div id="${prepare_button_id(name)}"></div>`;
-		},
-		html_buttons(){
-			return Object.keys(o.buttons()).map(button=>
-				o.html_button(button)
-			).join('');
-		},
+		html: Object.freeze({
+			field(name, label=null, width=null){
+				const id = prepare_field_id(name);
+				return `
+					<div class="field-container ${label ? 'field-label' : ''}" style="width:${width ? width+'px' : '100%'}">
+						${label ? `<label>${fmt.html(label)}</label>` : ''}
+						<div id="${id}" class="${label ? 'field-input' : ''}"></div>
+						${fields.get(name).type === TYPE_DROPDOWN ? '' : `<div id="${field_error_id(id)}" class="field-error"></div>`}
+					</div>
+				`;
+			},
+			field_inline(name, label, width){
+				const id = prepare_field_id(name);
+				return `
+					<div class="field-container field-label-inline">
+						${fields.get(name).type === TYPE_CHECKBOX ? `
+							<label>${fmt.html(label)}</label>
+							<div id="${id}" class="field-input"></div>
+						` : `
+							
+						`}
+					</div>
+				`;
+			},
+			button(name){
+				return `<div id="${prepare_button_id(name)}"></div>`;
+			},
+			buttons(){
+				return Object.keys(o.buttons()).map(button=>
+					o.html.button(button)
+				).join('');
+			},
+		}),
 		render(values={}){
 			o.render_fields(values);
 			o.render_buttons();

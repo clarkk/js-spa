@@ -57,19 +57,20 @@ function create_modal(store, type, content){
 	modal_stack.append(elm);
 	
 	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), modal = Object.freeze({
-		activate(bool=true){
-			if(fieldset_group()) fieldset.active().activate(!!bool);
-			else fieldset.activate(!!bool);
+		activate(bool){
+			fieldset.activate(bool);
 		},
-		title(html){
-			elm_title.innerHTML = html || '';
-		},
-		content(html){
-			elm_content.innerHTML = html || '';
-		},
-		buttons(html){
-			elm_buttons.innerHTML = html;
-		},
+		write: Object.freeze({
+			title(html){
+				elm_title.innerHTML = html || '';
+			},
+			content(html){
+				elm_content.innerHTML = html || '';
+			},
+			buttons(html){
+				elm_buttons.innerHTML = html;
+			}
+		}),
 		close(){
 			if(top_modal() !== modal) return;
 			
@@ -83,7 +84,7 @@ function create_modal(store, type, content){
 	
 	switch(typeof content){
 	case 'string':
-		modal.title(content);
+		modal.write.title(content);
 		fieldset = frm.fieldset(store, null, {
 			[frm.BTN_ACTION]: {
 				click(){
@@ -91,7 +92,7 @@ function create_modal(store, type, content){
 				}
 			}
 		});
-		modal.buttons(fieldset.html_buttons());
+		modal.write.buttons(fieldset.html.buttons());
 		fieldset.render().focus();
 		break;
 		
@@ -99,7 +100,7 @@ function create_modal(store, type, content){
 		fieldset = content.call(modal);
 		if(fieldset_group()) fieldset.mount();
 		else{
-			modal.buttons(fieldset.html_buttons());
+			modal.write.buttons(fieldset.html.buttons());
 			fieldset.render().focus();
 		}
 		break;
