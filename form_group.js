@@ -33,8 +33,20 @@ export function stepper(host){
 			content: group.html.content
 		}),
 		mount(){
+			let step_index = 0, last_index = step_names.length - 1;
 			group.scopes().forEach(scope=>{
-				scope.fieldset().render_fields();
+				const f = scope.fieldset();
+				
+				if(step_index > 0){
+					
+				}
+				
+				if(step_index < last_index){
+					
+				}
+				
+				f.render_fields();
+				step_index++;
 			});
 			
 			group.select();
