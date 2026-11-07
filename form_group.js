@@ -1,7 +1,7 @@
 import * as dom from 'dom';
 import * as frm from 'frm';
 
-let navigation;
+let renderers = null;
 
 init({
 	stepper({name, id, icon, title}){
@@ -21,10 +21,10 @@ init({
 	}
 });
 
-export function init(renderers){
-	navigation = Object.freeze({
-		stepper: renderers.stepper,
-		tabs: renderers.tabs
+export function init(custom_renderers){
+	renderers = Object.freeze({
+		stepper: custom_renderers.stepper,
+		tabs: custom_renderers.tabs
 	});
 }
 
@@ -58,7 +58,7 @@ export function stepper(host){
 				return `
 					<div class="stepper">
 						${Array.from(steps, ([name, step])=>
-							navigation.stepper({name, ...step})
+							renderers.stepper({name, ...step})
 						).join('')}
 					</div>
 				`;
@@ -161,7 +161,7 @@ export function tabs(host){
 				return `
 					<div class="tabs">
 						${Array.from(tabs, ([name, tab])=>
-							navigation.tabs({name, ...tab})
+							renderers.tabs({name, ...tab})
 						).join('')}
 					</div>
 				`;
