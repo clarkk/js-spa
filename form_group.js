@@ -1,6 +1,33 @@
 import * as dom from 'dom';
 import * as frm from 'frm';
 
+let navigation;
+
+init({
+	stepper({name, id, icon, title}){
+		return `
+			<div id="${id}" class="step">
+				<i class="bi bi-${icon}"></i>
+				${title}
+			</div>
+		`;
+	},
+	tabs({name, id, title}){
+		return `
+			<a id="${id}" href="#${name}">
+				${title}
+			</a>
+		`;
+	}
+});
+
+export function init(renderers){
+	navigation = Object.freeze({
+		stepper: renderers.stepper,
+		tabs: renderers.tabs
+	});
+}
+
 export function stepper(host){
 	const group = fieldset_group(), steps = new Map(), step_names = [], step_data = [], o = {
 		add(name, icon, title, factory){
@@ -28,12 +55,13 @@ export function stepper(host){
 		},
 		html: Object.freeze({
 			navigation(){
-				return Array.from(steps.entries(), ([name, step])=>`
-					<div id="${step.id}" class="step">
-						<i class="bi bi-${step.icon}"></i>
-						${step.title}
+				return `
+					<div class="stepper">
+						${Array.from(steps.entries(), ([name, step])=>
+							navigation.stepper({name, ...step})
+						).join('')}
 					</div>
-				`).join('');
+				`;
 			},
 			content: group.html.content
 		}),
@@ -130,11 +158,13 @@ export function tabs(host){
 		},
 		html: Object.freeze({
 			navigation(){
-				return Array.from(tabs.entries(), ([name, tab])=>`
-					<a id="${tab.id}" href="#${name}">
-						${tab.title}
-					</a>
-				`).join('');
+				return `
+					<div class="tabs">
+						${Array.from(tabs.entries(), ([name, tab])=>
+							navigation.tabs({name, ...tab})
+						).join('')}
+					</div>
+				`;
 			},
 			content: group.html.content
 		}),
