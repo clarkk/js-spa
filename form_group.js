@@ -2,14 +2,18 @@ import * as dom from 'dom';
 import * as frm from 'frm';
 
 export function stepper(host){
-	const group = fieldset_group(), steps = new Map(), step_names = [], o = {
+	const group = fieldset_group(), steps = new Map(), step_names = [], step_data = [], o = {
 		add(name, icon, title, factory){
-			const scope = group.add(name, factory), id = dom.id();
+			const step_index = step_names.length, id = dom.id(), scope = group.add(name, factory, {
+				post_data(){
+					if(step_index === 0) return null;
+					return {...step_data[step_index - 1]};
+				}
+			});
 			steps.set(name, {
 				id,
 				icon,
-				title,
-				//data: {}
+				title
 			});
 			step_names.push(name);
 			return scope;
@@ -17,10 +21,10 @@ export function stepper(host){
 		active: group.active,
 		activate: group.activate,
 		next(){
-			return direction(1);
+			return change(1);
 		},
 		back(){
-			return direction(-1);
+			return change(-1);
 		},
 		html: Object.freeze({
 			navigation(){
@@ -34,28 +38,25 @@ export function stepper(host){
 			content: group.html.content
 		}),
 		mount(){
-			let step_index = 0, last_index = step_names.length - 1;
+			let step_index = 0;
+			const last_index = step_names.length - 1;
 			group.scopes().forEach(scope=>{
 				const f = scope.fieldset();
 				
-				if(step_index > 0){
-					if(!f.buttons(frm.BTN_BACK, true)){
-						f.apply_button(frm.BTN_BACK, {
-							click(){
-								o.steps.back();
-							}
-						});
-					}
+				if(step_index > 0 && !f.buttons(frm.BTN_BACK, true)){
+					f.apply_button(frm.BTN_BACK, {
+						click(){
+							o.back();
+						}
+					});
 				}
 				
-				if(step_index < last_index){
-					if(!f.buttons(frm.BTN_NEXT, true)){
-						f.apply_button(frm.BTN_NEXT, {
-							click(){
-								o.next();
-							}
-						});
-					}
+				if(step_index < last_index && !f.buttons(frm.BTN_NEXT, true)){
+					f.apply_button(frm.BTN_NEXT, {
+						click(){
+							o.next();
+						}
+					});
 				}
 				
 				f.render_fields();
@@ -69,17 +70,14 @@ export function stepper(host){
 		}
 	};
 	
-	function direction(move){
-		/*
-			- loading class not added to button
-		*/
-		
-		console.log('dir:', move)
-		const target_index = index(group.active().name) + move;
+	function change(move){
+		const active = group.active(), current_index = index(active.name), target_index = current_index + move;
 		if(target_index < 0 || target_index >= step_names.length) return false;
-		console.log('index:', target_index)
-		if(group.select(step_names[target_index]) === null) return false;
-		console.log('render')
+		
+		step_data[current_index] = active.fieldset().val();
+		
+		group.select(step_names[target_index]);
+		if(step_data[target_index] != null) group.active().fieldset().reset(step_data[target_index]);
 		render();
 		
 		return true;
@@ -120,7 +118,6 @@ export function tabs(host){
 		activate: group.activate,
 		select(name=null){
 			name = group.select(name);
-			if(name === null) return false;
 			
 			tabs.forEach((tab, key)=>{
 				document.getElementById(tab.id).classList.toggle('active', key === name);
@@ -166,10 +163,10 @@ export function tabs(host){
 function fieldset_group(){
 	let active = null;
 	const scopes = new Map(), o = {
-		add(name, factory){
+		add(name, factory, methods={}){
 			if(scopes.has(name)) throw Error(`Fieldset '${name}' already exists`);
 			
-			const scope = fieldset_scope(name, factory);
+			const scope = fieldset_scope(name, factory, methods);
 			scopes.set(name, scope);
 			return scope;
 		},
@@ -182,8 +179,6 @@ function fieldset_group(){
 		select(name=null){
 			const scope = get_scope(name);
 			if(scope !== active){
-				if(fieldset_sending()) return null;
-				
 				active = scope;
 				scopes.forEach(scope=>
 					scope.activate(active === scope)
@@ -208,13 +203,6 @@ function fieldset_group(){
 		})
 	};
 	
-	function fieldset_sending(){
-		for(const scope of o.scopes()){
-			if(scope.fieldset().sending()) return true;
-		}
-		return false;
-	}
-	
 	function get_scope(name=null){
 		if(!scopes.size) throw Error(`Fieldset group is empty`);
 		if(name === null) return o.scopes().next().value;
@@ -224,9 +212,10 @@ function fieldset_group(){
 	return Object.freeze(o);
 }
 
-function fieldset_scope(name, factory){
+function fieldset_scope(name, factory, methods={}){
 	let scope_html = '';
 	const id = dom.id(), scope_context = Object.freeze({
+		...methods,
 		write: Object.freeze({
 			content(html){
 				scope_html = html || '';
