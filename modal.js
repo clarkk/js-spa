@@ -3,31 +3,9 @@ import * as frm from 'frm';
 
 const stack = [], type_dialog = 'dialog', type_error = 'error';
 
-let app_container = null, modal_backdrop = null, modal_stack = null, renderers = null;
+let app_container = null, modal_backdrop = null, modal_stack = null;
 
-const default_renderers = Object.freeze({
-	dialog({title_id, content_id, buttons_id}){
-		return `
-			<div id="${title_id}" class="modal-title"></div>
-			<div id="${content_id}" class="modal-content"></div>
-			<div id="${buttons_id}" class="modal-buttons"></div>
-		`;
-	},
-	error({title_id, content_id, buttons_id}){
-		return `
-			<div id="${title_id}" class="modal-title"></div>
-			<div id="${content_id}" class="modal-content"></div>
-			<div id="${buttons_id}" class="modal-buttons"></div>
-		`;
-	}
-});
-
-export function init(main, modal_container, custom_renderers){
-	renderers = Object.freeze({
-		dialog: custom_renderers?.dialog ?? default_renderers.dialog,
-		error: custom_renderers?.error ?? default_renderers.error
-	});
-	
+export function init(main, modal_container){
 	app_container = main;
 	const backdrop_id = dom.id(), stack_id = dom.id();
 	modal_container.innerHTML = `
@@ -71,11 +49,11 @@ function create_modal(store, type, content){
 	let fieldset = null;
 	const title_id = dom.id(), content_id = dom.id(), buttons_id = dom.id(), elm = document.createElement('div');
 	elm.className = 'modal-'+type;
-	elm.innerHTML = renderers[type]({
-		title_id,
-		content_id,
-		buttons_id
-	});
+	elm.innerHTML = `
+		<div id="${title_id}" class="modal-title"></div>
+		<div id="${content_id}" class="modal-content"></div>
+		<div id="${buttons_id}" class="modal-buttons"></div>
+	`;
 	modal_stack.append(elm);
 	
 	const elm_title = document.getElementById(title_id), elm_content = document.getElementById(content_id), elm_buttons = document.getElementById(buttons_id), modal = Object.freeze({
