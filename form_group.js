@@ -57,7 +57,7 @@ export function stepper(host){
 			navigation(){
 				return `
 					<div class="stepper">
-						${Array.from(steps.entries(), ([name, step])=>
+						${Array.from(steps, ([name, step])=>
 							navigation.stepper({name, ...step})
 						).join('')}
 					</div>
@@ -87,7 +87,7 @@ export function stepper(host){
 					});
 				}
 				
-				f.render_fields();
+				f.move_button_last(frm.BTN_ACTION).render_fields();
 				step_index++;
 			});
 			
@@ -160,7 +160,7 @@ export function tabs(host){
 			navigation(){
 				return `
 					<div class="tabs">
-						${Array.from(tabs.entries(), ([name, tab])=>
+						${Array.from(tabs, ([name, tab])=>
 							navigation.tabs({name, ...tab})
 						).join('')}
 					</div>

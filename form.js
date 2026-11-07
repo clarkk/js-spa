@@ -125,6 +125,14 @@ export function fieldset(store, fields, buttons, model_input=null){
 			buttons[name] = button;
 			return o;
 		},
+		move_button_last(name){
+			if(name in buttons){
+				const button = buttons[name];
+				delete buttons[name];
+				buttons[name] = button;
+			}
+			return o;
+		},
 		render(values={}){
 			o.render_fields(values);
 			o.render_buttons();
