@@ -42,8 +42,7 @@ export function stepper(host){
 					if(!f.buttons(frm.BTN_BACK, true)){
 						f.apply_button(frm.BTN_BACK, {
 							click(){
-								console.log('back step')
-								//steps.next();
+								o.steps.back();
 							}
 						});
 					}
@@ -53,8 +52,7 @@ export function stepper(host){
 					if(!f.buttons(frm.BTN_NEXT, true)){
 						f.apply_button(frm.BTN_NEXT, {
 							click(){
-								console.log('next step')
-								//steps.next();
+								o.next();
 							}
 						});
 					}
@@ -72,11 +70,16 @@ export function stepper(host){
 	};
 	
 	function direction(move){
+		/*
+			- loading class not added to button
+		*/
+		
+		console.log('dir:', move)
 		const target_index = index(group.active().name) + move;
 		if(target_index < 0 || target_index >= step_names.length) return false;
-		
+		console.log('index:', target_index)
 		if(group.select(step_names[target_index]) === null) return false;
-		
+		console.log('render')
 		render();
 		
 		return true;
