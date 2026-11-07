@@ -1,4 +1,5 @@
 import * as dom from 'dom';
+import * as frm from 'frm';
 
 export function stepper(host){
 	const group = fieldset_group(), steps = new Map(), step_names = [], o = {
@@ -38,11 +39,25 @@ export function stepper(host){
 				const f = scope.fieldset();
 				
 				if(step_index > 0){
-					
+					if(!f.buttons(frm.BTN_BACK, true)){
+						f.apply_button(frm.BTN_BACK, {
+							click(){
+								console.log('back step')
+								//steps.next();
+							}
+						});
+					}
 				}
 				
 				if(step_index < last_index){
-					
+					if(!f.buttons(frm.BTN_NEXT, true)){
+						f.apply_button(frm.BTN_NEXT, {
+							click(){
+								console.log('next step')
+								//steps.next();
+							}
+						});
+					}
 				}
 				
 				f.render_fields();

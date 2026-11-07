@@ -119,6 +119,12 @@ export function fieldset(store, fields, buttons, model_input=null){
 				).join('');
 			},
 		}),
+		apply_button(name, button){
+			button = deep_clone(button);
+			apply_button(name, button);
+			buttons[name] = button;
+			return o;
+		},
 		render(values={}){
 			o.render_fields(values);
 			o.render_buttons();
@@ -134,6 +140,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 			return o;
 		},
 		render_buttons(){
+			if(!Object.keys(buttons).length) throw Error('Fieldset must have at least one button');
+			
 			for(const k in buttons) prepare_button(k).render();
 			return o;
 		},
@@ -287,7 +295,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 	
 	apply_fields(fields);
 	
-	buttons = deep_clone(buttons);
+	buttons = deep_clone(buttons ?? {});
 	for(const k in buttons) apply_button(k, buttons[k]);
 	
 	async function send(run){
@@ -614,7 +622,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		if(!button?.Button) return false;
 		
 		await button.Button.click();
-		return false;
+		return true;
 	}
 	
 	function value_change(value, init){
