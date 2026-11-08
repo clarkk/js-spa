@@ -44,15 +44,15 @@ button {
 	align-items: center;
 	gap: .3rem;
 	padding: .8rem 1rem;
+	color: hsl(var(--color-text));
 	background: hsl(var(--color-background));
 	border: 0;
 	border-radius: 99px;
-	color: hsl(var(--color-text));
 	cursor: pointer;
 	user-select: none;
 }
 
-.btn-small {
+button.btn-small {
 	padding: .5rem .8rem;
 }
 
@@ -221,6 +221,7 @@ textarea,
 	display: inline-flex;
 	flex-direction: column;
 	gap: .1rem;
+	min-width: 0;
 }
 
 .field-label,
@@ -229,6 +230,7 @@ textarea,
 }
 
 .field-label-inline {
+	flex-direction: row;
 	align-items: center;
 	gap: .3rem;
 }
@@ -251,6 +253,7 @@ textarea,
 }
 
 .field-input {
+	min-width: 0;
 	padding: var(--input-focus-shadow);
 }
 
@@ -363,7 +366,7 @@ textarea.error {
 	background:hsl(var(--color-background-warning));
 }*/
 
-.btn-cta {
+button.btn-cta {
 	--color-text: 0 0 100%;
 	--color-background: var(--color-cta);
 }
@@ -496,7 +499,7 @@ body.debtor #page_content .inp-checkbox-row,
 
 button:focus {
 	--color-shadow: 0 0% 76%;
-	--opacity-shadow: 60%;
+	--opacity-shadow: 40%;
 	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
 }
 
@@ -507,6 +510,11 @@ textarea:focus,
 	--opacity-shadow: 30%;
 	border-color: hsl(var(--input-color-focus));
 	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
+}
+
+button.btn-cta:focus {
+	--color-shadow: var(--color-cta);
+	--opacity-shadow: 30%;
 }
 
 input.error:focus,
