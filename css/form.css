@@ -1,6 +1,11 @@
 :root {
+	--input-color-text: 0 0% 15%;
+	--input-color-background: 0 0% 100%;
+	--input-color-border: 0 0% 75%;
+	--input-color-focus: 215 90% 50%;
 	--input-focus-shadow: 3px;
-	--input-color-background: hsl(0 0% 100%);
+	
+	--input-color-error-background: var(--color-error-h) var(--color-error-s) 97%;
 }
 
 /*::placeholder{
@@ -33,15 +38,17 @@ textarea {
 }
 
 button {
+	--color-text: 0 0% 0%;
+	--color-background: 0 0% 96%;
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
 	gap: .3rem;
 	padding: .8rem 1rem;
-	background: hsl(0 0% 96%);
+	background: hsl(var(--color-background));
 	border: 0;
 	border-radius: 99px;
-	color: hsl(0 0% 0%);
+	color: hsl(var(--color-text));
 	cursor: pointer;
 	user-select: none;
 }
@@ -67,9 +74,11 @@ button {
 input,
 textarea,
 .input-checkbox {
+	--color-background: var(--input-color-background);
+	--color-border: var(--input-color-border);
 	display: inline-block;
-	background: var(--input-color-background);
-	border: 1px solid hsl(0 0% 15%);
+	background: hsl(var(--color-background));
+	border: 1px solid hsl(var(--color-border));
 	border-radius: 2px;
 }
 
@@ -79,10 +88,11 @@ textarea,
 
 input,
 textarea {
+	--color-text: var(--input-color-text);
 	width: 100%;
 	padding: .3rem .4rem;
 	line-height: 1.3rem;
-	color: hsl(0 0% 15%);
+	color: hsl(var(--color-text));
 }
 
 textarea {
@@ -133,22 +143,21 @@ textarea.sending {
 
 input[readonly],
 textarea[readonly] {
+	--color-background: 0 0% 97%;
 	color: inherit;
-	background: hsl(0 0% 97%);
 	user-select: none;
 }
 
 button:disabled {
-	color: hsl(0 0% 50%);
-	background: hsl(0 0% 98%);
+	--color-text: 0 0% 50%;
+	--color-background: 0 0% 98%;
 	cursor: default;
 }
 
 input:disabled,
 textarea:disabled {
-	color: inherit;
-	background: hsl(0 0% 94%);
-	user-select: none;
+	--color-text: 0 0% 50%;
+	--color-background: 0 0% 94%;
 }
 
 /*.inp-checkbox,
@@ -315,9 +324,9 @@ textarea,
 
 input.error,
 textarea.error {
-	background-color: hsl(var(--color-error-input-background));
+	--color-text: var(--color-error-input-text);
+	--color-background: var(--input-color-error-background);
 	border-color: hsl(var(--color-error)) !important;
-	color: hsl(var(--color-error-input-text));
 }
 
 /*.inp-positive{
@@ -356,8 +365,8 @@ textarea.error {
 }*/
 
 .btn-cta {
-	color: hsl(0 0 100%);
-	background: hsl(var(--color-cta));
+	--color-text: 0 0 100%;
+	--color-background: var(--color-cta);
 }
 
 /*.btn-cta{
@@ -495,8 +504,9 @@ button:focus {
 input:focus,
 textarea:focus,
 .input-checkbox.focus {
-	--color-shadow: var(--color-input-focus);
-	--opacity-shadow: 40%;
+	--color-shadow: var(--input-color-focus);
+	--opacity-shadow: 30%;
+	border-color: hsl(var(--input-color-focus));
 	box-shadow: 0 0 0 var(--input-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
 }
 
@@ -510,7 +520,7 @@ textarea.error:focus {
 textarea:focus,
 .inp-checkbox.focus,
 .btn-cta:focus{
-	box-shadow:0 0 0 var(--input-focus-shadow) hsl(var(--color-input-focus) / 40%);
+	box-shadow:0 0 0 var(--input-focus-shadow) hsl(var(--input-color-focus) / 40%);
 }
 
 input:focus,
@@ -576,7 +586,7 @@ button.loading {
 
 /*.btn-cta.loading{
 	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%) !important;
-	--pulse-color:var(--color-input-focus);
+	--pulse-color:var(--input-color-focus);
 	animation-name:btn-pulse;
 }
 
