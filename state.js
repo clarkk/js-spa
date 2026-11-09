@@ -7,6 +7,9 @@ export function create_auth_store(init_state, url_trans, create_extension=null){
 	let current_state = init_state, env_data = null, trans_lang = {}, trans_lang_error = {};
 	const listeners = new Set(), schema = create_schema(), o = {
 		schema,
+		async init(){
+			await load_trans(url_trans);
+		},
 		env(data, update=false){
 			if(!arguments.length) return {...env_data};
 			env_data = {...data};
@@ -41,16 +44,12 @@ export function create_auth_store(init_state, url_trans, create_extension=null){
 		}
 	};
 	
-	load_trans(url_trans);
-	
-	function load_trans(url){
-		api.client.get(null, url).then(trans=>{
-			trans_lang = trans?.lang || {};
-			trans_lang_error = trans?.lang_error || {};
-			o.update();
-		}).catch(err=>{
-			console.error('Unable to load translations:', err);
-		});
+	async function load_trans(url){
+		const trans = await api.client.get(null, url);
+		if(!trans?.lang || typeof trans.lang !== 'object') throw new Error('Invalid translations response');
+		
+		trans_lang = trans.lang;
+		trans_lang_error = trans.lang_error || {};
 	}
 	
 	function translate(key, dict, replace){
