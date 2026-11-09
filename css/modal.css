@@ -33,6 +33,9 @@
 	grid-area: 1 / 1;
 	display: flex;
 	flex-direction: column;
+	max-width: calc(100vw - 2rem);
+	max-height: calc(100dvh - 2rem);
+	border-radius: .1rem;
 	pointer-events: auto;
 }
 

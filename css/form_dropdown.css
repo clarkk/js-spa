@@ -1,10 +1,18 @@
+:root {
+	--dropdown-color-header: 0 0% 95%;
+	--dropdown-color-background-header: 215 30% 30%;
+}
+
 .field-dropdown {
 	position: relative;
 }
 
 .field-dropdown > input {
-	padding-right: 1rem;
 	transition: padding-right .2s;
+}
+
+.field-dropdown:not(.active) > input {
+	padding-right: 1rem;
 }
 
 .field-dropdown-icon {
@@ -17,10 +25,6 @@
 	pointer-events: none;
 }
 
-.field-dropdown.active > input {
-	padding-right: revert;
-}
-
 .field-dropdown.active > .field-dropdown-icon {
 	display: none;
 }
@@ -29,9 +33,9 @@
 	position: fixed;
 	z-index: 3;
 	display: none;
-	background: #fff;
+	background: hsl(0 0% 100%);
 	border-radius: .6rem;
-	box-shadow: 0 .3rem 1rem hsl(0 0% 0% / 12%);
+	box-shadow: 0 .4rem 1.2rem hsl(0 0% 80%);
 	overflow: hidden;
 }
 
@@ -43,28 +47,34 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: .4rem .5rem;
+	gap: 1rem;
+	padding: .7rem 1rem;
+	color: hsl(var(--dropdown-color-header));
+	background: hsl(var(--dropdown-color-background-header));
 }
 
 .field-dropdown-label {
+	font-size: .9rem;
 	font-weight: 600;
 }
 
 .field-dropdown-count {
 	font-size: .8rem;
+	font-variant-numeric: tabular-nums;
 }
 
 .field-dropdown-list,
 .field-dropdown-calendar {
 	margin: 0;
 	padding: 0;
+	max-width: calc(100vw - 1rem);
 	list-style: none;
 	overflow: auto;
 }
 
 .field-dropdown-list {
 	width: 20rem;
-	height: 12rem;
+	height: 13rem;
 }
 
 .field-dropdown-calendar {
@@ -75,12 +85,13 @@
 .field-dropdown-list > li {
 	display: flex;
 	align-items: center;
-	padding: .45rem .7rem;
+	padding: .5rem .7rem;
 	cursor: pointer;
 	user-select: none;
 	white-space: nowrap;
 }
 
 .field-dropdown-list > li.selected {
-	background: hsl(0 0% 80%);
+	color: hsl(0 0% 100%);
+	background: hsl(var(--input-color-focus) / 80%);
 }

@@ -183,6 +183,18 @@ export function create(store, parent, value){
 	};
 }
 
+export function clear(){
+	active?.close();
+	
+	if(position_frame !== null){
+		cancelAnimationFrame(position_frame);
+		position_frame = null;
+	}
+	
+	panel?.remove();
+	panel = null;
+}
+
 function create_list(store, inputs, field_val, controls, def, is_open){
 	let options = [], filtered = [], selected = -1, searching = false, items = null, unsubscribe = null;
 	const o = {
