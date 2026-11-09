@@ -353,10 +353,10 @@ textarea.error {
 
 .inp-alert.warning{
 	background:hsl(var(--color-background-warning));
-}*/
+}
 
-/*.btn-cta{
-	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 10%) !important;
+.btn-cta{
+	--color-border:var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 10%) !important;
 	--opacity-border:100%;
 	background:hsl(var(--color-focus));
 	color:#fff;
@@ -390,7 +390,7 @@ textarea.error {
 }
 
 .body-invert .btn-cta{
-	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 45%);
+	--color-border:var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 45%);
 }
 
 .modal .button-panel button{
@@ -526,18 +526,18 @@ textarea:focus,
 }
 
 .btn-cta:focus{
-	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 40%) !important;
+	--color-border:var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 40%) !important;
 }
 
 .body-invert input:focus,
 .body-invert .btn-cta:focus,
 .body-invert .inp-checkbox.focus{
-	box-shadow:0 0 0 var(--input-width-focus-shadow) hsl(var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) + 25%) / 60%);
+	box-shadow:0 0 0 var(--input-width-focus-shadow) hsl(var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) + 25%) / 60%);
 }
 
 .body-invert input:focus,
 .body-invert .inp-checkbox.focus{
-	border-color:hsl(var(--color-focus-h) 100% 50%);
+	border-color:hsl(var(--input-color-focus-h) 100% 50%);
 }
 
 .body-invert button:focus{
@@ -546,7 +546,7 @@ textarea:focus,
 }
 
 .body-invert .btn-cta:focus{
-	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 10%);
+	--color-border:var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 10%);
 }
 
 .modal-error button:focus,
@@ -582,25 +582,25 @@ textarea.sending {
 
 input[readonly],
 textarea[readonly] {
-	--color-background: var(--color-focus-h) 5% 97%;
+	--color-background: var(--input-color-focus-h) 10% 97%;
 	color: inherit;
 	user-select: none;
 }
 
 button:disabled {
 	--color-text: 0 0% 50%;
-	--color-background: var(--color-focus-h) 5% 98%;
+	--color-background: var(--input-color-focus-h) 10% 98%;
 	cursor: default;
 }
 
 input:disabled,
 textarea:disabled {
 	--color-text: 0 0% 50%;
-	--color-background: var(--color-focus-h) 5% 94%;
+	--color-background: var(--input-color-focus-h) 10% 94%;
 }
 
 /*.btn-cta.loading{
-	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%) !important;
+	--color-border:var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%) !important;
 	--pulse-color:var(--input-color-focus);
 	animation-name:btn-pulse;
 }
@@ -611,8 +611,8 @@ textarea:disabled {
 }
 
 .body-invert .btn-cta.loading{
-	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%);
-	--pulse-color:var(--color-focus-h) 100% 90%;
+	--color-border:var(--input-color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 30%);
+	--pulse-color:var(--input-color-focus-h) 100% 90%;
 }*/
 
 @keyframes btn-pulse {
