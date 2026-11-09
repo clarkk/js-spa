@@ -1,0 +1,13 @@
+:root {
+	--color-cta-h: 264;
+	--color-cta-s: 90%;
+	--color-cta-l: 60%;
+	--color-cta: var(--color-cta-h) var(--color-cta-s) var(--color-cta-l);
+	
+	--color-focus-h: 215;
+	
+	--color-error-h: 355;
+	--color-error-s: 100%;
+	--color-error-l: 59%;
+	--color-error: var(--color-error-h) var(--color-error-s) var(--color-error-l);
+}

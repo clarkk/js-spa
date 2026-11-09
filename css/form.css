@@ -3,13 +3,15 @@
 	--button-color-background: var(--color-cta-h) var(--color-cta-s) 96%;
 	--button-width-focus-shadow: 3px;
 	
-	--input-color-focus-h: 215;
+	--input-color-focus-h: var(--color-focus-h);
 	
 	--input-color-text: 0 0% 15%;
 	--input-color-background: 0 0% 100%;
-	--input-color-border: var(--input-color-focus-h) 10% 75%;
+	--input-color-border: var(--input-color-focus-h) 20% 70%;
 	--input-color-focus: var(--input-color-focus-h) 90% 50%;
 	--input-width-focus-shadow: 3px;
+	
+	--input-color-error-text: var(--color-error-h) 45% 28%;
 	--input-color-error-background: var(--color-error-h) var(--color-error-s) 97%;
 }
 
@@ -139,30 +141,6 @@ input[type='checkbox'] {
 
 .input-checkbox-inner.checked {
 	--size: 10px;
-}
-
-input.sending,
-textarea.sending {
-	cursor: default;
-}
-
-input[readonly],
-textarea[readonly] {
-	--color-background: 0 0% 97%;
-	color: inherit;
-	user-select: none;
-}
-
-button:disabled {
-	--color-text: 0 0% 50%;
-	--color-background: 0 0% 98%;
-	cursor: default;
-}
-
-input:disabled,
-textarea:disabled {
-	--color-text: 0 0% 50%;
-	--color-background: 0 0% 94%;
 }
 
 /*.inp-checkbox,
@@ -330,9 +308,14 @@ textarea,
 	border-radius:4px;
 }*/
 
+button.btn-cta {
+	--color-text: 0 0 100%;
+	--color-background: var(--color-cta);
+}
+
 input.error,
 textarea.error {
-	--color-text: var(--color-error-input-text);
+	--color-text: var(--input-color-error-text);
 	--color-background: var(--input-color-error-background);
 	border-color: hsl(var(--color-error)) !important;
 }
@@ -371,11 +354,6 @@ textarea.error {
 .inp-alert.warning{
 	background:hsl(var(--color-background-warning));
 }*/
-
-button.btn-cta {
-	--color-text: 0 0 100%;
-	--color-background: var(--color-cta);
-}
 
 /*.btn-cta{
 	--color-border:var(--color-focus-h) var(--color-focus-s) calc(var(--color-focus-l) - 10%) !important;
@@ -509,6 +487,11 @@ button:focus {
 	box-shadow: 0 0 0 var(--button-width-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
 }
 
+button.btn-cta:focus {
+	--color-shadow: var(--color-cta-h) var(--color-cta-s) 50%;
+	--opacity-shadow: 40%;
+}
+
 input:focus,
 textarea:focus,
 .input-checkbox.focus {
@@ -516,11 +499,6 @@ textarea:focus,
 	--opacity-shadow: 40%;
 	border-color: hsl(var(--input-color-focus));
 	box-shadow: 0 0 0 var(--input-width-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
-}
-
-button.btn-cta:focus {
-	--color-shadow: var(--color-cta-h) var(--color-cta-s) 50%;
-	--opacity-shadow: 40%;
 }
 
 input.error:focus,
@@ -595,6 +573,30 @@ button.loading {
 	--pulse-color: 0 0% 65%;
 	cursor: default;
 	animation: btn-pulse .8s infinite;
+}
+
+input.sending,
+textarea.sending {
+	cursor: default;
+}
+
+input[readonly],
+textarea[readonly] {
+	--color-background: var(--color-focus-h) 5% 97%;
+	color: inherit;
+	user-select: none;
+}
+
+button:disabled {
+	--color-text: 0 0% 50%;
+	--color-background: var(--color-focus-h) 5% 98%;
+	cursor: default;
+}
+
+input:disabled,
+textarea:disabled {
+	--color-text: 0 0% 50%;
+	--color-background: var(--color-focus-h) 5% 94%;
 }
 
 /*.btn-cta.loading{

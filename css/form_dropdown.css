@@ -1,14 +1,10 @@
 :root {
-	--dropdown-color-header: 0 0% 95%;
-	--dropdown-color-background-header: 215 30% 30%;
+	--dropdown-color-text-header: 0 0% 95%;
+	--dropdown-color-background-header: var(--input-color-focus-h) 30% 30%;
 }
 
 .field-dropdown {
 	position: relative;
-}
-
-.field-dropdown > input {
-	transition: padding-right .2s;
 }
 
 .field-dropdown:not(.active) > input {
@@ -49,7 +45,7 @@
 	align-items: center;
 	gap: 1rem;
 	padding: .7rem 1rem;
-	color: hsl(var(--dropdown-color-header));
+	color: hsl(var(--dropdown-color-text-header));
 	background: hsl(var(--dropdown-color-background-header));
 }
 
