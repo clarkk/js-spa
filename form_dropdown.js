@@ -1,5 +1,6 @@
 import * as dom from 'dom';
 import * as fmt from 'fmt';
+import * as time from 'time';
 import * as frm from 'frm';
 
 let active = null, position_frame = null, panel = null;
@@ -335,7 +336,7 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 }
 
 function create_calendar(store, inputs, field_val, controls, def){
-	const o = {
+	const weekdays = time.weekdays(store.env().lang, 1), o = {
 		init(value){
 			inputs.text.value = value ?? '';
 		},
@@ -345,9 +346,11 @@ function create_calendar(store, inputs, field_val, controls, def){
 				<div class="field-dropdown-header">
 					<div class="field-dropdown-label">${store.t(def.label)}</div>
 				</div>
-				<ul class="field-dropdown-calendar">
+				<div class="field-dropdown-calendar-grid">
+					<div></div>
+					${weekdays.map(day=>`<div>${day}</div>`).join('')}
 					
-				</ul>
+				</div>
 			`;
 			return o;
 		}

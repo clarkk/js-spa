@@ -73,11 +73,6 @@
 	height: 13rem;
 }
 
-.field-dropdown-calendar {
-	width: 18rem;
-	height: 10rem;
-}
-
 .field-dropdown-list > li {
 	display: flex;
 	align-items: center;
@@ -90,4 +85,18 @@
 .field-dropdown-list > li.selected {
 	color: hsl(0 0% 100%);
 	background: hsl(var(--input-color-focus) / 80%);
+}
+
+.field-dropdown-calendar-grid {
+	display: grid;
+	grid-template-columns: 2rem repeat(7, minmax(2rem, 1fr));
+	gap: .2rem;
+}
+
+.field-dropdown-calendar-day {
+	display: grid;
+	place-items: center;
+	min-height: 2.5rem;
+	padding: 0;
+	font-variant-numeric: tabular-nums;
 }
