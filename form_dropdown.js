@@ -337,14 +337,17 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 function create_calendar(store, inputs, field_val, controls, def){
 	const o = {
 		init(value){
-			
+			inputs.text.value = value ?? '';
 		},
 		render(){
 			const panel = get_panel();
 			panel.innerHTML = `
-				<div class="field-dropdown-calendar">
+				<div class="field-dropdown-header">
 					<div class="field-dropdown-label">${store.t(def.label)}</div>
 				</div>
+				<ul class="field-dropdown-calendar">
+					
+				</ul>
 			`;
 			return o;
 		}

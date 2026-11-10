@@ -14,12 +14,12 @@ export function amount(s, f=2){
 }
 
 export function date(time){
-	return format_date(new Date(time * 1000));
+	return format_date(time === 'now' ? new Date() : new Date(time * 1000));
 }
 
 export function datetime(time){
-	const n = new Date(time * 1000), hour = String(n.getHours()).padStart(2, '0'), min = String(n.getMinutes()).padStart(2, '0');
-	return `${format_date(n)} ${hour}:${min}`;
+	const d = new Date(time * 1000), hour = String(d.getHours()).padStart(2, '0'), min = String(d.getMinutes()).padStart(2, '0');
+	return `${format_date(d)} ${hour}:${min}`;
 }
 
 function format_date(d){
