@@ -4,7 +4,7 @@ export function go(path, force=false){
 	const same = window.location.pathname === path;
 	if(!force && same) return;
 	if(!same) window.history.pushState({}, null, path);
-	_handle?.(); 
+	_handle?.();
 }
 
 export function create_router(handler){
@@ -13,11 +13,16 @@ export function create_router(handler){
 	window.onpopstate = _handle;
 	
 	document.addEventListener('click', e=>{
-		const link = e.target.closest('a'), href = link?.getAttribute('href');
-		if(href?.startsWith('/') && !link.target){
-			e.preventDefault();
-			go(href);
-		}
+		if(e.ctrlKey || e.metaKey || e.shiftKey) return;
+		
+		const link = e.target.closest('a');
+		if(!link || link.target || link.hasAttribute('download')) return;
+		
+		const href = link.getAttribute('href');
+		if(!href?.startsWith('/') || href.startsWith('//')) return;
+		
+		e.preventDefault();
+		go(href);
 	});
 	
 	return {
@@ -26,38 +31,43 @@ export function create_router(handler){
 }
 
 export const controller = (_=>{
-	let container = null, subscription = null, cleanup = null, abort = null, o = {
+	let container = null, subscription = null, cleanup = null, abort = null;
+	const o = {
 		init(elm){
 			container = elm;
 		},
 		render(store, view){
 			o.clear();
 			
-			abort = new AbortController();
-			const signal = abort.signal;
+			subscription = store.subscribe(render_view);
+			render_view();
 			
-			subscription = store.subscribe(_=>{
-				if(!signal.aborted) view(container, signal);
-			});
-			view(container, signal);
+			function render_view(){
+				clear_view();
+				
+				abort = new AbortController();
+				view(container, abort.signal);
+			}
 		},
 		clear(){
-			abort?.abort();
+			subscription?.();
+			subscription = null;
 			
-			if(subscription){
-				subscription();
-				subscription = null;
-			}
-			if(cleanup){
-				cleanup();
-				cleanup = null;
-			}
-			
-			abort = null;
+			clear_view();
 		},
 		cleanup(fn){
 			cleanup = fn;
 		}
 	};
+	
+	function clear_view(){
+		abort?.abort();
+		abort = null;
+		
+		const fn = cleanup;
+		cleanup = null;
+		fn?.();
+	}
+	
 	return o;
 })();

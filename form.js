@@ -517,7 +517,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					break;
 					
 				case KEY_ENTER:
-					if(field.type !== TYPE_TEXTAREA || e.ctrlKey){
+					if(field.type !== TYPE_TEXTAREA || e.ctrlKey || e.metaKey){
 						e.preventDefault();
 						const buttons = fieldset.buttons();
 						if(await button_click(buttons[BTN_PUT])) break;

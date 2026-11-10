@@ -26,7 +26,9 @@ export function create(){
 			if(!map?.size) return;
 			
 			let changed = false;
-			for(const id of ids) changed ||= map.delete(id);
+			for(const id of ids){
+				if(map.delete(id)) changed = true;
+			}
 			if(!changed) return;
 			
 			if(cache[table]){
