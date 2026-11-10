@@ -1,6 +1,6 @@
 :root {
-	--button-color-text: var(--color-cta-h) 30% 12%;
-	--button-color-background: var(--color-cta-h) var(--color-cta-s) 96%;
+	--button-color-text: var(--color-cta-h) calc(var(--color-cta-s) - 60%) calc(var(--color-cta-l) - 48%);
+	--button-color-background: var(--color-cta-h) var(--color-cta-s) calc(var(--color-cta-l) + 36%);
 	--button-width-focus-shadow: 3px;
 	
 	--input-color-focus-h: var(--color-focus-h);
@@ -11,8 +11,8 @@
 	--input-color-focus: var(--input-color-focus-h) 90% 50%;
 	--input-width-focus-shadow: 3px;
 	
-	--input-color-error-text: var(--color-error-h) 45% 28%;
-	--input-color-error-background: var(--color-error-h) var(--color-error-s) 97%;
+	--input-color-error-text: var(--color-error-h) calc(var(--color-error-s) - 55%) calc(var(--color-error-l) - 31%);
+	--input-color-error-background: var(--color-error-h) var(--color-error-s) calc(var(--color-error-l) + 38%);
 }
 
 /*::placeholder{
@@ -482,14 +482,22 @@ body.debtor #page_content .inp-checkbox-row,
 }*/
 
 button:focus {
-	--color-shadow: var(--color-cta-h) var(--color-cta-s) 40%;
+	--color-shadow: var(--color-cta-h) var(--color-cta-s) calc(var(--color-cta-l) - 20%);
 	--opacity-shadow: 20%;
 	box-shadow: 0 0 0 var(--button-width-focus-shadow) hsl(var(--color-shadow) / var(--opacity-shadow));
 }
 
 button.btn-cta:focus {
-	--color-shadow: var(--color-cta-h) var(--color-cta-s) 50%;
+	--color-shadow: var(--color-cta-h) var(--color-cta-s) calc(var(--color-cta-l) - 10%);
 	--opacity-shadow: 40%;
+}
+
+button:hover {
+	--color-background: var(--color-cta-h) var(--color-cta-s) calc(var(--color-cta-l) + 32%);
+}
+
+button.btn-cta:hover {
+	--color-background: var(--color-cta-h) var(--color-cta-s) calc(var(--color-cta-l) - 5%);
 }
 
 input:focus,
@@ -587,7 +595,8 @@ textarea[readonly] {
 	user-select: none;
 }
 
-button:disabled {
+button:disabled,
+button.btn-cta:disabled {
 	--color-text: 0 0% 50%;
 	--color-background: var(--input-color-focus-h) 10% 98%;
 	cursor: default;

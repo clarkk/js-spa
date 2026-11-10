@@ -13,7 +13,7 @@ export function amount(s, f=2){
 	return int.replace(/\B(?=(\d{3})+(?!\d))/g, '.')+','+dec;
 }
 
-export function timestamp(time){
+export function datetime(time){
 	const n = new Date(time * 1000), day = String(n.getDate()).padStart(2, '0'), month = String(n.getMonth() + 1).padStart(2, '0'), year = n.getFullYear(),
 		hour = String(n.getHours()).padStart(2, '0'), min = String(n.getMinutes()).padStart(2, '0');
 	return `${day}-${month}-${year} ${hour}:${min}`;
