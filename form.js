@@ -12,8 +12,6 @@ export const
 	TYPE_CHECKBOX = 'checkbox',
 	TYPE_DROPDOWN = 'dropdown',
 	
-	DROPDOWN_CALENDAR = 'calendar',
-	
 	BTN_ACTION = 'action',
 	BTN_BACK = 'back',
 	BTN_CANCEL = 'cancel',
@@ -367,6 +365,15 @@ export function fieldset(store, fields, buttons, model_input=null){
 					fields.set(name, field);
 				}
 				if(!field.id) field.id = dom.id();
+				if(field.dropdown) field.type = TYPE_DROPDOWN;
+				else if(field.dropdown_calendar){
+					field.type = TYPE_DROPDOWN;
+					field.dropdown = {
+						calendar: true,
+						label: field.dropdown_calendar
+					};
+					delete field.dropdown_calendar;
+				}
 				if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
 				field.css = create_css(field.css);
 			});

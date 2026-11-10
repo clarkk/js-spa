@@ -24,7 +24,7 @@ export function create(store, parent, value){
 			
 			definition = def;
 			
-			component = def === frm.DROPDOWN_CALENDAR ? create_calendar(store, inputs, parent.val, controls) : create_list(store, inputs, parent.val, controls, def, _=>opened);
+			component = def.calendar ? create_calendar(store, inputs, parent.val, controls, def) : create_list(store, inputs, parent.val, controls, def, _=>opened);
 			component.init(value);
 			inputs.text.readOnly = o.select();
 			inputs.text.classList.toggle('input-dropdown-select', o.select());
@@ -334,7 +334,7 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 	return Object.freeze(o);
 }
 
-function create_calendar(store, inputs, field_val, controls){
+function create_calendar(store, inputs, field_val, controls, def){
 	const o = {
 		init(value){
 			
@@ -343,7 +343,7 @@ function create_calendar(store, inputs, field_val, controls){
 			const panel = get_panel();
 			panel.innerHTML = `
 				<div class="field-dropdown-calendar">
-					
+					<div class="field-dropdown-label">${store.t(def.label)}</div>
 				</div>
 			`;
 			return o;
