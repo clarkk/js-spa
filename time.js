@@ -39,6 +39,20 @@ export function weekdays(locale='da', length=1){
 	);
 }
 
+export function date(time){
+	return format_date(time === 'now' ? new Date() : new Date(time * 1000));
+}
+
+export function datetime(time){
+	const d = new Date(time * 1000), hour = String(d.getHours()).padStart(2, '0'), min = String(d.getMinutes()).padStart(2, '0');
+	return `${format_date(d)} ${hour}:${min}`;
+}
+
+function format_date(d){
+	const day = String(d.getDate()).padStart(2, '0'), month = String(d.getMonth() + 1).padStart(2, '0'), year = d.getFullYear();
+	return `${day}-${month}-${year}`;
+}
+
 function parse_date(value){
 	value = String(value ?? '').trim();
 	
