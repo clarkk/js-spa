@@ -93,10 +93,24 @@
 	gap: .2rem;
 }
 
+.field-dropdown-calendar-weekday,
+.field-dropdown-calendar-week {
+	padding: .2rem;
+	color: hsl(0 0% 40%);
+	text-align: center;
+}
+
+.field-dropdown-calendar-weekday {
+	font-size: .9rem;
+}
+
+.field-dropdown-calendar-week {
+	align-self: center;
+	font-size: .8rem;
+}
+
 .field-dropdown-calendar-day {
-	display: grid;
-	place-items: center;
-	min-height: 2.5rem;
-	padding: 0;
+	padding: .4rem;
+	text-align: center;
 	font-variant-numeric: tabular-nums;
 }

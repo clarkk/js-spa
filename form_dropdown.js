@@ -341,18 +341,21 @@ function create_calendar(store, inputs, field_val, controls, def){
 			inputs.text.value = value ?? '';
 		},
 		render(){
-			const cal = time.calendar(inputs.text.value);
-			console.log(cal.get());
-			
-			const panel = get_panel();
+			const panel = get_panel(), cal = time.calendar(inputs.text.value);
 			panel.innerHTML = `
 				<div class="field-dropdown-header">
 					<div class="field-dropdown-label">${store.t(def.label)}</div>
 				</div>
 				<div class="field-dropdown-calendar-grid">
 					<div></div>
-					${weekdays.map(day=>`<div>${day}</div>`).join('')}
-					
+					${weekdays.map(day=>`<div class="field-dropdown-calendar-weekday">${day.toUpperCase()}</div>`).join('')}
+					${cal.get().weeks.map(week=>`
+						<div class="field-dropdown-calendar-week">${week.number}</div>
+						${week.days.map(day=>{
+							
+							return `<div class="field-dropdown-calendar-day">${day.day}</div>`;
+						}).join('')}
+					`).join('')}
 				</div>
 			`;
 			return o;
