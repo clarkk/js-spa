@@ -357,7 +357,7 @@ function create_calendar(store, inputs, field_val, controls, def){
 						${week.days.map(day=>{
 							const id = dom.id();
 							if(day.current_month) items.push(id);
-							return `<div id="${id}" class="field-dropdown-calendar-day">${day.day}</div>`;
+							return `<div id="${id}" class="field-dropdown-calendar-day" ${day.date ? `data-date="${day.date}"` : ''}>${day.day}</div>`;
 						}).join('')}
 					`).join('')}
 				</div>
@@ -366,9 +366,10 @@ function create_calendar(store, inputs, field_val, controls, def){
 			items = items.map(id=>document.getElementById(id));
 			
 			panel.querySelector('.field-dropdown-calendar-grid').addEventListener('click', e=>{
-				/*const item = e.target.closest('li');
-				if(!item) return;
+				const date = e.target.dataset.date;
+				if(!date) return;
 				
+				/*
 				selected = Number(item.dataset.index);
 				o.choose();
 				inputs.text.focus();
@@ -376,11 +377,11 @@ function create_calendar(store, inputs, field_val, controls, def){
 			});
 			
 			panel.addEventListener('pointerdown', e=>{
-				/*if(e.target.closest('li')) return;
+				if(e.target.dataset.date) return;
 				
 				e.preventDefault();
 				e.stopPropagation();
-				inputs.text.focus();*/
+				inputs.text.focus();
 			});
 			
 			return o;

@@ -90,11 +90,13 @@ function month_weeks(date){
 			days: []
 		};
 		for(let i = 0; i < 7; i++){
+			const current_month = current.getUTCMonth() === month;
 			week.days.push({
+				date: current_month ? String(current.getUTCDate()).padStart(2, '0')+'-'+String(current.getUTCMonth() + 1).padStart(2, '0')+'-'+current.getUTCFullYear() : null,
 				year: current.getUTCFullYear(),
 				month: current.getUTCMonth() + 1,
 				day: current.getUTCDate(),
-				current_month: current.getUTCMonth() === month
+				current_month
 			});
 			current.setUTCDate(current.getUTCDate() + 1);
 		}
