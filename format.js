@@ -8,9 +8,9 @@ export function html(s){
 		.replace(/'/g, "&#39;");
 };
 
-export function amount(s, f=2){
+export function amount(s, f=2, thousands=true){
 	const [int, dec] = Number(s).toFixed(f).split('.');
-	return int.replace(/\B(?=(\d{3})+(?!\d))/g, '.')+','+dec;
+	return (thousands ? int.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : int)+','+dec;
 }
 
 export function date(time){

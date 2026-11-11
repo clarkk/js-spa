@@ -341,6 +341,9 @@ function create_calendar(store, inputs, field_val, controls, def){
 			inputs.text.value = value ?? '';
 		},
 		render(){
+			const cal = time.calendar(inputs.text.value);
+			console.log(cal.get());
+			
 			const panel = get_panel();
 			panel.innerHTML = `
 				<div class="field-dropdown-header">

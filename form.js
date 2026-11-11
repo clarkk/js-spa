@@ -131,14 +131,16 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			return o;
 		},
-		render(values={}){
-			o.render_fields(values);
+		render(values={}, format={}){
+			o.render_fields(values, format);
 			o.render_buttons();
 			return o;
 		},
-		render_fields(values={}){
+		render_fields(values={}, format={}){
 			fields?.forEach((field, name)=>{
-				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, values[name]).render();
+				let value = values[name] != null ? values[name] : null;
+				if(value !== null && format[name]) value = format[name](value, values);
+				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, value).render();
 			});
 			fields?.forEach(field=>
 				field.Field?.apply_handler()
