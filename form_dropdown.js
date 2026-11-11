@@ -214,7 +214,7 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 		render(){
 			const panel = get_panel();
 			panel.innerHTML = `
-				<div class="field-dropdown-header">
+				<div class="field-dropdown-list-header">
 					<div class="field-dropdown-label">${store.t(def.label)}</div>
 					${o.select() ? '' : `<div class="field-dropdown-count">${filtered.length} / ${options.length}</div>`}
 				</div>
@@ -336,28 +336,53 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 }
 
 function create_calendar(store, inputs, field_val, controls, def){
-	const weekdays = time.weekdays(store.env().lang, 1), o = {
+	let cal = null, items = [];
+	const lang = store.env().lang, weekdays = time.weekdays(lang, 1), o = {
 		init(value){
 			inputs.text.value = value ?? '';
+			cal = time.calendar(inputs.text.value, lang);
 		},
 		render(){
-			const panel = get_panel(), cal = time.calendar(inputs.text.value);
+			const panel = get_panel(), c = cal.get();
 			panel.innerHTML = `
-				<div class="field-dropdown-header">
+				<div class="field-dropdown-calendar-header">
 					<div class="field-dropdown-label">${store.t(def.label)}</div>
+					<div class="field-dropdown-calender-month">${c.month_name} ${c.year}</div>
 				</div>
 				<div class="field-dropdown-calendar-grid">
 					<div></div>
 					${weekdays.map(day=>`<div class="field-dropdown-calendar-weekday">${day.toUpperCase()}</div>`).join('')}
-					${cal.get().weeks.map(week=>`
+					${c.weeks.map(week=>`
 						<div class="field-dropdown-calendar-week">${week.number}</div>
 						${week.days.map(day=>{
-							
-							return `<div class="field-dropdown-calendar-day">${day.day}</div>`;
+							const id = dom.id();
+							if(day.current_month) items.push(id);
+							return `<div id="${id}" class="field-dropdown-calendar-day">${day.day}</div>`;
 						}).join('')}
 					`).join('')}
 				</div>
 			`;
+			
+			items = items.map(id=>document.getElementById(id));
+			
+			panel.querySelector('.field-dropdown-calendar-grid').addEventListener('click', e=>{
+				/*const item = e.target.closest('li');
+				if(!item) return;
+				
+				selected = Number(item.dataset.index);
+				o.choose();
+				inputs.text.focus();
+				controls.close();*/
+			});
+			
+			panel.addEventListener('pointerdown', e=>{
+				/*if(e.target.closest('li')) return;
+				
+				e.preventDefault();
+				e.stopPropagation();
+				inputs.text.focus();*/
+			});
+			
 			return o;
 		}
 	};

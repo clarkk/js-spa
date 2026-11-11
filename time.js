@@ -1,5 +1,5 @@
-export function calendar(value){
-	const parsed = parse_date(value), today = new Date();
+export function calendar(value, locale='da'){
+	const parsed = parse_date(value), today = new Date(), formatter = new Intl.DateTimeFormat(locale, {month: 'long', timeZone: 'UTC'});
 	today.setTime(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 	
 	const date = parsed ? new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day)) : today, o = {
@@ -7,6 +7,7 @@ export function calendar(value){
 			return {
 				year: date.getUTCFullYear(),
 				month: date.getUTCMonth() + 1,
+				month_name: month_name(date),
 				day: date.getUTCDate(),
 				weeks: month_weeks(date)
 			};
@@ -22,6 +23,12 @@ export function calendar(value){
 			return o.get();
 		}
 	};
+	
+	function month_name(date){
+		let s = formatter.format(date);
+		return s.charAt(0).toUpperCase()+s.slice(1);
+	}
+	
 	return o;
 }
 
