@@ -336,13 +336,14 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 }
 
 function create_calendar(store, inputs, field_val, controls, def){
-	let cal = null, items = [];
+	let options = [], cal = null, selected = -1, items = [];
 	const lang = store.env().lang, weekdays = time.weekdays(lang, 1), o = {
 		init(value){
 			inputs.text.value = value ?? '';
 			cal = time.calendar(inputs.text.value, lang);
 		},
 		render(){
+			options = [];
 			const panel = get_panel(), c = cal.get();
 			panel.innerHTML = `
 				<div class="field-dropdown-calendar-header">
@@ -356,8 +357,11 @@ function create_calendar(store, inputs, field_val, controls, def){
 						<div class="field-dropdown-calendar-week">${week.number}</div>
 						${week.days.map(day=>{
 							const id = dom.id();
-							if(day.current_month) items.push(id);
-							return `<div id="${id}" class="field-dropdown-calendar-day" ${day.date ? `data-date="${day.date}"` : ''}>${day.day}</div>`;
+							if(day.current_month){
+								items.push(id);
+								options.push(day.date);
+							}
+							return `<div id="${id}" class="field-dropdown-calendar-day${day.current_month ? '-date' : ''}" ${day.current_month ? `data-index="${options.length - 1}"` : ''}>${day.day}</div>`;
 						}).join('')}
 					`).join('')}
 				</div>
@@ -366,18 +370,17 @@ function create_calendar(store, inputs, field_val, controls, def){
 			items = items.map(id=>document.getElementById(id));
 			
 			panel.querySelector('.field-dropdown-calendar-grid').addEventListener('click', e=>{
-				const date = e.target.dataset.date;
-				if(!date) return;
+				const item = e.target;
+				if(!item.classList.contains('field-dropdown-calendar-day-date')) return;
 				
-				/*
 				selected = Number(item.dataset.index);
 				o.choose();
 				inputs.text.focus();
-				controls.close();*/
+				controls.close();
 			});
 			
 			panel.addEventListener('pointerdown', e=>{
-				if(e.target.dataset.date) return;
+				if(e.target.classList.contains('field-dropdown-calendar-day-date')) return;
 				
 				e.preventDefault();
 				e.stopPropagation();
@@ -385,8 +388,35 @@ function create_calendar(store, inputs, field_val, controls, def){
 			});
 			
 			return o;
-		}
+		},
+		down(){
+			move(1);
+		},
+		up(){
+			move(-1);
+		},
+		choose(){
+			if(selected === -1) return;
+			
+			field_val(options[selected]);
+		},
 	};
+	
+	function move(direction){
+		const previous = selected;
+		selected += direction;
+		
+		console.log(selected)
+		
+		/*
+		if(selected < 0) selected = filtered.length - 1;
+		else if(selected >= filtered.length) selected = 0;
+		
+		items[previous]?.classList.remove(CLASS_SELECTED);
+		items[selected]?.classList.add(CLASS_SELECTED);
+		o.scroll_selected();*/
+	}
+	
 	return Object.freeze(o);
 }
 

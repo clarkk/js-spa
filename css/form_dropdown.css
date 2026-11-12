@@ -101,13 +101,15 @@
 
 .field-dropdown-calendar-grid {
 	display: grid;
-	grid-template-columns: 2rem repeat(7, minmax(2rem, 1fr));
-	gap: .2rem;
+	grid-template-columns: 2rem repeat(7, minmax(2.1rem, 1fr));
+	gap: .3rem;
+	padding: .3rem;
+	user-select: none;
 }
 
 .field-dropdown-calendar-weekday,
 .field-dropdown-calendar-week {
-	padding: .2rem;
+	padding: .3rem;
 	color: hsl(0 0% 40%);
 	text-align: center;
 }
@@ -121,8 +123,20 @@
 	font-size: .8rem;
 }
 
-.field-dropdown-calendar-day {
-	padding: .5rem;
-	text-align: center;
+.field-dropdown-calendar-day,
+.field-dropdown-calendar-day-date {
+	display: grid;
+	place-items: center;
+	aspect-ratio: 1;
 	font-variant-numeric: tabular-nums;
+	border-radius: 50%;
+}
+
+.field-dropdown-calendar-day {
+	color: hsl(0 0% 90%);
+}
+
+.field-dropdown-calendar-day-date {
+	background: hsl(var(--input-color-focus-h) 30% 96%);
+	cursor: pointer;
 }
