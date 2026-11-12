@@ -71,6 +71,11 @@
 	margin-top: .2rem;
 }
 
+.field-dropdown-calender-navigation i {
+	padding: .2rem .4rem;
+	cursor: pointer;
+}
+
 .field-dropdown-list,
 .field-dropdown-calendar {
 	margin: 0;
@@ -94,23 +99,28 @@
 	white-space: nowrap;
 }
 
-.field-dropdown-list > li.selected {
+.field-dropdown-calendar-day-date.today {
+	background: hsl(var(--input-color-focus) / 20%);
+}
+
+.field-dropdown-list > li.selected,
+.field-dropdown-calendar-day-date.selected {
 	color: hsl(0 0% 100%);
 	background: hsl(var(--input-color-focus) / 80%);
 }
 
 .field-dropdown-calendar-grid {
 	display: grid;
-	grid-template-columns: 2rem repeat(7, minmax(2.1rem, 1fr));
-	gap: .3rem;
-	padding: .3rem;
+	grid-template-columns: 2rem repeat(7, minmax(2.4rem, 1fr));
+	gap: .1rem;
 	user-select: none;
+	padding: .2rem;
 }
 
 .field-dropdown-calendar-weekday,
 .field-dropdown-calendar-week {
 	padding: .3rem;
-	color: hsl(0 0% 40%);
+	color: hsl(0 0% 50%);
 	text-align: center;
 }
 
@@ -137,6 +147,9 @@
 }
 
 .field-dropdown-calendar-day-date {
-	background: hsl(var(--input-color-focus-h) 30% 96%);
 	cursor: pointer;
+}
+
+.field-dropdown-calendar-day-date.active {
+	background: hsl(var(--input-color-focus-h) 30% 90%);
 }

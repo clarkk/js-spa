@@ -336,38 +336,31 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 }
 
 function create_calendar(store, inputs, field_val, controls, def){
-	let options = [], cal = null, selected = -1, items = [];
-	const lang = store.env().lang, weekdays = time.weekdays(lang, 1), o = {
+	let panel = null, options = [], cal = null, selected = -1, items = [];
+	const lang = store.env().lang, weekdays = time.weekdays(lang, 1), label_id = dom.id(), content_id = dom.id(), o = {
 		init(value){
 			inputs.text.value = value ?? '';
 			cal = time.calendar(inputs.text.value, lang);
 		},
 		render(){
-			options = [];
-			const panel = get_panel(), c = cal.get();
+			panel = get_panel();
+			const prev_id = dom.id(), next_id = dom.id();
 			panel.innerHTML = `
 				<div class="field-dropdown-calendar-header">
 					<div class="field-dropdown-label">${store.t(def.label)}</div>
-					<div class="field-dropdown-calender-month">${c.month_name} ${c.year}</div>
+					<div class="field-dropdown-calender-month">
+						<div id="${label_id}"></div>
+						<div class="field-dropdown-calender-navigation">
+							<i id="${prev_id}" class="bi bi-chevron-left"></i>
+							<i id="${next_id}" class="bi bi-chevron-right"></i>
+						</div>
+					</div>
 				</div>
-				<div class="field-dropdown-calendar-grid">
-					<div></div>
-					${weekdays.map(day=>`<div class="field-dropdown-calendar-weekday">${day.toUpperCase()}</div>`).join('')}
-					${c.weeks.map(week=>`
-						<div class="field-dropdown-calendar-week">${week.number}</div>
-						${week.days.map(day=>{
-							const id = dom.id();
-							if(day.current_month){
-								items.push(id);
-								options.push(day.date);
-							}
-							return `<div id="${id}" class="field-dropdown-calendar-day${day.current_month ? '-date' : ''}" ${day.current_month ? `data-index="${options.length - 1}"` : ''}>${day.day}</div>`;
-						}).join('')}
-					`).join('')}
-				</div>
+				<div id="${content_id}" class="field-dropdown-calendar-grid"></div>
 			`;
 			
-			items = items.map(id=>document.getElementById(id));
+			panel.querySelector('#'+prev_id).onclick = prev_month;
+			panel.querySelector('#'+next_id).onclick = next_month;
 			
 			panel.querySelector('.field-dropdown-calendar-grid').addEventListener('click', e=>{
 				const item = e.target;
@@ -387,7 +380,34 @@ function create_calendar(store, inputs, field_val, controls, def){
 				inputs.text.focus();
 			});
 			
+			o.update();
+			select(options.indexOf(inputs.text.value));
+			
 			return o;
+		},
+		update(){
+			const c = cal.get(), today = time.date('now');
+			panel.querySelector('#'+label_id).innerHTML = c.month_name+' '+c.year;
+			
+			options = [];
+			items = [];
+			panel.querySelector('#'+content_id).innerHTML = `
+				<div></div>
+				${weekdays.map(day=>`<div class="field-dropdown-calendar-weekday">${day.toUpperCase()}</div>`).join('')}
+				${c.weeks.map(week=>`
+					<div class="field-dropdown-calendar-week">${week.number}</div>
+					${week.days.map(day=>{
+						const id = dom.id();
+						if(day.current_month){
+							items.push(id);
+							options.push(day.date);
+						}
+						return `<div id="${id}" class="field-dropdown-calendar-day${day.current_month ? '-date' : ''} ${day.date === today ? 'today' : ''}" ${day.current_month ? `data-index="${options.length - 1}"` : ''}>${day.day}</div>`;
+					}).join('')}
+				`).join('')}
+			`;
+			
+			items = items.map(id=>panel.querySelector('#'+id));
 		},
 		down(){
 			move(1);
@@ -399,22 +419,32 @@ function create_calendar(store, inputs, field_val, controls, def){
 			if(selected === -1) return;
 			
 			field_val(options[selected]);
-		},
+		}
 	};
 	
+	function next_month(){
+		cal.update(1);
+		o.update();
+		select(0);
+	}
+	
+	function prev_month(){
+		cal.update(-1);
+		o.update();
+		select(options.length - 1);
+	}
+	
 	function move(direction){
-		const previous = selected;
-		selected += direction;
-		
-		console.log(selected)
-		
-		/*
-		if(selected < 0) selected = filtered.length - 1;
-		else if(selected >= filtered.length) selected = 0;
-		
-		items[previous]?.classList.remove(CLASS_SELECTED);
+		const index = selected + direction;
+		if(index < 0) prev_month();
+		else if(index >= options.length) next_month();
+		else select(index);
+	}
+	
+	function select(index){
+		items[selected]?.classList.remove(CLASS_SELECTED);
+		selected = index;
 		items[selected]?.classList.add(CLASS_SELECTED);
-		o.scroll_selected();*/
 	}
 	
 	return Object.freeze(o);
