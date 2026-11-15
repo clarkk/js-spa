@@ -96,6 +96,7 @@ function month_weeks(date){
 				year: current.getUTCFullYear(),
 				month: current.getUTCMonth() + 1,
 				day: current.getUTCDate(),
+				time: Math.floor(current.getTime() / 1000),
 				current_month
 			});
 			current.setUTCDate(current.getUTCDate() + 1);

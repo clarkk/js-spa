@@ -154,7 +154,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		render_fields(values={}, format={}){
 			fields?.forEach((field, name)=>{
 				let value = values[name] != null ? values[name] : null;
-				if(value !== null && format[name]) value = format[name](value, values);
+				field.format = format[name] ?? null;
 				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, value).render();
 			});
 			fields?.forEach(field=>
@@ -506,6 +506,8 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			
 			if(field.ralign) field.css.class('text-right');
 			
+			const value = field.value != null && field.format ? field.format(field.value) : field.value;
+			
 			let checkbox_id, checkbox_inner_id;
 			switch(field.type){
 			case TYPE_BLIND:
@@ -519,14 +521,14 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				checkbox_inner_id = dom.id();
 				elm.innerHTML = `
 					<div id="${checkbox_id}" class="input-checkbox">
-						<input id="${input_id}" type="${TYPE_CHECKBOX}" ${field.value ? 'checked' : ''}>
+						<input id="${input_id}" type="${TYPE_CHECKBOX}" ${value ? 'checked' : ''}>
 						<div id="${checkbox_inner_id}" class="input-checkbox-inner"></div>
 					</div>
 				`;
 				break;
 				
 			case TYPE_DROPDOWN:
-				const d = frm_dropdown.create(fieldset.store, o, field.value);
+				const d = frm_dropdown.create(fieldset.store, o, field.value, field.format);
 				field.Dropdown = d.api
 					.render(elm, input_id)
 					.definition(field.dropdown);
@@ -535,7 +537,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				
 			default:
 				const maxlength = input_maxlength();
-				elm.innerHTML = `<input id="${input_id}" ${field.css.render()} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(field.value ?? '')}">`;
+				elm.innerHTML = `<input id="${input_id}" ${field.css.render()} type="${field.type || 'text'}" autocomplete="nope" ${maxlength ? `maxlength="${maxlength}"` : ''} value="${fmt.html(value ?? '')}">`;
 			}
 			
 			input = document.getElementById(input_id);
@@ -635,6 +637,8 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			}
 			
 			if(value !== undefined){
+				if(value !== null && field.format) value = field.format(value);
+				
 				switch(field.type){
 				case TYPE_CHECKBOX:
 					input.checked = !!value;

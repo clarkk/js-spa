@@ -7,7 +7,7 @@ let active = null, position_frame = null, panel = null;
 
 const CLASS_ACTIVE='active', CLASS_SELECTED='selected', PADDING=4;
 
-export function create(store, parent, value){
+export function create(store, parent, value, format){
 	let container = null, rendered = false, opened = false, component = null, definition = null;
 	const input_select_id = dom.id(), inputs = {
 		text: null,
@@ -26,7 +26,7 @@ export function create(store, parent, value){
 			definition = def;
 			
 			component = def.calendar ? create_calendar(store, inputs, parent.val, controls, def) : create_list(store, inputs, parent.val, controls, def, _=>opened);
-			component.init(value);
+			component.init(format ? format(value) : value);
 			inputs.text.readOnly = o.select();
 			inputs.text.classList.toggle('input-dropdown-select', o.select());
 			
@@ -381,7 +381,7 @@ function create_calendar(store, inputs, field_val, controls, def){
 			});
 			
 			o.update();
-			select(options.indexOf(inputs.text.value));
+			select(options.findIndex(option=>option.date === inputs.text.value));
 			
 			return o;
 		},
@@ -400,7 +400,10 @@ function create_calendar(store, inputs, field_val, controls, def){
 						const id = dom.id();
 						if(day.current_month){
 							items.push(id);
-							options.push(day.date);
+							options.push({
+								date: day.date,
+								time: day.time
+							});
 						}
 						return `<div id="${id}" class="field-dropdown-calendar-day${day.current_month ? '-date' : ''} ${day.date === today ? 'today' : ''}" ${day.current_month ? `data-index="${options.length - 1}"` : ''}>${day.day}</div>`;
 					}).join('')}
@@ -418,7 +421,7 @@ function create_calendar(store, inputs, field_val, controls, def){
 		choose(){
 			if(selected === -1) return;
 			
-			field_val(options[selected]);
+			field_val(options[selected].time);
 		}
 	};
 	
