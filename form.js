@@ -171,7 +171,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		tab(tabindex, e){
 			tabs.tab(tabindex, e);
 		},
-		val(name){
+		val(name, value){
 			if(fields === null) return null;
 			
 			if(!arguments.length){
@@ -184,7 +184,23 @@ export function fieldset(store, fields, buttons, model_input=null){
 			
 			if(name){
 				valid_field_name(name);
-				return get_input_value(name);
+				if(arguments.length === 1) return get_input_value(name);
+				
+				if(value !== undefined){
+					const field = fields.get(name);
+					switch(field.type){
+					case TYPE_BLIND:
+						break;
+						
+					case TYPE_HIDDEN:
+						field.value = value;
+						break;
+						
+					default:
+						field.Field.val(value);
+					}
+				}
+				return o;
 			}
 		},
 		val_types(){
@@ -607,9 +623,6 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		val(value){
 			if(!arguments.length){
 				switch(field.type){
-				case TYPE_HIDDEN:
-					return field.value;
-					
 				case TYPE_CHECKBOX:
 					return !!input.checked;
 					
@@ -623,10 +636,6 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			
 			if(value !== undefined){
 				switch(field.type){
-				case TYPE_HIDDEN:
-					field.value = value;
-					break;
-					
 				case TYPE_CHECKBOX:
 					input.checked = !!value;
 					break;
