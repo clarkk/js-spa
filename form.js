@@ -25,6 +25,7 @@ export const
 	KEY_ARROW_UP = 'ArrowUp';
 
 const EVENT_INPUT='input',
+	EVENT_CHANGE='change',
 	CLASS_ERROR='error',
 	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
 
@@ -131,6 +132,20 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			return o;
 		},
+		input_handlers(handlers){
+			for(const [name, handler] of Object.entries(handlers)){
+				valid_field_name(name);
+				fields.get(name).input_handler = handler;
+			}
+			return o;
+		},
+		change_handlers(handlers){
+			for(const [name, handler] of Object.entries(handlers)){
+				valid_field_name(name);
+				fields.get(name).change_handler = handler;
+			}
+			return o;
+		},
 		render(values={}, format={}){
 			o.render_fields(values, format);
 			o.render_buttons();
@@ -143,7 +158,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, value).render();
 			});
 			fields?.forEach(field=>
-				field.Field?.apply_handler()
+				field.Field?.tigger_init_handlers()
 			);
 			return o;
 		},
@@ -461,7 +476,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 }
 
 function create_field(fieldset, name, value, model_input, set_tabindex_field){
-	let input = null, rendered = false, dropdown_val = null, current_value = null;
+	let input = null, rendered = false, dropdown_val = null, current_input_value = null, current_change_value = null;
 	const field = fieldset.fields(name), o = {
 		render(){
 			if(rendered) throw Error(`Field '${name}' is already rendered`);
@@ -542,15 +557,23 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 				clear_field_error(field.id);
 				
 				const value = o.val();
-				if(current_value !== value) value_change(value, false);
+				if(current_input_value !== value) value_input_trigger(value, false);
+			});
+			
+			input.addEventListener(EVENT_CHANGE, _=>{
+				const value = o.val();
+				if(current_change_value !== value) value_change_trigger(value, false);
 			});
 			
 			if(field.type === TYPE_CHECKBOX) init_checkbox(checkbox_id, checkbox_inner_id);
 			
 			return o;
 		},
-		apply_handler(){
-			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) value_change(o.val(), true);
+		tigger_init_handlers(){
+			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)){
+				value_input_trigger(o.val(), true);
+				value_change_trigger(o.val(), true);
+			}
 		},
 		tab(e){
 			fieldset.tab(field.tabindex, e);
@@ -616,9 +639,11 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 					input.value = value ?? '';
 				}
 				
-				const event = new Event(EVENT_INPUT);
-				event.programmatic = true;
-				input.dispatchEvent(event);
+				for(const type of [EVENT_INPUT, EVENT_CHANGE]){
+					const event = new Event(type);
+					event.programmatic = true;
+					input.dispatchEvent(event);
+				}
 			}
 			return o;
 		},
@@ -642,12 +667,15 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 		return true;
 	}
 	
-	function value_change(value, init){
+	function value_input_trigger(value, init){
+		current_input_value = value;
 		if(field.type === TYPE_DROPDOWN && model_input && field.Dropdown?.select()) dropdown_select_unsets();
-		if(o.enabled()){
-			field.handler?.call(fieldset, value, init);
-			current_value = value;
-		}
+		if(o.enabled()) field.input_handler?.call(fieldset, value, init);
+	}
+	
+	function value_change_trigger(value, init){
+		current_change_value = value;
+		if(o.enabled()) field.change_handler?.call(fieldset, value, init);
 	}
 	
 	function dropdown_select_unsets(){
