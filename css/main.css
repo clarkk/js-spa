@@ -11,3 +11,7 @@
 	--color-error-l: 59%;
 	--color-error: var(--color-error-h) var(--color-error-s) var(--color-error-l);
 }
+
+.tabular-nums {
+	font-variant-numeric: tabular-nums;
+}

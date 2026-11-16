@@ -220,7 +220,7 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 				</div>
 				<ul class="field-dropdown-list">
 					${filtered.map((option, i)=>`
-						<li class="${i === selected ? CLASS_SELECTED : ''}" data-index="${i}">${fmt.html(option.text)}</li>
+						<li class="${i === selected ? CLASS_SELECTED : ''}" data-index="${i}">${option.html ?? fmt.html(option.text)}</li>
 					`).join('')}
 				</ul>
 			`;
