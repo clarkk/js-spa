@@ -92,7 +92,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 					<div class="field-container ${label ? 'field-label' : ''}" style="width:${width ? width+'px' : '100%'}">
 						${label ? `<label>${fmt.html(label)}</label>` : ''}
 						<div id="${id}" class="${label ? 'field-input' : ''}"></div>
-						${fields.get(name).type === TYPE_DROPDOWN ? '' : `<div id="${field_error_id(id)}" class="field-error"></div>`}
+						<div id="${field_error_id(id)}" class="field-error"></div>
 					</div>
 				`;
 			},
@@ -146,15 +146,16 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			return o;
 		},
-		render(values={}, format={}){
-			o.render_fields(values, format);
+		render(values={}, format={}, parse_types={}){
+			o.render_fields(values, format, parse_types);
 			o.render_buttons();
 			return o;
 		},
-		render_fields(values={}, format={}){
+		render_fields(values={}, format={}, parse_types={}){
 			fields?.forEach((field, name)=>{
 				let value = values[name] != null ? values[name] : null;
 				field.format = format[name] ?? null;
+				field.parse_types = parse_types[name] ?? null;
 				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, value).render();
 			});
 			fields?.forEach(field=>
@@ -217,6 +218,15 @@ export function fieldset(store, fields, buttons, model_input=null){
 				if(field.type === TYPE_DROPDOWN && !field.Dropdown?.select() && data[k] === ''){
 					data[k] = null;
 					continue;
+				}
+				
+				if(field.parse_types){
+					const value = field.parse_types(data[k]);
+					if(value === null){
+						error[k] = frm_types.ERROR_PARSE;
+						continue;
+					}
+					data[k] = value;
 				}
 				
 				const result = frm_types.convert(model_schema, k, data[k]);
@@ -382,6 +392,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 			
 		case frm_types.ERROR_BOOL:
 			return store.t_error('DATA_TYPE_BOOLEAN');
+			
+		case frm_types.ERROR_PARSE:
+			return store.t_error('DATA_TYPE_PARSE');
 			
 		default:
 			throw Error(`Unsupported convert error '${code}'`);

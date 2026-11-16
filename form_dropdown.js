@@ -280,7 +280,12 @@ function create_list(store, inputs, field_val, controls, def, is_open){
 			searching = false;
 		},
 		input(e){
-			if(e.programmatic) return;
+			if(e.programmatic){
+				searching = false;
+				filter();
+				if(is_open()) o.render();
+				return;
+			}
 			
 			controls.open();
 			searching = true;

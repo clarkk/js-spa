@@ -48,6 +48,12 @@ export function datetime(time){
 	return `${format_date(d)} ${hour}:${min}`;
 }
 
+export function parse_date_unix(value){
+	const parsed = parse_date(value);
+	if(!parsed) return null;
+	return Date.UTC(parsed.year, parsed.month - 1, parsed.day) / 1000;
+}
+
 function format_date(d){
 	const day = String(d.getDate()).padStart(2, '0'), month = String(d.getMonth() + 1).padStart(2, '0'), year = d.getFullYear();
 	return `${day}-${month}-${year}`;

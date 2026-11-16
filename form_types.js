@@ -8,6 +8,8 @@ export const
 	ERROR_UINT64 = 'uint64',
 	ERROR_BOOL = 'boolean',
 	
+	ERROR_PARSE = 'parse',
+	
 	SOURCE = 'convert';
 
 const TYPE_STRING='string', TYPE_INT='integer', TYPE_BOOL='boolean',
