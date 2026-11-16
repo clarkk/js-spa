@@ -153,10 +153,9 @@ export function fieldset(store, fields, buttons, model_input=null){
 		},
 		render_fields(values={}, format={}, parse_types={}){
 			fields?.forEach((field, name)=>{
-				let value = values[name] != null ? values[name] : null;
 				field.format = format[name] ?? null;
 				field.parse_types = parse_types[name] ?? null;
-				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, value).render();
+				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, values[name]).render();
 			});
 			fields?.forEach(field=>
 				field.Field?.tigger_init_handlers()
