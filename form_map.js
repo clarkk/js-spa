@@ -3,10 +3,28 @@ import * as api from 'api';
 import * as frm_types from 'frm_types';
 
 export function create(field, create_fieldset, register_summary){
-	const children = new Map();
 	let container, details, disabled = false, has_error = false;
-	
-	const o = {
+	const children = new Map(), o = {
+		readonly(bool=true){
+			children.forEach(child=>child.readonly(bool));
+			return o;
+		},
+		has_error(){
+			return has_error;
+		},
+		enabled(visible=false){
+			if(disabled) return false;
+			return !visible || !!container.getClientRects().length;
+		},
+		disable(bool=true, keep_value=false){
+			disabled = !!bool;
+			children.forEach(child=>{
+				for(const [name, f] of child.fields()){
+					if(f.Field) child.disable(name, bool, keep_value);
+				}
+			});
+			return o;
+		},
 		render(){
 			if(typeof field.layout !== 'function') throw Error('Map layout must be defined with html.map()');
 			
@@ -68,12 +86,10 @@ export function create(field, create_fieldset, register_summary){
 			
 			for(const [key, child] of children){
 				const values_child = values?.[key];
-				if(values_child === undefined) continue;
+				if(values_child == null) continue;
 				
 				for(const name of child.fields().keys()){
-					if(values_child[name] !== undefined){
-						child.val(name, values_child[name]);
-					}
+					if(values_child[name] !== undefined) child.val(name, values_child[name]);
 				}
 			}
 			
@@ -124,9 +140,6 @@ export function create(field, create_fieldset, register_summary){
 			has_error = false;
 			children.forEach(child=>child.clear_error());
 		},
-		has_error(){
-			return has_error;
-		},
 		focus(){
 			details.open = true;
 			
@@ -146,23 +159,6 @@ export function create(field, create_fieldset, register_summary){
 				}
 			}
 			
-			return o;
-		},
-		enabled(visible=false){
-			if(disabled) return false;
-			return !visible || !!container.getClientRects().length;
-		},
-		readonly(bool=true){
-			children.forEach(child=>child.readonly(bool));
-			return o;
-		},
-		disable(bool=true, keep_value=false){
-			disabled = !!bool;
-			children.forEach(child=>{
-				for(const [name, f] of child.fields()){
-					if(f.Field) child.disable(name, bool, keep_value);
-				}
-			});
 			return o;
 		},
 		reset(){

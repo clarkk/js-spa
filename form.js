@@ -80,6 +80,12 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 		has_error(){
 			return has_error;
 		},
+		disable(name, bool=true, keep_value=false){
+			valid_field_name(name);
+			const f = fields.get(name).Field;
+			f.disable(bool, keep_value);
+			return f;
+		},
 		fields(name){
 			if(!arguments.length) return fields;
 			valid_field_name(name);
@@ -387,12 +393,6 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 				}
 			}
 			return o;
-		},
-		disable(name, bool=true, keep_value=false){
-			valid_field_name(name);
-			const f = fields.get(name).Field;
-			f.disable(bool, keep_value);
-			return f;
 		},
 		reset(values={}){
 			fields.forEach((field, name)=>{
