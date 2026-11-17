@@ -492,9 +492,10 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 			
 			field.Field = frm_map.create(
 				field,
-				(child_fields, child_model)=>fieldset(store, child_fields, {}, child_model, {
+				(child_table, child_fields)=>fieldset(store, child_fields, null, null, {
 					parent: o,
-					tabs
+					tabs,
+					table: child_table
 				}),
 				summary=>frm_map.register_summary(summary, tabs, elm_visible)
 			);
@@ -502,7 +503,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 			return field.Field;
 		}
 		
-		return create_field(o, name, value, model_input, set_tabindex_field);
+		return create_field(o, name, value, model_input, set_tabindex_field, internal?.table ?? null);
 	}
 	
 	function prepare_button(name){
@@ -567,7 +568,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 	return Object.freeze(o);
 }
 
-function create_field(fieldset, name, value, model_input, set_tabindex_field){
+function create_field(fieldset, name, value, model_input, set_tabindex_field, table=null){
 	let input = null, rendered = false, dropdown_val = null, current_input_value = null, current_change_value = null;
 	const field = fieldset.fields(name), o = {
 		render(){
@@ -805,18 +806,21 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 	}
 	
 	function input_maxlength(){
-		if(!model_input) return null;
+		let resource = table;
+		if(resource == null){
+			if(!model_input) return null;
+			
+			resource = fieldset.store.schema.table_resource(model_input.name);
+			if(!resource) throw Error(`Table resource '${model_input.name}' does not exist`);
+		}
 		
-		let resource = fieldset.store.schema.table_resource(model_input.name);
-		if(!resource) throw Error(`Table resource '${model_input.name}' does not exist`);
-		
-		if(!Array.isArray(resource)) resource = [resource];
-		for(const table of resource){
+		const tables = Array.isArray(resource) ? resource : [resource];
+		for(const table of tables){
 			const column = fieldset.store.schema.db_column(table, name);
 			if(column) return column.length || null;
 		}
 		
-		throw Error(`DB schema '${model_input.name}.${name}' does not exist`);
+		throw Error(`DB column '${name}' does not exist in '${tables.join(', ')}'`);
 	}
 	
 	function has_focus(){

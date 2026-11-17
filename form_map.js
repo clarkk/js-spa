@@ -38,7 +38,7 @@ export function create(field, create_fieldset, register_summary){
 			register_summary(container.querySelector('summary'));
 			
 			for(const [key, values] of entries){
-				const child = create_fieldset(field.fields, field.model_input ?? null);
+				const child = create_fieldset(field.table, field.fields);
 				
 				children.set(key, child);
 				
