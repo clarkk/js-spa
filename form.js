@@ -1,5 +1,6 @@
 import * as frm_types from 'frm_types';
 import * as frm_map from 'frm_map';
+import * as frm_error from 'frm_error';
 import * as frm_dropdown from 'frm_dropdown';
 import * as api from 'api';
 import * as fmt from 'fmt';
@@ -236,11 +237,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 						data[k] = field.Field.val_types();
 					}
 					catch(err){
-						if(
-							!(err instanceof api.HTTP_error) ||
-							err.status !== 422 ||
-							err.body?.source !== frm_types.SOURCE
-						) throw err;
+						if(!frm_error.is_conversion(err)) throw err;
 						
 						error[k] = err.body.error;
 					}
@@ -271,12 +268,9 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 				if(result.error) error[k] = result.error;
 				else data[k] = result.value;
 			}
-			if(Object.keys(error).length){
-				throw new api.HTTP_error(422, {
-					error,
-					source: frm_types.SOURCE
-				});
-			}
+			
+			if(Object.keys(error).length) throw frm_error.error(error, true);
+			
 			return data;
 		},
 		error(err, focus=true){
@@ -494,42 +488,15 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 		const field = fields.get(name);
 		
 		if(field.type === TYPE_MAP){
-			if(value !== undefined) field.value = value;
+			if(value != null) field.value = value;
 			
 			field.Field = frm_map.create(
 				field,
-				(child_fields, child_model)=>fieldset(
-					store,
-					child_fields,
-					{},
-					child_model,
-					{
-						parent: o,
-						tabs
-					}
-				),
-				summary=>{
-					const index = tabs.tabindex();
-					
-					tabs.field(index, {
-						input(){
-							return summary;
-						},
-						enabled(visible=false){
-							return !visible || !!elm_visible(summary);
-						},
-						focus(){
-							summary.focus();
-						}
-					});
-					
-					summary.addEventListener('keydown', e=>{
-						if(e.key !== KEY_TAB) return;
-
-						e.preventDefault();
-						tabs.tab(index, e);
-					});
-				}
+				(child_fields, child_model)=>fieldset(store, child_fields, {}, child_model, {
+					parent: o,
+					tabs
+				}),
+				summary=>frm_map.register_summary(summary, tabs, elm_visible)
 			);
 			
 			return field.Field;

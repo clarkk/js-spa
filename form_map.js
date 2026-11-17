@@ -1,6 +1,5 @@
 import * as fmt from 'fmt';
-import * as api from 'api';
-import * as frm_types from 'frm_types';
+import * as frm_error from 'frm_error';
 
 export function create(field, create_fieldset, register_summary){
 	let container, details, has_error = false;
@@ -39,27 +38,19 @@ export function create(field, create_fieldset, register_summary){
 			register_summary(container.querySelector('summary'));
 			
 			for(const [key, values] of entries){
-				const child = create_fieldset(
-					field.fields,
-					field.model_input ?? null
-				);
+				const child = create_fieldset(field.fields, field.model_input ?? null);
 				
 				children.set(key, child);
 				
-				const html = field.layout.call({
+				const html = field.layout.call(Object.freeze({
 					field(name, label=null, width=null){
-						return child.html.field(name, label ? `${label} ${key}` : key, width);
+						return child.html.field(name, label ? label+' '+key : key, width);
 					}
-				}, key);
+				}), key);
 				
 				content.insertAdjacentHTML('beforeend', html);
 				
-				child.render_fields(
-					values ?? {},
-					field.format ?? {},
-					field.parse_types ?? {},
-					false
-				);
+				child.render_fields(values ?? {}, field.format ?? {}, field.parse_types ?? {}, false);
 			}
 			
 			return o;
@@ -86,40 +77,27 @@ export function create(field, create_fieldset, register_summary){
 			return o;
 		},
 		val_types(){
-			const data = [], errors = [];
+			const data = {}, error = {};
 			for(const [key, child] of children){
 				try{
-					data.push([key, child.val_types()]);
+					data[key] = child.val_types();
 				}
 				catch(err){
-					if(
-						!(err instanceof api.HTTP_error) ||
-						err.status !== 422 ||
-						err.body?.source !== frm_types.SOURCE
-					) throw err;
+					if(!frm_error.is_conversion(err)) throw err;
 					
-					errors.push([key, err.body.error]);
+					error[key] = err.body.error;
 				}
 			}
 			
-			if(errors.length){
-				throw new api.HTTP_error(422, {
-					error: Object.fromEntries(errors),
-					source: frm_types.SOURCE
-				});
-			}
+			if(Object.keys(error).length) throw frm_error.error(error, true);
 			
-			return Object.fromEntries(data);
+			return data;
 		},
 		error(errors={}, convert_error=false){
 			has_error = false;
 			
 			for(const [key, child] of children){
-				child.error(new api.HTTP_error(422, {
-					error: errors?.[key] ?? {},
-					source: convert_error ? frm_types.SOURCE : null
-				}), false);
-				
+				child.error(frm_error.error(errors?.[key] ?? {}, convert_error), false);
 				if(child.has_error()) has_error = true;
 			}
 			
@@ -160,4 +138,27 @@ export function create(field, create_fieldset, register_summary){
 		}
 	};
 	return Object.freeze(o);
+}
+
+export function register_summary(summary, tabs, elm_visible){
+	const index = tabs.tabindex();
+	
+	tabs.field(index, {
+		input(){
+			return summary;
+		},
+		enabled(visible=false){
+			return !visible || !!elm_visible(summary);
+		},
+		focus(){
+			summary.focus();
+		}
+	});
+	
+	summary.addEventListener('keydown', e=>{
+		if(e.key !== 'Tab') return;
+		
+		e.preventDefault();
+		tabs.tab(index, e);
+	});
 }
