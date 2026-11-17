@@ -1,4 +1,5 @@
 import * as frm_types from 'frm_types';
+import * as frm_map from 'frm_map';
 import * as frm_dropdown from 'frm_dropdown';
 import * as api from 'api';
 import * as fmt from 'fmt';
@@ -11,6 +12,7 @@ export const
 	TYPE_TEXTAREA = 'textarea',
 	TYPE_CHECKBOX = 'checkbox',
 	TYPE_DROPDOWN = 'dropdown',
+	TYPE_MAP = 'map',
 	
 	BTN_ACTION = 'action',
 	BTN_BACK = 'back',
@@ -24,10 +26,7 @@ export const
 	KEY_ARROW_DOWN = 'ArrowDown',
 	KEY_ARROW_UP = 'ArrowUp';
 
-const EVENT_INPUT='input',
-	EVENT_CHANGE='change',
-	CLASS_ERROR='error',
-	BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
+const EVENT_INPUT='input', EVENT_CHANGE='change', CLASS_ERROR='error', BTN_CTA_NAMES=[BTN_ACTION,BTN_NEXT,BTN_PUT];
 
 fieldset.table = function(store, name, fields, buttons){
 	return fieldset(store, fields, buttons, Object.freeze({
@@ -56,13 +55,13 @@ export function fields_val_reset(fields){
 	return data;
 }
 
-export function fieldset(store, fields, buttons, model_input=null){
+export function fieldset(store, fields, buttons, model_input=null, internal=null){
 	let active = true, has_error = false, sending = false;
 	
 	const model_schema = model_input ? store.schema.get(model_input.type, model_input.name) : null;
 	if(model_input && !model_schema) throw Error(`Model input '${model_input.type}.${model_input.name}' does not exist`);
 	
-	const field_names = Object.create(null), tabs = create_tabs(), o = {
+	const field_names = Object.create(null), tabs = internal?.tabs ?? create_tabs(), o = {
 		store,
 		active(){
 			return active;
@@ -71,8 +70,15 @@ export function fieldset(store, fields, buttons, model_input=null){
 			active = !!bool;
 			return o;
 		},
+		readonly(bool){
+			fields?.forEach(field=>field.Field?.readonly(bool));
+			return o;
+		},
 		sending(){
 			return sending;
+		},
+		has_error(){
+			return has_error;
 		},
 		fields(name){
 			if(!arguments.length) return fields;
@@ -80,6 +86,8 @@ export function fieldset(store, fields, buttons, model_input=null){
 			return fields.get(name);
 		},
 		buttons(name, gracefully=false){
+			if(internal) return arguments.length ? internal.parent.buttons(name, gracefully) : internal.parent.buttons();
+			
 			if(!arguments.length) return buttons;
 			if(gracefully) return buttons[name] || null;
 			valid_button_name(name);
@@ -108,6 +116,12 @@ export function fieldset(store, fields, buttons, model_input=null){
 						`}
 					</div>
 				`;
+			},
+			map(name, layout){
+				const field = o.fields(name);
+				if(field.type !== TYPE_MAP) throw Error(`Field '${name}' is not a map`);
+				field.layout = layout;
+				return o.html.field(name);
 			},
 			button(name){
 				return `<div id="${prepare_button_id(name)}"></div>`;
@@ -148,24 +162,25 @@ export function fieldset(store, fields, buttons, model_input=null){
 		},
 		render(values={}, format={}, parse_types={}){
 			o.render_fields(values, format, parse_types);
-			o.render_buttons();
-			return o;
+			return o.render_buttons();
 		},
-		render_fields(values={}, format={}, parse_types={}){
+		render_fields(values={}, format={}, parse_types={}, init=true){
 			fields?.forEach((field, name)=>{
 				field.format = format[name] ?? null;
 				field.parse_types = parse_types[name] ?? null;
 				if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)) prepare_field(name, values[name]).render();
 			});
-			fields?.forEach(field=>
-				field.Field?.tigger_init_handlers()
-			);
+			if(init) o.init_handlers();
 			return o;
 		},
 		render_buttons(){
 			if(!Object.keys(buttons).length) throw Error('Fieldset must have at least one button');
 			
 			for(const k in buttons) prepare_button(k).render();
+			return o;
+		},
+		init_handlers(){
+			fields?.forEach(field=>field.Field?.init_handlers());
 			return o;
 		},
 		tab(tabindex, e){
@@ -209,6 +224,26 @@ export function fieldset(store, fields, buttons, model_input=null){
 			
 			for(const k in data){
 				const field = fields.get(k);
+				
+				if(field.type === TYPE_MAP){
+					try{
+						data[k] = field.Field.val_types();
+					}
+					catch(err){
+						if(
+							!(err instanceof api.HTTP_error) ||
+							err.status !== 422 ||
+							err.body?.source !== frm_types.SOURCE
+						){
+							throw err;
+						}
+						
+						error[k] = err.body.error;
+					}
+					
+					continue;
+				}
+				
 				if(!field.Field?.enabled()){
 					data[k] = null;
 					continue;
@@ -228,7 +263,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 					data[k] = value;
 				}
 				
-				const result = frm_types.convert(model_schema, k, data[k]);
+				const result = model_schema ? frm_types.convert(model_schema, k, data[k]) : {value: data[k]};
 				if(result.error) error[k] = result.error;
 				else data[k] = result.value;
 			}
@@ -240,7 +275,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			return data;
 		},
-		error(err){
+		error(err, focus=true){
 			switch(true){
 			case err instanceof api.HTTP_error:
 				has_error = false;
@@ -253,6 +288,11 @@ export function fieldset(store, fields, buttons, model_input=null){
 						return true;
 					}
 					fields.forEach((field, name)=>{
+						if(field.type === TYPE_MAP){
+							if(field.Field.error(error[name] ?? {}, convert_error)) has_error = true;
+							return;
+						}
+						
 						const input = field.Field?.input();
 						if(!input) return;
 						
@@ -267,7 +307,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 						}
 						else clear_field_error(field.id);
 					});
-					if(has_error) o.focus();
+					if(has_error && focus) o.focus();
 					return true;
 				
 				case 404:
@@ -289,6 +329,21 @@ export function fieldset(store, fields, buttons, model_input=null){
 			
 			return false;
 		},
+		clear_error(){
+			if(!has_error) return;
+			
+			has_error = false;
+			fields.forEach(field=>{
+				if(field.type === TYPE_MAP){
+					field.Field?.clear_error();
+					return;
+				}
+				
+				field.Field?.input()?.classList.remove(CLASS_ERROR);
+				clear_field_error(field.id);
+			});
+			return o;
+		},
 		focus(){
 			if(fields === null){
 				focus_button();
@@ -296,6 +351,15 @@ export function fieldset(store, fields, buttons, model_input=null){
 			}
 			if(has_error){
 				for(const [_, field] of fields){
+					if(field.type === TYPE_MAP){
+						if(field.Field?.has_error()){
+							field.Field.focus();
+							break;
+						}
+						
+						continue;
+					}
+					
 					if(field.Field?.enabled(true) && field.Field.input().classList.contains(CLASS_ERROR)){
 						field.Field.focus();
 						break;
@@ -350,7 +414,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 		if(sending) return false;
 		
 		sending = true;
-		clear_error();
+		o.clear_error();
 		try{
 			await run();
 			return true;
@@ -358,16 +422,6 @@ export function fieldset(store, fields, buttons, model_input=null){
 		finally{
 			sending = false;
 		}
-	}
-	
-	function clear_error(){
-		if(!has_error) return;
-		
-		has_error = false;
-		fields.forEach(field=>{
-			field.Field?.input()?.classList.remove(CLASS_ERROR);
-			clear_field_error(field.id);
-		});
 	}
 	
 	function convert_error_message(code){
@@ -419,7 +473,7 @@ export function fieldset(store, fields, buttons, model_input=null){
 					};
 					delete field.dropdown_calendar;
 				}
-				if(field.type !== TYPE_HIDDEN) field.tabindex = tabs.tabindex();
+				if(![TYPE_HIDDEN,TYPE_MAP].includes(field.type)) field.tabindex = tabs.tabindex();
 				field.css = create_css(field.css);
 			});
 		}
@@ -438,6 +492,51 @@ export function fieldset(store, fields, buttons, model_input=null){
 	
 	function prepare_field(name, value){
 		valid_field_name(name);
+		
+		const field = fields.get(name);
+		
+		if(field.type === TYPE_MAP){
+			if(value !== undefined) field.value = value;
+			
+			field.Field = frm_map.create(
+				field,
+				(child_fields, child_model)=>fieldset(
+					store,
+					child_fields,
+					{},
+					child_model,
+					{
+						parent: o,
+						tabs
+					}
+				),
+				summary=>{
+					const index = tabs.tabindex();
+					
+					tabs.field(index, {
+						input(){
+							return summary;
+						},
+						enabled(visible=false){
+							return !visible || !!elm_visible(summary);
+						},
+						focus(){
+							summary.focus();
+						}
+					});
+					
+					summary.addEventListener('keydown', e=>{
+						if(e.key !== KEY_TAB) return;
+
+						e.preventDefault();
+						tabs.tab(index, e);
+					});
+				}
+			);
+			
+			return field.Field;
+		}
+		
 		return create_field(o, name, value, model_input, set_tabindex_field);
 	}
 	
@@ -599,7 +698,7 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field){
 			
 			return o;
 		},
-		tigger_init_handlers(){
+		init_handlers(){
 			if(![TYPE_HIDDEN,TYPE_BLIND].includes(field.type)){
 				value_input_trigger(o.val(), true);
 				value_change_trigger(o.val(), true);
@@ -849,7 +948,8 @@ function create_button(fieldset, name, send){
 }
 
 function create_tabs(){
-	let tabindex = 0, tabs = Object.create(null);
+	let tabindex = 0;
+	const tabs = Object.create(null);
 	return {
 		tabindex(){
 			return tabindex++;
@@ -916,7 +1016,16 @@ function deep_clone(obj){
 }
 
 function elm_visible(elm){
-	return elm && (elm.offsetWidth || elm.offsetHeight || elm.getClientRects().length);
+	if(!elm) return false;
+	for(let parent = elm.parentElement; parent; parent = parent.parentElement){
+		if(parent instanceof HTMLDetailsElement && !parent.open){
+			const summary = Array.from(parent.children).find(
+				child=>child.tagName === 'SUMMARY'
+			);
+			if(!summary?.contains(elm)) return false;
+		}
+	}
+	return elm.offsetWidth || elm.offsetHeight || elm.getClientRects().length;
 }
 
 function set_field_error(id, msg){
