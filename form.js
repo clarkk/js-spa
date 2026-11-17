@@ -57,7 +57,6 @@ export function fields_val_reset(fields){
 
 export function fieldset(store, fields, buttons, model_input=null, internal=null){
 	let active = true, has_error = false, sending = false;
-	
 	const model_schema = model_input ? store.schema.get(model_input.type, model_input.name) : null;
 	if(model_input && !model_schema) throw Error(`Model input '${model_input.type}.${model_input.name}' does not exist`);
 	
@@ -126,6 +125,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 			map(name, layout){
 				const field = o.fields(name);
 				if(field.type !== TYPE_MAP) throw Error(`Field '${name}' is not a map`);
+				
 				field.layout = layout;
 				return o.html.field(name);
 			},
@@ -240,9 +240,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 							!(err instanceof api.HTTP_error) ||
 							err.status !== 422 ||
 							err.body?.source !== frm_types.SOURCE
-						){
-							throw err;
-						}
+						) throw err;
 						
 						error[k] = err.body.error;
 					}

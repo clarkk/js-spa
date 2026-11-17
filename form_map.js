@@ -3,7 +3,7 @@ import * as api from 'api';
 import * as frm_types from 'frm_types';
 
 export function create(field, create_fieldset, register_summary){
-	let container, details, disabled = false, has_error = false;
+	let container, details, has_error = false;
 	const children = new Map(), o = {
 		readonly(bool=true){
 			children.forEach(child=>child.readonly(bool));
@@ -13,17 +13,7 @@ export function create(field, create_fieldset, register_summary){
 			return has_error;
 		},
 		enabled(visible=false){
-			if(disabled) return false;
-			return !visible || !!container.getClientRects().length;
-		},
-		disable(bool=true, keep_value=false){
-			disabled = !!bool;
-			children.forEach(child=>{
-				for(const [name, f] of child.fields()){
-					if(f.Field) child.disable(name, bool, keep_value);
-				}
-			});
-			return o;
+			return !visible || container.getClientRects().length;
 		},
 		render(){
 			if(typeof field.layout !== 'function') throw Error('Map layout must be defined with html.map()');
@@ -96,10 +86,10 @@ export function create(field, create_fieldset, register_summary){
 			return o;
 		},
 		val_types(){
-			const values = [], errors = [];
+			const data = [], errors = [];
 			for(const [key, child] of children){
 				try{
-					values.push([key, child.val_types()]);
+					data.push([key, child.val_types()]);
 				}
 				catch(err){
 					if(
@@ -119,7 +109,7 @@ export function create(field, create_fieldset, register_summary){
 				});
 			}
 			
-			return Object.fromEntries(values);
+			return Object.fromEntries(data);
 		},
 		error(errors={}, convert_error=false){
 			has_error = false;
