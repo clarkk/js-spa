@@ -22,11 +22,11 @@ export function create(field, create_fieldset, register_summary){
 			
 			const entries = Object.entries(field.value ?? {});
 			
-			container.innerHTML = com.map_details(field.label, entries.length);
+			container.innerHTML = com.map_details(field.label, entries);
 			
 			details = container.querySelector('details');
 			
-			const content = details.querySelector('.field-map-content');
+			const content = details.querySelector('.map-details-content');
 			register_summary(details.querySelector('summary'));
 			
 			for(const [key, values] of entries){

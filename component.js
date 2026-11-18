@@ -10,15 +10,25 @@ export function loader(size='3rem', invert=false){
 	`;
 }
 
-export function map_details(label, count, content=''){
+export function map_details(label, entries, content=''){
+	let filled = 0, total = 0;
+	for(const [key, values] of entries){
+		total++;
+		for(const name in values){
+			if(String(values[name] ?? '').trim() === '') continue;
+			filled++;
+			break;
+		}
+	}
+	
 	return `
-		<details class="field-map" ${count ? '' : 'hidden'}>
+		<details class="map-details" ${total ? '' : 'hidden'}>
 			<summary>
-				<i class="bi bi-chevron-right" aria-hidden="true"></i>
-				${label ?? ''}
-				<span class="field-map-count">${count}</span>
+				<i class="bi bi-chevron-right"></i>
+				<div class="map-details-label">${label ?? ''}</div>
+				<div class="map-details-count">${filled} / ${total}</div>
 			</summary>
-			<div class="field-map-content">${content}</div>
+			<div class="map-details-content">${content}</div>
 		</details>
 	`;
 }

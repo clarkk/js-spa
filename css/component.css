@@ -41,3 +41,46 @@
 		stroke-dashoffset: -124px;
 	}
 }
+
+.map-details {
+	/*border-top: 1px solid hsl(0 0% 88%);*/
+}
+
+.map-details > summary {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	padding: .7rem .3rem;
+	border-radius: .3rem;
+	font-size: .9rem;
+	list-style: none;
+	cursor: pointer;
+	user-select: none;
+}
+
+.map-details > summary::-webkit-details-marker {
+	display: none;
+}
+
+.map-details > summary > i {
+	display: inline-block;
+	font-size: .8em;
+	line-height: 1;
+}
+
+.map-details[open] > summary > i {
+	transform: rotate(90deg);
+}
+
+.map-details-label {
+	font-weight: 600;
+}
+
+.map-details-count {
+	color: hsl(0 0% 60%);
+	font-weight: 500;
+}
+
+.map-details-content {
+	padding-top: .1rem;
+}

@@ -202,16 +202,17 @@ textarea,
 
 .field-group {
 	display: grid;
-	gap: .6rem;
+	gap: .8rem;
 	min-width: 0;
 	margin: 0;
-	padding: .6rem .8rem .8rem;
+	padding: .6rem .9rem .9rem;
 	border: 1px solid hsl(0 0% 88%);
 	border-radius: .5rem;
 }
 
 .field-group > legend {
 	padding: 0 .3rem;
+	font-size: .9rem;
 	font-weight: 600;
 }
 
@@ -237,6 +238,7 @@ textarea,
 .field-label label,
 .field-label-inline label {
 	font-size: .8rem;
+	line-height: 1.3;
 	text-align: left;
 }
 
@@ -261,13 +263,17 @@ textarea,
 	padding: .4rem .6rem;
 	border: 1px solid hsl(0 0% 88%);
 	border-radius: .4rem;
-	background: hsl(0 0% 97%);
+	background: hsl(0 0% 97% / 90%);
 	line-height: 1.4;
 	overflow-wrap: anywhere;
 }
 
+.field-data:empty::before {
+	content: "\00a0";
+}
+
 .field-group .field-data {
-	padding: 0;
+	padding: 0 .3rem;
 	border: 0;
 	background: transparent;
 }
