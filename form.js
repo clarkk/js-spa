@@ -715,27 +715,26 @@ function create_field(fieldset, name, value, model_input, set_tabindex_field, ta
 				}
 			}
 			
-			if(value !== undefined){
-				if(value !== null && field.format) value = field.format(value);
+			value ??= null;
+			if(value !== null && field.format) value = field.format(value);
+			
+			switch(field.type){
+			case TYPE_CHECKBOX:
+				input.checked = !!value;
+				break;
 				
-				switch(field.type){
-				case TYPE_CHECKBOX:
-					input.checked = !!value;
-					break;
-					
-				case TYPE_DROPDOWN:
-					dropdown_val(value);
-					break;
-					
-				default:
-					input.value = value ?? '';
-				}
+			case TYPE_DROPDOWN:
+				dropdown_val(value);
+				break;
 				
-				for(const type of [EVENT_INPUT, EVENT_CHANGE]){
-					const event = new Event(type);
-					event.programmatic = true;
-					input.dispatchEvent(event);
-				}
+			default:
+				input.value = value ?? '';
+			}
+			
+			for(const type of [EVENT_INPUT, EVENT_CHANGE]){
+				const event = new Event(type);
+				event.programmatic = true;
+				input.dispatchEvent(event);
 			}
 			return o;
 		},
