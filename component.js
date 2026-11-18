@@ -15,12 +15,9 @@ export function map_details(label, entries, content=''){
 	for(const [key, values] of entries){
 		total++;
 		for(const name in values){
-			if(String(values[name] ?? '').trim() === '') continue;
-			filled++;
-			break;
+			if(String(values[name] ?? '').trim() !== '') filled++;
 		}
 	}
-	
 	return `
 		<details class="map-details" ${total ? '' : 'hidden'}>
 			<summary>
