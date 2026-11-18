@@ -1,3 +1,5 @@
+import * as fmt from 'fmt';
+
 export function loader(size='3rem', invert=false){
 	return `
 		<div class="loader ${invert ? 'invert' : ''}">
@@ -5,6 +7,19 @@ export function loader(size='3rem', invert=false){
 				<circle cx="50" cy="50" r="20"></circle>
 			</svg>
 		</div>
+	`;
+}
+
+export function map_details(label, count, content=''){
+	return `
+		<details class="field-map" ${count ? '' : 'hidden'}>
+			<summary>
+				<i class="bi bi-chevron-right" aria-hidden="true"></i>
+				${label ?? ''}
+				<span class="field-map-count">${count}</span>
+			</summary>
+			<div class="field-map-content">${content}</div>
+		</details>
 	`;
 }
 

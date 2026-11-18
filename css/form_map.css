@@ -1,0 +1,28 @@
+.field-map {
+	/*border-top: 1px solid hsl(0 0% 88%);*/
+}
+
+.field-map > summary {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	padding: .7rem .3rem;
+	border-radius: .3rem;
+	font-weight: 600;
+	list-style: none;
+	cursor: pointer;
+	user-select: none;
+}
+
+.field-map > summary::-webkit-details-marker {
+	display: none;
+}
+
+.field-map > summary > i {
+	font-size: .85em;
+	line-height: 1;
+}
+
+.field-map[open] > summary > i {
+	transform: rotate(90deg);
+}

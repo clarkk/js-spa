@@ -200,6 +200,21 @@ textarea,
 	cursor: default;
 }*/
 
+.field-group {
+	display: grid;
+	gap: .6rem;
+	min-width: 0;
+	margin: 0;
+	padding: .6rem .8rem .8rem;
+	border: 1px solid hsl(0 0% 88%);
+	border-radius: .5rem;
+}
+
+.field-group > legend {
+	padding: 0 .3rem;
+	font-weight: 600;
+}
+
 .field-container {
 	position: relative;
 	display: inline-flex;
@@ -239,6 +254,22 @@ textarea,
 .field-input {
 	min-width: 0;
 	padding: var(--input-width-focus-shadow);
+}
+
+.field-data {
+	min-height: 1.4em;
+	padding: .4rem .6rem;
+	border: 1px solid hsl(0 0% 88%);
+	border-radius: .4rem;
+	background: hsl(0 0% 97%);
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+
+.field-group .field-data {
+	padding: 0;
+	border: 0;
+	background: transparent;
 }
 
 .field-error {

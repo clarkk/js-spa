@@ -102,8 +102,9 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 		html: Object.freeze({
 			field(name, label=null, width=null){
 				const id = prepare_field_id(name);
+				width ??= fields.get(name).width ?? '100%';
 				return `
-					<div class="field-container ${label ? 'field-label' : ''}" style="width:${width ? width+'px' : '100%'}">
+					<div class="field-container ${label ? 'field-label' : ''}" style="width:${width}">
 						${label ? `<label>${fmt.html(label)}</label>` : ''}
 						<div id="${id}" class="${label ? 'field-input' : ''}"></div>
 						<div id="${field_error_id(id)}" class="field-error"></div>
@@ -112,6 +113,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 			},
 			field_inline(name, label, width){
 				const id = prepare_field_id(name);
+				width ??= fields.get(name).width ?? '100%';
 				return `
 					<div class="field-container field-label-inline">
 						${fields.get(name).type === TYPE_CHECKBOX ? `

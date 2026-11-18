@@ -1,4 +1,4 @@
-import * as fmt from 'fmt';
+import * as com from 'com';
 import * as frm_error from 'frm_error';
 
 export function create(field, create_fieldset, register_summary){
@@ -22,20 +22,12 @@ export function create(field, create_fieldset, register_summary){
 			
 			const entries = Object.entries(field.value ?? {});
 			
-			container.innerHTML = `
-				<details class="field-map" ${entries.length ? '' : 'hidden'}>
-					<summary>
-						${fmt.html(field.label ?? '')}
-						<span class="field-map-count">${entries.length}</span>
-					</summary>
-					<div class="field-map-content"></div>
-				</details>
-			`;
+			container.innerHTML = com.map_details(field.label, entries.length);
 			
 			details = container.querySelector('details');
 			
-			const content = container.querySelector('.field-map-content');
-			register_summary(container.querySelector('summary'));
+			const content = details.querySelector('.field-map-content');
+			register_summary(details.querySelector('summary'));
 			
 			for(const [key, values] of entries){
 				const child = create_fieldset(field.table, field.fields);
