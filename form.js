@@ -467,7 +467,6 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 					};
 					delete field.dropdown_calendar;
 				}
-				if(![TYPE_HIDDEN,TYPE_MAP].includes(field.type)) field.tabindex = tabs.tabindex();
 				field.css = create_css(field.css);
 			});
 		}
@@ -505,6 +504,7 @@ export function fieldset(store, fields, buttons, model_input=null, internal=null
 			return field.Field;
 		}
 		
+		field.tabindex = tabs.tabindex();
 		return create_field(o, name, value, model_input, set_tabindex_field, internal?.table ?? null);
 	}
 	
