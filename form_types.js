@@ -13,9 +13,15 @@ export const
 	SOURCE = 'convert';
 
 const TYPE_STRING='string', TYPE_INT='integer', TYPE_BOOL='boolean',
-	FORMAT_DECIMAL='decimal', FORMAT_INT32='int32', FORMAT_INT64='int64', FORMAT_UINT32='uint32', FORMAT_UINT64='uint64',
 	RE_INT_SIGNED=/^-?\d+$/, RE_INT_UNSIGNED=/^\d+$/, RE_DECIMAL=/^-?\d+(?:[.,]\d+)?$/,
 	MIN_INT32=-2147483648n, MAX_INT32=2147483647n, MAX_UINT32=4294967295n, MIN_INT64=-9223372036854775808n, MAX_INT64=9223372036854775807n, MAX_UINT64=18446744073709551615n;
+
+const INTEGER_FORMATS = {
+	[ERROR_INT32]: {pattern: RE_INT_SIGNED, min: MIN_INT32, max: MAX_INT32},
+	[ERROR_INT64]: {pattern: RE_INT_SIGNED, min: MIN_INT64, max: MAX_INT64},
+	[ERROR_UINT32]: {pattern: RE_INT_UNSIGNED, min: 0n, max: MAX_UINT32},
+	[ERROR_UINT64]: {pattern: RE_INT_UNSIGNED, min: 0n, max: MAX_UINT64}
+};
 
 export function convert(model_schema, name, value){
 	const field = model_schema.fields[name];
@@ -25,9 +31,9 @@ export function convert(model_schema, name, value){
 	
 	switch(field.type){
 	case TYPE_STRING:
-		return convert_string(field, value);
+		return convert_string(name, field, value);
 	case TYPE_INT:
-		return convert_integer(field, value);
+		return convert_integer(name, field, value);
 	case TYPE_BOOL:
 		return convert_boolean(value);
 	default:
@@ -35,67 +41,34 @@ export function convert(model_schema, name, value){
 	}
 }
 
-function convert_string(field, value){
+function convert_string(name, field, value){
 	const type = typeof value;
 	if(type !== TYPE_STRING && (type !== 'number' || !Number.isFinite(value))) return error(ERROR_STRING);
 	
 	switch(field.format){
-	case '':
 	case undefined:
-	case null:
 		return result(String(value));
-		
-	case FORMAT_DECIMAL:
+	case ERROR_DECIMAL:
 		return convert_format_decimal(value);
-		
 	default:
-		throw Error(`Unsupported string format '${field.format}'`);
+		throw Error(`Unsupported string format '${field.format}' in ${name}`);
 	}
 }
 
-function convert_integer(field, value){
-	const type = typeof value;
-	if(type !== TYPE_STRING && type !== 'number' && type !== 'bigint') return error_int(field.format);
-	if(type === 'number' && !Number.isSafeInteger(value)) return error_int(field.format);
+function convert_integer(name, field, value){
+	const format = field.format ?? ERROR_INT32, config = INTEGER_FORMATS[format], type = typeof value;
+	if(!config) throw Error(`Unsupported integer format '${format}' in ${name}`);
+	if(type !== TYPE_STRING && type !== 'number' && type !== 'bigint') return error(format);
+	if(type === 'number' && !Number.isSafeInteger(value)) return error(format);
 	
 	const s = String(value);
-	switch(field.format){
-	case FORMAT_INT32:
-	case FORMAT_INT64:
-		if(!RE_INT_SIGNED.test(s)) return error_int(field.format);
-		break;
-		
-	case FORMAT_UINT32:
-	case FORMAT_UINT64:
-		if(!RE_INT_UNSIGNED.test(s)) return error_int(field.format);
-		break;
-		
-	default:
-		throw Error(`Unsupported integer format '${field.format}'`);
-	}
+	if(!config.pattern.test(s)) return error(format);
 	
 	const b = BigInt(s);
-	switch(field.format){
-	case FORMAT_INT32:
-		if(b < MIN_INT32 || b > MAX_INT32) return error_int(field.format);
-		break;
-		
-	case FORMAT_UINT32:
-		if(b > MAX_UINT32 || b < 0) return error_int(field.format);
-		break;
-		
-	case FORMAT_INT64:
-		if(b < MIN_INT64 || b > MAX_INT64) return error_int(field.format);
-		break;
-		
-	case FORMAT_UINT64:
-		if(b > MAX_UINT64 || b < 0) return error_int(field.format);
-		break;
-	}
+	if(b < config.min || b > config.max) return error(format);
 	
 	const n = Number(b);
-	if(!Number.isSafeInteger(n)) return error_int(field.format);
-	return result(n);
+	return Number.isSafeInteger(n) ? result(n) : error(format);
 }
 
 function convert_boolean(value){
@@ -115,19 +88,4 @@ function result(value){
 
 function error(error){
 	return {error};
-}
-
-function error_int(format){
-	switch(format){
-	case FORMAT_INT32:
-		return error(ERROR_INT32);
-	case FORMAT_INT64:
-		return error(ERROR_INT64);
-	case FORMAT_UINT32:
-		return error(ERROR_UINT32);
-	case FORMAT_UINT64:
-		return error(ERROR_UINT64);
-	default:
-		throw Error(`Unsupported int format '${format}'`);
-	}
 }
